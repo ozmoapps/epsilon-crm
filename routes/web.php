@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function () {
         ->name('contract-templates.make_default');
     Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])
         ->name('contract-templates.toggle_active');
-    Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show']);
+    Route::resource('sales-orders', SalesOrderController::class);
     Route::get('sales-orders/{salesOrder}/contracts/create', [ContractController::class, 'create'])
         ->name('sales-orders.contracts.create');
     Route::post('sales-orders/{salesOrder}/contracts', [ContractController::class, 'store'])
