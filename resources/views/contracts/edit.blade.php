@@ -1,0 +1,29 @@
+<x-app-layout>
+    <x-slot name="header">
+        <x-page-header title="{{ __('Sözleşme Düzenle') }}" subtitle="{{ $contract->contract_no }}">
+            <x-slot name="actions">
+                <x-button href="{{ route('contracts.show', $contract) }}" variant="secondary" size="sm">
+                    {{ __('Detaya Dön') }}
+                </x-button>
+            </x-slot>
+        </x-page-header>
+    </x-slot>
+
+    <div class="space-y-6">
+        @include('contracts._sales_order_summary', ['salesOrder' => $salesOrder])
+
+        <x-card>
+            <x-slot name="header">{{ __('Sözleşme Detayları') }}</x-slot>
+            <form method="POST" action="{{ route('contracts.update', $contract) }}" class="space-y-6">
+                @csrf
+                @method('PUT')
+
+                @include('contracts._form', ['contract' => $contract])
+
+                <div class="flex items-center justify-end">
+                    <x-button type="submit">{{ __('Güncelle') }}</x-button>
+                </div>
+            </form>
+        </x-card>
+    </div>
+</x-app-layout>

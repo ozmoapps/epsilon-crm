@@ -6,6 +6,8 @@
         'confirmed' => 'bg-blue-50 text-blue-700 ring-blue-200',
         'in_progress' => 'bg-amber-50 text-amber-800 ring-amber-200',
         'completed' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+        'sent' => 'bg-sky-50 text-sky-700 ring-sky-200',
+        'signed' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
         'canceled' => 'bg-rose-50 text-rose-700 ring-rose-200',
         'cancelled' => 'bg-rose-50 text-rose-700 ring-rose-200',
         'neutral' => 'bg-gray-100 text-gray-700 ring-gray-200',

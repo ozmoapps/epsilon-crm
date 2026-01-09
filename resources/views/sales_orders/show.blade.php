@@ -7,9 +7,20 @@
                     $canStart = $salesOrder->status === 'confirmed';
                     $canComplete = $salesOrder->status === 'in_progress';
                     $canCancel = ! in_array($salesOrder->status, ['completed', 'canceled'], true);
+                    $hasContract = (bool) $salesOrder->contract;
                     $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
                     $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
                 @endphp
+
+                @if ($hasContract)
+                    <x-button href="{{ route('contracts.show', $salesOrder->contract) }}" size="sm">
+                        {{ __('Sözleşmeyi Görüntüle') }}
+                    </x-button>
+                @else
+                    <x-button href="{{ route('sales-orders.contracts.create', $salesOrder) }}" size="sm">
+                        {{ __('Sözleşme Oluştur') }}
+                    </x-button>
+                @endif
 
                 <x-ui.dropdown align="right" width="w-60">
                     <x-slot name="trigger">

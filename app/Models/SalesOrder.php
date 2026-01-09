@@ -119,6 +119,11 @@ class SalesOrder extends Model
         return $this->hasMany(SalesOrderItem::class)->orderBy('sort_order');
     }
 
+    public function contract()
+    {
+        return $this->hasOne(Contract::class);
+    }
+
     public function recalculateTotals(): void
     {
         $this->loadMissing('items');
