@@ -29,57 +29,91 @@
 
         <x-card>
             <x-slot name="header">{{ __('Liste') }}</x-slot>
-            <div class="space-y-4">
-                @forelse ($workOrders as $workOrder)
-                    <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-base font-semibold text-gray-900">{{ $workOrder->title }}</p>
-                                <p class="text-sm text-gray-500">
-                                    {{ $workOrder->customer?->name ?? 'Müşteri yok' }}
-                                    @if ($workOrder->vessel)
-                                        · {{ $workOrder->vessel->name }}
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-2 text-sm">
-                                <x-badge variant="info">{{ $workOrder->status_label }}</x-badge>
-                                <x-button href="{{ route('work-orders.show', $workOrder) }}" variant="secondary" size="sm">
-                                    {{ __('Detay') }}
-                                </x-button>
-                                <x-button href="{{ route('work-orders.edit', $workOrder) }}" variant="secondary" size="sm">
-                                    {{ __('Düzenle') }}
-                                </x-button>
-                                <form method="POST" action="{{ route('work-orders.destroy', $workOrder) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <x-button type="submit" variant="danger" size="sm" onclick="return confirm('İş emri silinsin mi?')">
-                                        {{ __('Sil') }}
-                                    </x-button>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="mt-4 grid gap-3 text-sm text-gray-600 sm:grid-cols-2">
-                            <div>
-                                <span class="text-gray-500">{{ __('Planlanan Başlangıç') }}:</span>
-                                <span class="font-medium text-gray-900">
-                                    {{ $workOrder->planned_start_at ? $workOrder->planned_start_at->format('d.m.Y') : '—' }}
-                                </span>
-                            </div>
-                            <div>
-                                <span class="text-gray-500">{{ __('Planlanan Bitiş') }}:</span>
-                                <span class="font-medium text-gray-900">
-                                    {{ $workOrder->planned_end_at ? $workOrder->planned_end_at->format('d.m.Y') : '—' }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="rounded-xl border border-dashed border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
-                        {{ __('Kayıt bulunamadı.') }}
-                    </div>
-                @endforelse
-            </div>
+            @php
+                $statusVariants = [
+                    'draft' => 'draft',
+                    'planned' => 'neutral',
+                    'in_progress' => 'in_progress',
+                    'completed' => 'completed',
+                    'cancelled' => 'canceled',
+                ];
+                $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
+                $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
+            @endphp
+            <x-ui.table>
+                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-4 py-3 text-left">{{ __('İş Emri') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('Müşteri') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('Tekne') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('Durum') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('Planlanan Başlangıç') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('Planlanan Bitiş') }}</th>
+                        <th class="px-4 py-3 text-right">{{ __('Aksiyonlar') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($workOrders as $workOrder)
+                        <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $workOrder->title }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600">{{ $workOrder->customer?->name ?? 'Müşteri yok' }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600">{{ $workOrder->vessel?->name ?? '-' }}</td>
+                            <td class="px-4 py-3">
+                                <x-ui.badge :variant="$statusVariants[$workOrder->status] ?? 'neutral'">
+                                    {{ $workOrder->status_label }}
+                                </x-ui.badge>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-slate-600">
+                                {{ $workOrder->planned_start_at ? $workOrder->planned_start_at->format('d.m.Y') : '—' }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-slate-600">
+                                {{ $workOrder->planned_end_at ? $workOrder->planned_end_at->format('d.m.Y') : '—' }}
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <x-ui.dropdown align="right" width="w-44">
+                                    <x-slot name="trigger">
+                                        <x-ui.tooltip text="{{ __('İşlemler') }}">
+                                            <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900" aria-label="{{ __('İşlemler') }}">
+                                                <x-icon.dots class="h-4 w-4" />
+                                            </button>
+                                        </x-ui.tooltip>
+                                    </x-slot>
+                                    <x-slot name="content">
+                                        <x-ui.tooltip text="{{ __('Görüntüle') }}" class="w-full">
+                                            <a href="{{ route('work-orders.show', $workOrder) }}" class="{{ $actionItemClass }}">
+                                                <x-icon.info class="h-4 w-4 text-sky-600" />
+                                                {{ __('Görüntüle') }}
+                                            </a>
+                                        </x-ui.tooltip>
+                                        <x-ui.tooltip text="{{ __('Düzenle') }}" class="w-full">
+                                            <a href="{{ route('work-orders.edit', $workOrder) }}" class="{{ $actionItemClass }}">
+                                                <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                                {{ __('Düzenle') }}
+                                            </a>
+                                        </x-ui.tooltip>
+                                        <form method="POST" action="{{ route('work-orders.destroy', $workOrder) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-ui.tooltip text="{{ __('Sil') }}" class="w-full">
+                                                <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('İş emri silinsin mi?')">
+                                                    <x-icon.trash class="h-4 w-4" />
+                                                    {{ __('Sil') }}
+                                                </button>
+                                            </x-ui.tooltip>
+                                        </form>
+                                    </x-slot>
+                                </x-ui.dropdown>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-4 py-6 text-center text-sm text-slate-500">
+                                {{ __('Kayıt bulunamadı.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </x-ui.table>
         </x-card>
 
         <div>

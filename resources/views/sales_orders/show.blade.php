@@ -2,6 +2,74 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Satış Siparişi Detayı') }}" subtitle="{{ $salesOrder->order_no }}">
             <x-slot name="actions">
+                @php
+                    $canConfirm = $salesOrder->status === 'draft';
+                    $canStart = $salesOrder->status === 'confirmed';
+                    $canComplete = $salesOrder->status === 'in_progress';
+                    $canCancel = ! in_array($salesOrder->status, ['completed', 'canceled'], true);
+                    $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
+                    $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
+                @endphp
+
+                <x-ui.dropdown align="right" width="w-60">
+                    <x-slot name="trigger">
+                        <x-button type="button" variant="secondary" size="sm" class="inline-flex items-center gap-2">
+                            {{ __('İşlemler') }}
+                            <x-icon.dots class="h-4 w-4" />
+                        </x-button>
+                    </x-slot>
+                    <x-slot name="content">
+                        @if ($canConfirm)
+                            <form method="POST" action="{{ route('sales-orders.confirm', $salesOrder) }}">
+                                @csrf
+                                @method('PATCH')
+                                <x-ui.tooltip text="{{ __('Siparişi Onayla') }}" class="w-full">
+                                    <button type="submit" class="{{ $actionItemClass }}">
+                                        <x-icon.check class="h-4 w-4 text-emerald-600" />
+                                        {{ __('Onayla') }}
+                                    </button>
+                                </x-ui.tooltip>
+                            </form>
+                        @endif
+                        @if ($canStart)
+                            <form method="POST" action="{{ route('sales-orders.start', $salesOrder) }}">
+                                @csrf
+                                @method('PATCH')
+                                <x-ui.tooltip text="{{ __('Siparişi Başlat') }}" class="w-full">
+                                    <button type="submit" class="{{ $actionItemClass }}">
+                                        <x-icon.arrow-right class="h-4 w-4 text-blue-600" />
+                                        {{ __('Devam Ettir') }}
+                                    </button>
+                                </x-ui.tooltip>
+                            </form>
+                        @endif
+                        @if ($canComplete)
+                            <form method="POST" action="{{ route('sales-orders.complete', $salesOrder) }}">
+                                @csrf
+                                @method('PATCH')
+                                <x-ui.tooltip text="{{ __('Siparişi Tamamla') }}" class="w-full">
+                                    <button type="submit" class="{{ $actionItemClass }}">
+                                        <x-icon.check class="h-4 w-4 text-emerald-600" />
+                                        {{ __('Tamamla') }}
+                                    </button>
+                                </x-ui.tooltip>
+                            </form>
+                        @endif
+                        @if ($canCancel)
+                            <form method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}">
+                                @csrf
+                                @method('PATCH')
+                                <x-ui.tooltip text="{{ __('Siparişi İptal Et') }}" class="w-full">
+                                    <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Satış siparişi iptal edilsin mi?')">
+                                        <x-icon.x class="h-4 w-4" />
+                                        {{ __('İptal') }}
+                                    </button>
+                                </x-ui.tooltip>
+                            </form>
+                        @endif
+                    </x-slot>
+                </x-ui.dropdown>
+
                 <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm satış siparişleri') }}
                 </x-button>
@@ -25,9 +93,20 @@
                     <p class="text-xs tracking-wide text-gray-500">{{ __('İş Emri') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $salesOrder->workOrder?->title ?? '-' }}</p>
                 </div>
+                @php
+                    $statusVariants = [
+                        'draft' => 'draft',
+                        'confirmed' => 'confirmed',
+                        'in_progress' => 'in_progress',
+                        'completed' => 'completed',
+                        'canceled' => 'canceled',
+                    ];
+                @endphp
                 <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Durum') }}</p>
-                    <x-badge status="{{ $salesOrder->status }}">{{ $salesOrder->status_label }}</x-badge>
+                    <x-ui.badge :variant="$statusVariants[$salesOrder->status] ?? 'neutral'">
+                        {{ $salesOrder->status_label }}
+                    </x-ui.badge>
                 </div>
                 <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Sipariş Tarihi') }}</p>
@@ -258,16 +337,16 @@
                                                 <x-button type="submit" size="sm" class="disabled:cursor-not-allowed disabled:opacity-50" x-bind:disabled="!dirty">
                                                     {{ __('Kaydet') }}
                                                 </x-button>
-                                                <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-gray-300 hover:text-gray-900" onclick="const form = document.getElementById('new-item-form'); if (form) { form.open = true; } const field = document.getElementById('new-item-description'); if (field) { field.focus(); field.scrollIntoView({ behavior: 'smooth', block: 'center' }); }" aria-label="{{ __('Satır ekle') }}">
-                                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                        <path fill-rule="evenodd" d="M10 4.25a.75.75 0 0 1 .75.75v4.25H15a.75.75 0 0 1 0 1.5h-4.25V15a.75.75 0 0 1-1.5 0v-4.25H5a.75.75 0 0 1 0-1.5h4.25V5a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                                <button form="delete-item-{{ $item->id }}" type="submit" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 text-red-600 transition hover:border-red-300 hover:text-red-700" aria-label="{{ __('Satırı sil') }}">
-                                                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                        <path fill-rule="evenodd" d="M8.75 2.75a.75.75 0 0 1 .75.75V4h2.5v-.5a.75.75 0 0 1 1.5 0V4h2a.75.75 0 0 1 0 1.5h-.5v9a2 2 0 0 1-2 2H6.25a2 2 0 0 1-2-2v-9h-.5a.75.75 0 0 1 0-1.5h2v-.5a.75.75 0 0 1 .75-.75h2.5Zm-2 2.75v9a.5.5 0 0 0 .5.5h5.5a.5.5 0 0 0 .5-.5v-9h-6.5Z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
+                                                <x-ui.tooltip text="{{ __('Satır ekle') }}">
+                                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-gray-300 hover:text-gray-900" onclick="const form = document.getElementById('new-item-form'); if (form) { form.open = true; } const field = document.getElementById('new-item-description'); if (field) { field.focus(); field.scrollIntoView({ behavior: 'smooth', block: 'center' }); }" aria-label="{{ __('Satır ekle') }}">
+                                                        <x-icon.plus class="h-4 w-4" />
+                                                    </button>
+                                                </x-ui.tooltip>
+                                                <x-ui.tooltip text="{{ __('Satırı sil') }}">
+                                                    <button form="delete-item-{{ $item->id }}" type="submit" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 text-red-600 transition hover:border-red-300 hover:text-red-700" aria-label="{{ __('Satırı sil') }}">
+                                                        <x-icon.trash class="h-4 w-4" />
+                                                    </button>
+                                                </x-ui.tooltip>
                                             </div>
                                         </form>
 
