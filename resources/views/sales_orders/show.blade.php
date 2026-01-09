@@ -2,9 +2,6 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Satış Siparişi Detayı') }}" subtitle="{{ $salesOrder->order_no }}">
             <x-slot name="actions">
-                <x-button href="{{ route('sales-orders.edit', $salesOrder) }}" variant="secondary" size="sm">
-                    {{ __('Düzenle') }}
-                </x-button>
                 <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm satış siparişleri') }}
                 </x-button>
