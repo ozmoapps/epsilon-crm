@@ -34,13 +34,27 @@
 
             <div>
                 <x-input-label for="boat_type" :value="__('Tekne Sınıfı')" />
-                <x-text-input id="boat_type" name="boat_type" type="text" class="mt-1 block w-full" :value="old('boat_type', $vessel->boat_type ?? '')" />
+                <select id="boat_type" name="boat_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">{{ __('Seçiniz') }}</option>
+                    @foreach (config('vessels.boat_types', []) as $key => $label)
+                        <option value="{{ $key }}" @selected(old('boat_type', $vessel->boat_type ?? '') === $key)>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
                 <x-input-error :messages="$errors->get('boat_type')" class="mt-2" />
             </div>
 
             <div>
                 <x-input-label for="material" :value="__('Gövde Malzemesi')" />
-                <x-text-input id="material" name="material" type="text" class="mt-1 block w-full" :value="old('material', $vessel->material ?? '')" />
+                <select id="material" name="material" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="">{{ __('Seçiniz') }}</option>
+                    @foreach (config('vessels.materials', []) as $key => $label)
+                        <option value="{{ $key }}" @selected(old('material', $vessel->material ?? '') === $key)>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
                 <x-input-error :messages="$errors->get('material')" class="mt-2" />
             </div>
 

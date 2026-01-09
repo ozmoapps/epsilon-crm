@@ -47,11 +47,11 @@
                                 </div>
                                 <div>
                                     <dt class="text-gray-500">{{ __('Tekne Sınıfı') }}</dt>
-                                    <dd class="text-gray-900">{{ $vessel->boat_type ?: '—' }}</dd>
+                                    <dd class="text-gray-900">{{ $vessel->boat_type_label ?: '—' }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-gray-500">{{ __('Gövde Malzemesi') }}</dt>
-                                    <dd class="text-gray-900">{{ $vessel->material ?: '—' }}</dd>
+                                    <dd class="text-gray-900">{{ $vessel->material_label ?: '—' }}</dd>
                                 </div>
                                 <div class="sm:col-span-2">
                                     <dt class="text-gray-500">{{ __('Ruhsat Numarası') }}</dt>
