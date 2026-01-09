@@ -109,7 +109,7 @@
                     <div class="mt-6 rounded-lg border border-gray-100 bg-gray-50 p-4">
                         <p class="text-sm font-semibold text-gray-800">{{ __('Kalem Ekle') }}</p>
                         @include('quotes._item_form', [
-                            'item' => new \\App\\Models\\QuoteItem(),
+                            'item' => new \App\Models\QuoteItem(),
                             'action' => route('quotes.items.store', $quote),
                             'method' => 'POST',
                             'buttonLabel' => 'Kalem Ekle',
