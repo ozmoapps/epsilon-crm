@@ -24,6 +24,9 @@
                     <x-nav-link :href="route('work-orders.index')" :active="request()->routeIs('work-orders.*')">
                         {{ __('İş Emirleri') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.*')">
+                        {{ __('Teklifler') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -87,6 +90,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('work-orders.index')" :active="request()->routeIs('work-orders.*')">
                 {{ __('İş Emirleri') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.*')">
+                {{ __('Teklifler') }}
             </x-responsive-nav-link>
         </div>
 
