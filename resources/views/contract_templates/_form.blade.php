@@ -44,6 +44,12 @@
         </p>
     </div>
 
+    <div>
+        <x-input-label for="change_note" :value="__('Değişiklik Notu (Opsiyonel)')" />
+        <x-input id="change_note" name="change_note" type="text" class="mt-1" :value="old('change_note')" />
+        <x-input-error :messages="$errors->get('change_note')" class="mt-2" />
+    </div>
+
     @if ($previewHtml)
         <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
             <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700">{{ __('Önizleme') }}</h3>

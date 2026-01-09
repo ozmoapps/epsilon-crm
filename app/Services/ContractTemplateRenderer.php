@@ -4,14 +4,17 @@ namespace App\Services;
 
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use App\Models\ContractTemplateVersion;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class ContractTemplateRenderer
 {
-    public function render(Contract $contract, ContractTemplate $template): string
+    public function render(Contract $contract, ContractTemplate|ContractTemplateVersion $template): string
     {
         $contract->loadMissing(['salesOrder.customer', 'salesOrder.items']);
+
+        [$content, $format] = $this->resolveTemplate($template);
 
         $currencySymbols = config('quotes.currency_symbols', []);
         $currencySymbol = $currencySymbols[$contract->currency] ?? $contract->currency;
@@ -42,7 +45,7 @@ class ContractTemplateRenderer
             'line_items_table' => $this->lineItemsTable($contract, $currencySymbol, $formatMoney),
         ];
 
-        if ($template->format === 'html') {
+        if ($format === 'html') {
             $escaped = collect($replacements)
                 ->mapWithKeys(function ($value, $key) {
                     if ($key === 'line_items_table') {
@@ -68,7 +71,26 @@ class ContractTemplateRenderer
             $key = $matches[1];
 
             return $escaped[$key] ?? $matches[0];
-        }, $template->content);
+        }, $content);
+    }
+
+    private function resolveTemplate(ContractTemplate|ContractTemplateVersion $template): array
+    {
+        if ($template instanceof ContractTemplateVersion) {
+            return [$template->content, $template->format];
+        }
+
+        if ($template->current_version_id) {
+            $version = $template->relationLoaded('currentVersion')
+                ? $template->currentVersion
+                : $template->currentVersion()->first();
+
+            if ($version) {
+                return [$version->content, $version->format];
+            }
+        }
+
+        return [$template->content, $template->format];
     }
 
     private function lineItemsTable(Contract $contract, string $currencySymbol, callable $formatMoney): string

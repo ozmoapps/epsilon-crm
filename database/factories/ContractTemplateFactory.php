@@ -22,4 +22,16 @@ class ContractTemplateFactory extends Factory
             'created_by' => User::factory(),
         ];
     }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (ContractTemplate $template) {
+            $template->createVersion(
+                $template->content,
+                $template->format,
+                $template->created_by,
+                null
+            );
+        });
+    }
 }

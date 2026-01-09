@@ -194,7 +194,7 @@ HTML;
 </div>
 HTML;
 
-        ContractTemplate::updateOrCreate(
+        $trDefault = ContractTemplate::updateOrCreate(
             ['locale' => 'tr', 'name' => 'Varsayılan TR Şablonu'],
             [
                 'content' => $trTemplate,
@@ -204,7 +204,7 @@ HTML;
             ]
         );
 
-        ContractTemplate::updateOrCreate(
+        $enDefault = ContractTemplate::updateOrCreate(
             ['locale' => 'en', 'name' => 'Default EN Template'],
             [
                 'content' => $enTemplate,
@@ -213,5 +213,18 @@ HTML;
                 'is_active' => true,
             ]
         );
+
+        foreach ([$trDefault, $enDefault] as $template) {
+            $template->loadMissing('currentVersion');
+
+            if (! $template->current_version_id) {
+                $template->createVersion($template->content, $template->format);
+                continue;
+            }
+
+            if ($template->currentVersion && $template->currentVersion->content !== $template->content) {
+                $template->createVersion($template->content, $template->format, null, 'Varsayılan şablon güncellendi.');
+            }
+        }
     }
 }
