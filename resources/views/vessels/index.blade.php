@@ -52,7 +52,7 @@
                                     <tr class="bg-white">
                                         <td class="px-4 py-3 font-semibold text-gray-900">{{ $vessel->name }}</td>
                                         <td class="px-4 py-3 text-gray-600">{{ $vessel->customer?->name ?? 'Müşteri yok' }}</td>
-                                        <td class="px-4 py-3 text-gray-600">{{ $vessel->type ?: '—' }}</td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $vessel->boat_type_label ?: '—' }}</td>
                                         <td class="px-4 py-3 text-gray-600">{{ $vessel->loa_m ?? '—' }}</td>
                                         <td class="px-4 py-3 text-gray-600">{{ $vessel->beam_m ?? '—' }}</td>
                                         <td class="px-4 py-3 text-gray-600">{{ $vessel->draft_m ?? '—' }}</td>

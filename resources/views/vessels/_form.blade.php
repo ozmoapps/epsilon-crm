@@ -27,13 +27,7 @@
             </div>
 
             <div>
-                <x-input-label for="type" :value="__('Tekne Tipi')" />
-                <x-text-input id="type" name="type" type="text" class="mt-1 block w-full" :value="old('type', $vessel->type ?? '')" />
-                <x-input-error :messages="$errors->get('type')" class="mt-2" />
-            </div>
-
-            <div>
-                <x-input-label for="boat_type" :value="__('Tekne Sınıfı')" />
+                <x-input-label for="boat_type" :value="__('Tekne Tipi')" />
                 <select id="boat_type" name="boat_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="">{{ __('Seçiniz') }}</option>
                     @foreach (config('vessels.boat_types', []) as $key => $label)
@@ -43,6 +37,18 @@
                     @endforeach
                 </select>
                 <x-input-error :messages="$errors->get('boat_type')" class="mt-2" />
+            </div>
+
+            <div>
+                <x-input-label for="type" :value="__('Marka')" />
+                <x-text-input id="type" name="type" type="text" class="mt-1 block w-full" :value="old('type', $vessel->type ?? '')" />
+                <x-input-error :messages="$errors->get('type')" class="mt-2" />
+            </div>
+
+            <div>
+                <x-input-label for="registration_number" :value="__('Model')" />
+                <x-text-input id="registration_number" name="registration_number" type="text" class="mt-1 block w-full" :value="old('registration_number', $vessel->registration_number ?? '')" />
+                <x-input-error :messages="$errors->get('registration_number')" class="mt-2" />
             </div>
 
             <div>
@@ -56,12 +62,6 @@
                     @endforeach
                 </select>
                 <x-input-error :messages="$errors->get('material')" class="mt-2" />
-            </div>
-
-            <div class="sm:col-span-2">
-                <x-input-label for="registration_number" :value="__('Ruhsat Numarası')" />
-                <x-text-input id="registration_number" name="registration_number" type="text" class="mt-1 block w-full" :value="old('registration_number', $vessel->registration_number ?? '')" />
-                <x-input-error :messages="$errors->get('registration_number')" class="mt-2" />
             </div>
         </div>
     </div>

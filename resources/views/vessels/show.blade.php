@@ -43,19 +43,19 @@
                                 </div>
                                 <div>
                                     <dt class="text-gray-500">{{ __('Tekne Tipi') }}</dt>
-                                    <dd class="text-gray-900">{{ $vessel->type ?: '—' }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="text-gray-500">{{ __('Tekne Sınıfı') }}</dt>
                                     <dd class="text-gray-900">{{ $vessel->boat_type_label ?: '—' }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-gray-500">{{ __('Gövde Malzemesi') }}</dt>
-                                    <dd class="text-gray-900">{{ $vessel->material_label ?: '—' }}</dd>
+                                    <dt class="text-gray-500">{{ __('Marka') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->type ?: '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Model') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->registration_number ?: '—' }}</dd>
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <dt class="text-gray-500">{{ __('Ruhsat Numarası') }}</dt>
-                                    <dd class="text-gray-900">{{ $vessel->registration_number ?: '—' }}</dd>
+                                    <dt class="text-gray-500">{{ __('Gövde Malzemesi') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->material_label ?: '—' }}</dd>
                                 </div>
                             </dl>
                         </div>
