@@ -20,10 +20,28 @@
 
                 @include('contracts._form', ['contract' => $contract])
 
-                <div class="flex items-center justify-end">
+                <div class="flex flex-wrap items-center justify-end gap-3">
+                    <x-button type="submit" name="apply_template" value="1" variant="secondary">
+                        {{ __('Şablonu Uygula') }}
+                    </x-button>
                     <x-button type="submit">{{ __('Güncelle') }}</x-button>
                 </div>
             </form>
+        </x-card>
+
+        <x-card>
+            <x-slot name="header">{{ __('Önizleme') }}</x-slot>
+            @if ($contract->rendered_body)
+                <div class="prose max-w-none">
+                    {!! $contract->rendered_body !!}
+                </div>
+            @elseif ($previewHtml)
+                <div class="prose max-w-none">
+                    {!! $previewHtml !!}
+                </div>
+            @else
+                <p class="text-sm text-gray-500">{{ __('Henüz bir şablon uygulanmadı.') }}</p>
+            @endif
         </x-card>
     </div>
 </x-app-layout>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\ContractTemplateController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\QuoteItemController;
@@ -29,6 +30,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
     Route::resource('contracts', ContractController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
+    Route::resource('contract-templates', ContractTemplateController::class)->except(['show', 'destroy']);
+    Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])
+        ->name('contract-templates.preview');
+    Route::post('contract-templates/{template}/make-default', [ContractTemplateController::class, 'makeDefault'])
+        ->name('contract-templates.make_default');
+    Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])
+        ->name('contract-templates.toggle_active');
     Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show']);
     Route::get('sales-orders/{salesOrder}/contracts/create', [ContractController::class, 'create'])
         ->name('sales-orders.contracts.create');

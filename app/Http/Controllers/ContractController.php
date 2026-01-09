@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contract;
+use App\Models\ContractTemplate;
 use App\Models\SalesOrder;
+use App\Services\ContractTemplateRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -62,6 +64,7 @@ class ContractController extends Controller
             'contract' => $contract,
             'salesOrder' => $salesOrder,
             'locales' => config('contracts.locales', []),
+            'templates' => $this->availableTemplates($contract->locale),
         ]);
     }
 
@@ -102,11 +105,12 @@ class ContractController extends Controller
         }
 
         $contract->load(['salesOrder.customer', 'salesOrder.items', 'salesOrder.vessel']);
-
         return view('contracts.edit', [
             'contract' => $contract,
             'salesOrder' => $contract->salesOrder,
             'locales' => config('contracts.locales', []),
+            'templates' => $this->availableTemplates($contract->locale),
+            'previewHtml' => $this->buildPreview($contract, ContractTemplate::defaultForLocale($contract->locale)),
         ]);
     }
 
@@ -120,6 +124,13 @@ class ContractController extends Controller
         $validated = $request->validate($this->rules(), $this->messages());
 
         $contract->update($validated);
+
+        if ($request->boolean('apply_template')) {
+            $this->applyTemplate($contract);
+
+            return redirect()->route('contracts.edit', $contract)
+                ->with('success', 'Şablon uygulandı ve önizleme güncellendi.');
+        }
 
         return redirect()->route('contracts.show', $contract)
             ->with('success', 'Sözleşme güncellendi.');
@@ -135,6 +146,12 @@ class ContractController extends Controller
 
     public function markSent(Contract $contract)
     {
+        if (! $contract->rendered_body) {
+            $this->applyTemplate($contract, true);
+        } elseif (! $contract->rendered_at) {
+            $contract->update(['rendered_at' => now()]);
+        }
+
         return $this->transitionStatus($contract, 'draft', 'sent', null, 'Sözleşme gönderildi olarak işaretlendi.');
     }
 
@@ -159,6 +176,12 @@ class ContractController extends Controller
     public function pdf(Contract $contract)
     {
         $contract->load(['salesOrder.customer', 'salesOrder.items']);
+
+        if (! $contract->rendered_body) {
+            $this->applyTemplate($contract, true);
+        } elseif (! $contract->rendered_at) {
+            $contract->update(['rendered_at' => now()]);
+        }
 
         return response()
             ->view('contracts.pdf', ['contract' => $contract])
@@ -186,6 +209,10 @@ class ContractController extends Controller
         return [
             'issued_at' => ['required', 'date'],
             'locale' => ['required', 'string', Rule::in($locales)],
+            'contract_template_id' => [
+                'nullable',
+                Rule::exists('contract_templates', 'id')->where('is_active', true),
+            ],
             'payment_terms' => ['nullable', 'string'],
             'warranty_terms' => ['nullable', 'string'],
             'scope_text' => ['nullable', 'string'],
@@ -201,6 +228,7 @@ class ContractController extends Controller
             'issued_at.date' => 'Düzenleme tarihi geçerli değil.',
             'locale.required' => 'Dil seçimi zorunludur.',
             'locale.in' => 'Dil seçimi geçersiz.',
+            'contract_template_id.exists' => 'Seçilen şablon bulunamadı.',
         ];
     }
 
@@ -229,5 +257,45 @@ class ContractController extends Controller
             'exclusions_text' => $salesOrder->exclusions ?: ($defaults['exclusions_text'] ?? null),
             'delivery_terms' => $defaults['delivery_terms'] ?? null,
         ];
+    }
+
+    private function availableTemplates(string $locale)
+    {
+        return ContractTemplate::query()
+            ->active()
+            ->where('locale', $locale)
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function buildPreview(Contract $contract, ?ContractTemplate $defaultTemplate): ?string
+    {
+        $template = $contract->contractTemplate ?: $defaultTemplate;
+
+        if (! $template) {
+            return null;
+        }
+
+        $renderer = app(ContractTemplateRenderer::class);
+
+        return $renderer->render($contract, $template);
+    }
+
+    private function applyTemplate(Contract $contract, bool $setRenderedAt = false): void
+    {
+        $template = $contract->contractTemplate
+            ?: ContractTemplate::defaultForLocale($contract->locale);
+
+        if (! $template) {
+            return;
+        }
+
+        $renderer = app(ContractTemplateRenderer::class);
+
+        $contract->forceFill([
+            'rendered_body' => $renderer->render($contract, $template),
+            'rendered_at' => $setRenderedAt ? now() : $contract->rendered_at,
+        ])->save();
     }
 }
