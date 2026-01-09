@@ -66,6 +66,29 @@
                     </div>
                 </div>
 
+                <div class="rounded-lg bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                            {{ __('İş Emirleri') }}
+                        </h3>
+                        <a href="{{ route('work-orders.create') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            {{ __('İş Emri Ekle') }}
+                        </a>
+                    </div>
+                    <div class="mt-4 space-y-3">
+                        @forelse ($customer->workOrders as $workOrder)
+                            <a href="{{ route('work-orders.show', $workOrder) }}" class="flex flex-col gap-1 rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
+                                <span class="font-medium text-gray-900">{{ $workOrder->title }}</span>
+                                <span class="text-gray-500">
+                                    {{ $workOrder->vessel?->name ?? 'Tekne yok' }} · {{ $workOrder->status_label }}
+                                </span>
+                            </a>
+                        @empty
+                            <p class="text-sm text-gray-500">{{ __('Henüz iş emri yok.') }}</p>
+                        @endforelse
+                    </div>
+                </div>
+
                 <form method="POST" action="{{ route('customers.destroy', $customer) }}">
                     @csrf
                     @method('DELETE')

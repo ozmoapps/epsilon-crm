@@ -3,6 +3,7 @@
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VesselController;
+use App\Http\Controllers\WorkOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,6 +21,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('customers', CustomerController::class);
     Route::resource('vessels', VesselController::class);
+    Route::resource('work-orders', WorkOrderController::class);
 });
 
 require __DIR__.'/auth.php';
