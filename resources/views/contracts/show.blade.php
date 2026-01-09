@@ -289,7 +289,7 @@
                         variant="secondary"
                         size="sm"
                         @click="downloadingPdf = true"
-                        :class="downloadingPdf ? 'pointer-events-none opacity-60' : ''"
+                        x-bind:class="downloadingPdf ? 'pointer-events-none opacity-60' : ''"
                     >
                         <span x-show="!downloadingPdf">{{ __('PDF İndir') }}</span>
                         <span x-cloak x-show="downloadingPdf">{{ __('Hazırlanıyor...') }}</span>
@@ -299,7 +299,7 @@
                         variant="secondary"
                         size="sm"
                         @click="downloadingZip = true"
-                        :class="downloadingZip ? 'pointer-events-none opacity-60' : ''"
+                        x-bind:class="downloadingZip ? 'pointer-events-none opacity-60' : ''"
                     >
                         <span x-show="!downloadingZip">{{ __('ZIP İndir') }}</span>
                         <span x-cloak x-show="downloadingZip">{{ __('Hazırlanıyor...') }}</span>
