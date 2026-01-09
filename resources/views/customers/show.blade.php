@@ -1,102 +1,98 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-xl font-semibold text-gray-800 leading-tight">
-                {{ $customer->name }}
-            </h2>
-            <div class="flex flex-wrap gap-2">
-                <a href="{{ route('customers.edit', $customer) }}" class="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+        <x-page-header title="{{ $customer->name }}" subtitle="{{ __('Müşteri detay görünümü') }}">
+            <x-slot name="actions">
+                <x-button href="{{ route('customers.edit', $customer) }}" variant="secondary" size="sm">
                     {{ __('Düzenle') }}
-                </a>
-                <a href="{{ route('customers.index') }}" class="rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                </x-button>
+                <x-button href="{{ route('customers.index') }}" variant="secondary" size="sm">
                     {{ __('Listeye Dön') }}
-                </a>
-            </div>
-        </div>
+                </x-button>
+            </x-slot>
+        </x-page-header>
     </x-slot>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
-            <div class="space-y-6">
-                @if (session('success'))
-                    <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
-                        {{ session('success') }}
+    <div class="space-y-6">
+        <div class="grid gap-4 lg:grid-cols-2">
+            <x-card>
+                <x-slot name="header">{{ __('İletişim') }}</x-slot>
+                <dl class="space-y-3 text-sm">
+                    <div>
+                        <dt class="text-gray-500">{{ __('Telefon') }}</dt>
+                        <dd class="font-medium text-gray-900">{{ $customer->phone ?: '—' }}</dd>
                     </div>
-                @endif
+                    <div>
+                        <dt class="text-gray-500">{{ __('E-posta') }}</dt>
+                        <dd class="font-medium text-gray-900">{{ $customer->email ?: '—' }}</dd>
+                    </div>
+                </dl>
+            </x-card>
 
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <dl class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-                        <div>
-                            <dt class="text-gray-500">{{ __('Telefon') }}</dt>
-                            <dd class="text-gray-900">{{ $customer->phone ?: '—' }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-gray-500">{{ __('E-posta') }}</dt>
-                            <dd class="text-gray-900">{{ $customer->email ?: '—' }}</dd>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <dt class="text-gray-500">{{ __('Adres') }}</dt>
-                            <dd class="text-gray-900">{{ $customer->address ?: '—' }}</dd>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <dt class="text-gray-500">{{ __('Notlar') }}</dt>
-                            <dd class="text-gray-900">{{ $customer->notes ?: '—' }}</dd>
-                        </div>
-                    </dl>
-                </div>
-
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                            {{ __('Tekneler') }}
-                        </h3>
-                        <a href="{{ route('vessels.create', ['customer_id' => $customer->id]) }}" class="text-sm text-indigo-600 hover:text-indigo-500">
-                            {{ __('Tekne Ekle') }}
-                        </a>
+            <x-card>
+                <x-slot name="header">{{ __('Adres ve Notlar') }}</x-slot>
+                <dl class="space-y-3 text-sm">
+                    <div>
+                        <dt class="text-gray-500">{{ __('Adres') }}</dt>
+                        <dd class="font-medium text-gray-900">{{ $customer->address ?: '—' }}</dd>
                     </div>
-                    <div class="mt-4 space-y-3">
-                        @forelse ($customer->vessels as $vessel)
-                            <a href="{{ route('vessels.show', $vessel) }}" class="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                <span>{{ $vessel->name }}</span>
-                                <span class="text-gray-400">→</span>
-                            </a>
-                        @empty
-                            <p class="text-sm text-gray-500">{{ __('Henüz tekne yok.') }}</p>
-                        @endforelse
+                    <div>
+                        <dt class="text-gray-500">{{ __('Notlar') }}</dt>
+                        <dd class="font-medium text-gray-900">{{ $customer->notes ?: '—' }}</dd>
                     </div>
-                </div>
-
-                <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                            {{ __('İş Emirleri') }}
-                        </h3>
-                        <a href="{{ route('work-orders.create') }}" class="text-sm text-indigo-600 hover:text-indigo-500">
-                            {{ __('İş Emri Ekle') }}
-                        </a>
-                    </div>
-                    <div class="mt-4 space-y-3">
-                        @forelse ($customer->workOrders as $workOrder)
-                            <a href="{{ route('work-orders.show', $workOrder) }}" class="flex flex-col gap-1 rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
-                                <span class="font-medium text-gray-900">{{ $workOrder->title }}</span>
-                                <span class="text-gray-500">
-                                    {{ $workOrder->vessel?->name ?? 'Tekne yok' }} · {{ $workOrder->status_label }}
-                                </span>
-                            </a>
-                        @empty
-                            <p class="text-sm text-gray-500">{{ __('Henüz iş emri yok.') }}</p>
-                        @endforelse
-                    </div>
-                </div>
-
-                <form method="POST" action="{{ route('customers.destroy', $customer) }}">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="w-full rounded-md border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50" onclick="return confirm('Müşteri kaydı silinsin mi?')">
-                        {{ __('Müşteri Kaydını Sil') }}
-                    </button>
-                </form>
-            </div>
+                </dl>
+            </x-card>
         </div>
+
+        <x-card>
+            <x-slot name="header">
+                <div class="flex items-center justify-between">
+                    <span>{{ __('Tekneler') }}</span>
+                    <x-button href="{{ route('vessels.create', ['customer_id' => $customer->id]) }}" variant="secondary" size="sm">
+                        {{ __('Tekne Ekle') }}
+                    </x-button>
+                </div>
+            </x-slot>
+            <div class="space-y-3">
+                @forelse ($customer->vessels as $vessel)
+                    <a href="{{ route('vessels.show', $vessel) }}" class="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100">
+                        <span class="font-medium text-gray-900">{{ $vessel->name }}</span>
+                        <span class="text-gray-400">→</span>
+                    </a>
+                @empty
+                    <p class="text-sm text-gray-500">{{ __('Henüz tekne yok.') }}</p>
+                @endforelse
+            </div>
+        </x-card>
+
+        <x-card>
+            <x-slot name="header">
+                <div class="flex items-center justify-between">
+                    <span>{{ __('İş Emirleri') }}</span>
+                    <x-button href="{{ route('work-orders.create') }}" variant="secondary" size="sm">
+                        {{ __('İş Emri Ekle') }}
+                    </x-button>
+                </div>
+            </x-slot>
+            <div class="space-y-3">
+                @forelse ($customer->workOrders as $workOrder)
+                    <a href="{{ route('work-orders.show', $workOrder) }}" class="flex flex-col gap-1 rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 sm:flex-row sm:items-center sm:justify-between">
+                        <span class="font-medium text-gray-900">{{ $workOrder->title }}</span>
+                        <span class="text-gray-500">
+                            {{ $workOrder->vessel?->name ?? 'Tekne yok' }} · {{ $workOrder->status_label }}
+                        </span>
+                    </a>
+                @empty
+                    <p class="text-sm text-gray-500">{{ __('Henüz iş emri yok.') }}</p>
+                @endforelse
+            </div>
+        </x-card>
+
+        <form method="POST" action="{{ route('customers.destroy', $customer) }}">
+            @csrf
+            @method('DELETE')
+            <x-button type="submit" variant="danger" class="w-full" onclick="return confirm('Müşteri kaydı silinsin mi?')">
+                {{ __('Müşteri Kaydını Sil') }}
+            </x-button>
+        </form>
     </div>
 </x-app-layout>
