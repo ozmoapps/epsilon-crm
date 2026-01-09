@@ -7,6 +7,7 @@ use App\Models\ContractTemplate;
 use App\Models\ContractTemplateVersion;
 use App\Models\SalesOrder;
 use App\Services\ContractTemplateRenderer;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -93,9 +94,15 @@ class ContractController extends Controller
 
     public function show(Contract $contract)
     {
-        $contract->load(['salesOrder.customer', 'salesOrder.items', 'creator']);
+        $contract->load(['salesOrder.customer', 'salesOrder.items', 'creator', 'rootContract']);
+        $rootId = $contract->root_contract_id ?? $contract->id;
+        $revisions = Contract::query()
+            ->where('id', $rootId)
+            ->orWhere('root_contract_id', $rootId)
+            ->orderByDesc('revision_no')
+            ->get();
 
-        return view('contracts.show', compact('contract'));
+        return view('contracts.show', compact('contract', 'revisions'));
     }
 
     public function edit(Contract $contract)
@@ -187,6 +194,80 @@ class ContractController extends Controller
         return response()
             ->view('contracts.pdf', ['contract' => $contract])
             ->header('Content-Type', 'application/pdf');
+    }
+
+    public function revise(Request $request, Contract $contract)
+    {
+        if (! $contract->canCreateRevision()) {
+            return back()->with('warning', 'Bu sözleşme için revizyon oluşturulamaz.');
+        }
+
+        $rootContract = $contract->root_contract_id
+            ? Contract::query()->findOrFail($contract->root_contract_id)
+            : $contract;
+
+        $baseContractNo = $rootContract->contract_no;
+        $latestRevision = Contract::query()
+            ->where('root_contract_id', $rootContract->id)
+            ->max('revision_no');
+        $latestRevision = max($latestRevision ?? 1, $rootContract->revision_no ?? 1);
+        $nextRevision = $latestRevision + 1;
+        $newContractNo = sprintf('%s-R%d', $baseContractNo, $nextRevision);
+
+        $newContract = DB::transaction(function () use ($contract, $request, $rootContract, $nextRevision, $newContractNo) {
+            $current = Contract::query()
+                ->where(function ($query) use ($rootContract) {
+                    $query->where('id', $rootContract->id)
+                        ->orWhere('root_contract_id', $rootContract->id);
+                })
+                ->where('is_current', true)
+                ->lockForUpdate()
+                ->first();
+
+            $newContract = Contract::create([
+                'sales_order_id' => $contract->sales_order_id,
+                'root_contract_id' => $rootContract->id,
+                'revision_no' => $nextRevision,
+                'contract_no' => $newContractNo,
+                'status' => 'draft',
+                'issued_at' => now()->toDateString(),
+                'locale' => $contract->locale,
+                'currency' => $contract->currency,
+                'customer_name' => $contract->customer_name,
+                'customer_company' => $contract->customer_company,
+                'customer_tax_no' => $contract->customer_tax_no,
+                'customer_address' => $contract->customer_address,
+                'customer_email' => $contract->customer_email,
+                'customer_phone' => $contract->customer_phone,
+                'subtotal' => $contract->subtotal,
+                'tax_total' => $contract->tax_total,
+                'grand_total' => $contract->grand_total,
+                'payment_terms' => $contract->payment_terms,
+                'warranty_terms' => $contract->warranty_terms,
+                'scope_text' => $contract->scope_text,
+                'exclusions_text' => $contract->exclusions_text,
+                'delivery_terms' => $contract->delivery_terms,
+                'contract_template_id' => $contract->contract_template_id,
+                'contract_template_version_id' => null,
+                'rendered_body' => null,
+                'rendered_at' => null,
+                'created_by' => $request->user()->id,
+                'is_current' => true,
+            ]);
+
+            if ($current) {
+                $current->forceFill([
+                    'is_current' => false,
+                    'superseded_by_id' => $newContract->id,
+                    'superseded_at' => now(),
+                ])->save();
+            }
+
+            return $newContract;
+        });
+
+        return redirect()->route('contracts.edit', $newContract)
+            ->with('success', 'Revizyon oluşturuldu.');
     }
 
     private function transitionStatus(Contract $contract, string $from, string $to, $signedAt, string $message)

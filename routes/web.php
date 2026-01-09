@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::post('sales-orders/{salesOrder}/contracts', [ContractController::class, 'store'])
         ->name('sales-orders.contracts.store');
     Route::get('contracts/{contract}/pdf', [ContractController::class, 'pdf'])->name('contracts.pdf');
+    Route::post('contracts/{contract}/revise', [ContractController::class, 'revise'])
+        ->name('contracts.revise');
     Route::patch('contracts/{contract}/mark-sent', [ContractController::class, 'markSent'])
         ->name('contracts.mark_sent');
     Route::patch('contracts/{contract}/mark-signed', [ContractController::class, 'markSigned'])

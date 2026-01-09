@@ -26,6 +26,8 @@ class ContractTemplateRenderer
         $replacements = [
             'contract.contract_no' => $contract->contract_no,
             'contract.issued_at' => $contract->issued_at?->format('d.m.Y') ?? '',
+            'contract.revision_no' => (string) ($contract->revision_no ?? 1),
+            'contract.revision_label' => $contract->revision_label ?? 'R1',
             'customer.name' => $customerName,
             'customer.company' => $contract->customer_company ?? '',
             'customer.tax_no' => $contract->customer_tax_no ?? '',

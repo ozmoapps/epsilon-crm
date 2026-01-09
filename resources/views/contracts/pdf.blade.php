@@ -17,6 +17,7 @@
     </style>
 </head>
 <body>
+    <p class="muted">Revizyon: {{ $contract->revision_label }}</p>
     {!! $contract->rendered_body !!}
 </body>
 </html>

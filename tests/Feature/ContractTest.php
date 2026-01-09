@@ -139,4 +139,99 @@ class ContractTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_revision_creation_creates_new_draft_and_updates_current(): void
+    {
+        $user = User::factory()->create();
+        $salesOrder = SalesOrder::factory()->create(['created_by' => $user->id]);
+
+        $rootContract = $this->createContract($user, $salesOrder, [
+            'status' => 'sent',
+        ]);
+
+        $response = $this->actingAs($user)->post(route('contracts.revise', $rootContract));
+
+        $response->assertRedirect();
+
+        $revision = Contract::query()
+            ->where('root_contract_id', $rootContract->id)
+            ->where('revision_no', 2)
+            ->first();
+
+        $this->assertNotNull($revision);
+        $this->assertSame($rootContract->id, $revision->root_contract_id);
+        $this->assertSame('draft', $revision->status);
+        $this->assertSame($rootContract->contract_no . '-R2', $revision->contract_no);
+
+        $this->assertDatabaseHas('contracts', [
+            'id' => $rootContract->id,
+            'is_current' => false,
+            'superseded_by_id' => $revision->id,
+        ]);
+        $this->assertDatabaseHas('contracts', [
+            'id' => $revision->id,
+            'is_current' => true,
+        ]);
+
+        $currentCount = Contract::query()
+            ->where(function ($query) use ($rootContract) {
+                $query->where('id', $rootContract->id)
+                    ->orWhere('root_contract_id', $rootContract->id);
+            })
+            ->where('is_current', true)
+            ->count();
+
+        $this->assertSame(1, $currentCount);
+    }
+
+    public function test_pdf_route_returns_success_for_revision(): void
+    {
+        $user = User::factory()->create();
+        $salesOrder = SalesOrder::factory()->create(['created_by' => $user->id]);
+
+        $rootContract = $this->createContract($user, $salesOrder, [
+            'status' => 'sent',
+        ]);
+
+        $revision = $this->createContract($user, $salesOrder, [
+            'root_contract_id' => $rootContract->id,
+            'revision_no' => 2,
+            'contract_no' => $rootContract->contract_no . '-R2',
+            'status' => 'draft',
+            'rendered_body' => '<p>Revizyon</p>',
+            'is_current' => true,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('contracts.pdf', $revision));
+
+        $response->assertStatus(200);
+    }
+
+    private function createContract(User $user, SalesOrder $salesOrder, array $overrides = []): Contract
+    {
+        $salesOrder->loadMissing('customer');
+
+        return Contract::create(array_merge([
+            'sales_order_id' => $salesOrder->id,
+            'status' => 'draft',
+            'issued_at' => now()->toDateString(),
+            'locale' => 'tr',
+            'currency' => $salesOrder->currency,
+            'customer_name' => $salesOrder->customer->name,
+            'customer_company' => null,
+            'customer_tax_no' => null,
+            'customer_address' => $salesOrder->customer->address,
+            'customer_email' => $salesOrder->customer->email,
+            'customer_phone' => $salesOrder->customer->phone,
+            'subtotal' => $salesOrder->subtotal,
+            'tax_total' => $salesOrder->vat_total,
+            'grand_total' => $salesOrder->grand_total,
+            'payment_terms' => 'Ödeme',
+            'warranty_terms' => 'Garanti',
+            'scope_text' => 'Kapsam',
+            'exclusions_text' => 'Hariçler',
+            'delivery_terms' => 'Teslim',
+            'created_by' => $user->id,
+        ], $overrides));
+    }
 }
