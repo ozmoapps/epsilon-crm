@@ -94,7 +94,16 @@ class ContractController extends Controller
 
     public function show(Contract $contract)
     {
-        $contract->load(['salesOrder.customer', 'salesOrder.items', 'creator', 'rootContract']);
+        $contract->load([
+            'salesOrder.customer',
+            'salesOrder.items',
+            'creator',
+            'rootContract',
+            'attachments' => fn ($query) => $query->latest(),
+            'attachments.uploader',
+            'deliveries' => fn ($query) => $query->latest(),
+            'deliveries.creator',
+        ]);
         $rootId = $contract->root_contract_id ?? $contract->id;
         $revisions = Contract::query()
             ->where('id', $rootId)

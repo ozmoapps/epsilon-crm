@@ -12,6 +12,10 @@
                     {{ __('PDF İndir') }}
                 </x-button>
 
+                <x-button href="#delivery-pack" variant="secondary" size="sm">
+                    {{ __('Gönderim Paketi') }}
+                </x-button>
+
                 @if ($contract->isEditable())
                     <x-button href="{{ route('contracts.edit', $contract) }}" variant="secondary" size="sm">
                         {{ __('Düzenle') }}
@@ -69,9 +73,32 @@
             'signed' => 'signed',
             'cancelled' => 'cancelled',
         ];
+        $deliveryStatusVariants = [
+            'prepared' => 'draft',
+            'sent' => 'sent',
+            'failed' => 'danger',
+        ];
+        $deliveryStatusLabels = [
+            'prepared' => 'Hazır',
+            'sent' => 'Gönderildi',
+            'failed' => 'Başarısız',
+        ];
+        $deliveryChannelLabels = [
+            'email' => 'E-posta',
+            'whatsapp' => 'WhatsApp',
+            'manual' => 'Manuel',
+        ];
         $currencySymbols = config('quotes.currency_symbols', []);
         $currencySymbol = $currencySymbols[$contract->currency] ?? $contract->currency;
         $formatMoney = fn ($value) => number_format((float) $value, 2, ',', '.');
+        $customerName = $contract->customer_name ?: __('Müşteri');
+        $deliveryTemplates = [
+            'tr_short' => "Merhaba {$customerName},\n{$contract->contract_no} ({$contract->revision_label}) numaralı sözleşmeyi sizinle paylaşıyorum.\nİyi çalışmalar.",
+            'tr_long' => "Merhaba {$customerName},\n{$contract->contract_no} ({$contract->revision_label}) numaralı sözleşme ve ilgili ekler hazırlandı. İnceleyip onayınıza sunuyorum.\nSorunuz olursa memnuniyetle destek olurum.\nİyi çalışmalar.",
+            'en_short' => "Hello {$customerName},\nSharing contract {$contract->contract_no} ({$contract->revision_label}).\nBest regards.",
+            'en_long' => "Hello {$customerName},\nThe contract {$contract->contract_no} ({$contract->revision_label}) and related attachments are prepared. Please review and share your approval.\nLet me know if you have any questions.\nBest regards.",
+        ];
+        $defaultTemplateKey = $contract->locale === 'en' ? 'en_short' : 'tr_short';
     @endphp
 
     <div class="space-y-6">
@@ -217,6 +244,194 @@
                         </div>
                     </div>
                 @endforeach
+            </div>
+        </x-card>
+
+        <x-card id="delivery-pack">
+            <x-slot name="header">{{ __('Gönderim / Paylaşım') }}</x-slot>
+            <div class="space-y-6">
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-button href="{{ route('contracts.pdf', $contract) }}" variant="secondary" size="sm">
+                        {{ __('PDF İndir') }}
+                    </x-button>
+                    <x-button href="{{ route('contracts.delivery_pack', $contract) }}" variant="secondary" size="sm">
+                        {{ __('ZIP İndir') }}
+                    </x-button>
+                </div>
+
+                <form method="POST" action="{{ route('contracts.deliveries.store', $contract) }}" class="space-y-4">
+                    @csrf
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <x-input-label for="channel" :value="__('Gönderim Kanalı')" />
+                            <x-select id="channel" name="channel" class="mt-1">
+                                <option value="email" @selected(old('channel') === 'email')>{{ __('E-posta') }}</option>
+                                <option value="whatsapp" @selected(old('channel') === 'whatsapp')>{{ __('WhatsApp') }}</option>
+                                <option value="manual" @selected(old('channel') === 'manual')>{{ __('Manuel') }}</option>
+                            </x-select>
+                            <x-input-error :messages="$errors->get('channel')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="recipient_name" :value="__('Alıcı Adı')" />
+                            <x-input id="recipient_name" name="recipient_name" type="text" class="mt-1" :value="old('recipient_name')" />
+                            <x-input-error :messages="$errors->get('recipient_name')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="recipient" :value="__('Alıcı (E-posta / Telefon)')" />
+                            <x-input id="recipient" name="recipient" type="text" class="mt-1" :value="old('recipient')" />
+                            <x-input-error :messages="$errors->get('recipient')" class="mt-2" />
+                        </div>
+                        <div class="space-y-2 pt-6">
+                            <label class="flex items-center gap-2 text-sm text-gray-700">
+                                <input type="checkbox" name="included_pdf" value="1" @checked(old('included_pdf', true)) class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                {{ __('PDF dahil') }}
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-gray-700">
+                                <input type="checkbox" name="included_attachments" value="1" @checked(old('included_attachments')) class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                {{ __('Ekler dahil') }}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div x-data="{
+                        templateKey: '{{ $defaultTemplateKey }}',
+                        templates: @js($deliveryTemplates),
+                        message: @js(old('message', $deliveryTemplates[$defaultTemplateKey])),
+                        updateMessage() { this.message = this.templates[this.templateKey]; }
+                    }" class="space-y-3">
+                        <div>
+                            <x-input-label for="template_key" :value="__('Mesaj Şablonu')" />
+                            <x-select id="template_key" class="mt-1" x-model="templateKey" @change="updateMessage()">
+                                <option value="tr_short">{{ __('Türkçe - Kısa') }}</option>
+                                <option value="tr_long">{{ __('Türkçe - Detaylı') }}</option>
+                                <option value="en_short">{{ __('English - Short') }}</option>
+                                <option value="en_long">{{ __('English - Detailed') }}</option>
+                            </x-select>
+                        </div>
+                        <div>
+                            <x-input-label for="message" :value="__('Mesaj Metni')" />
+                            <x-textarea id="message" name="message" rows="5" class="mt-1" x-model="message"></x-textarea>
+                            <p class="mt-1 text-xs text-gray-500">{{ __('Metni düzenleyebilir veya kopyalayabilirsiniz.') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-end gap-3">
+                        <x-button type="submit">{{ __('Paketi Hazırla') }}</x-button>
+                    </div>
+                </form>
+            </div>
+        </x-card>
+
+        <x-card>
+            <x-slot name="header">{{ __('Ek Dosyalar') }}</x-slot>
+            <div class="space-y-6">
+                <form method="POST" action="{{ route('contracts.attachments.store', $contract) }}" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    <div class="grid gap-4 md:grid-cols-3">
+                        <div>
+                            <x-input-label for="attachment_title" :value="__('Dosya Başlığı')" />
+                            <x-input id="attachment_title" name="title" type="text" class="mt-1" :value="old('title')" />
+                            <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="attachment_type" :value="__('Dosya Türü')" />
+                            <x-select id="attachment_type" name="type" class="mt-1">
+                                <option value="signed_pdf" @selected(old('type') === 'signed_pdf')>{{ __('İmzalı PDF') }}</option>
+                                <option value="annex" @selected(old('type') === 'annex')>{{ __('Ek') }}</option>
+                                <option value="id" @selected(old('type') === 'id')>{{ __('Kimlik') }}</option>
+                                <option value="other" @selected(old('type') === 'other')>{{ __('Diğer') }}</option>
+                            </x-select>
+                            <x-input-error :messages="$errors->get('type')" class="mt-2" />
+                        </div>
+                        <div>
+                            <x-input-label for="attachment_file" :value="__('Dosya')" />
+                            <x-input id="attachment_file" name="file" type="file" class="mt-1" />
+                            <x-input-error :messages="$errors->get('file')" class="mt-2" />
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <x-button type="submit" variant="secondary">{{ __('Dosya Yükle') }}</x-button>
+                    </div>
+                </form>
+
+                <div class="space-y-3 text-sm">
+                    @forelse ($contract->attachments as $attachment)
+                        <div class="flex flex-col gap-2 rounded-lg border border-gray-100 p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="space-y-1">
+                                <p class="font-semibold text-gray-900">{{ $attachment->title }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {{ $attachment->type }}
+                                    @if ($attachment->uploader)
+                                        · {{ $attachment->uploader->name }}
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <x-button href="{{ route('contracts.attachments.download', [$contract, $attachment]) }}" variant="secondary" size="sm">
+                                    {{ __('İndir') }}
+                                </x-button>
+                                <form method="POST" action="{{ route('contracts.attachments.destroy', [$contract, $attachment]) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-button type="submit" variant="danger" size="sm" onclick="return confirm('Ek dosya silinsin mi?')">
+                                        {{ __('Sil') }}
+                                    </x-button>
+                                </form>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-gray-500">{{ __('Henüz ek dosya yok.') }}</p>
+                    @endforelse
+                </div>
+            </div>
+        </x-card>
+
+        <x-card>
+            <x-slot name="header">{{ __('Gönderim Geçmişi') }}</x-slot>
+            <div class="space-y-3 text-sm">
+                @forelse ($contract->deliveries as $delivery)
+                    <div class="rounded-lg border border-gray-100 p-3 space-y-2">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="space-y-1">
+                                <p class="font-semibold text-gray-900">{{ $deliveryChannelLabels[$delivery->channel] ?? $delivery->channel }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {{ $delivery->recipient_name ?: __('Alıcı belirtilmedi') }}
+                                    @if ($delivery->recipient)
+                                        · {{ $delivery->recipient }}
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <x-ui.badge :variant="$deliveryStatusVariants[$delivery->status] ?? 'neutral'">
+                                    {{ $deliveryStatusLabels[$delivery->status] ?? $delivery->status }}
+                                </x-ui.badge>
+                                <span class="text-xs text-gray-500">
+                                    {{ $delivery->sent_at?->format('d.m.Y H:i') ?? '-' }}
+                                </span>
+                                @if ($delivery->status !== 'sent')
+                                    <form method="POST" action="{{ route('contracts.deliveries.mark_sent', [$contract, $delivery]) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <x-button type="submit" size="sm">
+                                            {{ __('Gönderildi olarak işaretle') }}
+                                        </x-button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            {{ __('Oluşturan') }}: {{ $delivery->creator?->name ?? '-' }}
+                        </div>
+                        @if ($delivery->message)
+                            <details class="text-xs text-gray-500">
+                                <summary class="cursor-pointer">{{ __('Mesajı Gör') }}</summary>
+                                <pre class="mt-2 whitespace-pre-wrap rounded bg-gray-50 p-2 text-gray-700">{{ $delivery->message }}</pre>
+                            </details>
+                        @endif
+                    </div>
+                @empty
+                    <p class="text-sm text-gray-500">{{ __('Henüz gönderim kaydı yok.') }}</p>
+                @endforelse
             </div>
         </x-card>
 

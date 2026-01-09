@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\ContractAttachmentController;
+use App\Http\Controllers\ContractDeliveryController;
 use App\Http\Controllers\ContractTemplateController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuoteController;
@@ -45,6 +47,18 @@ Route::middleware('auth')->group(function () {
     Route::post('sales-orders/{salesOrder}/contracts', [ContractController::class, 'store'])
         ->name('sales-orders.contracts.store');
     Route::get('contracts/{contract}/pdf', [ContractController::class, 'pdf'])->name('contracts.pdf');
+    Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])
+        ->name('contracts.attachments.store');
+    Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'download'])
+        ->name('contracts.attachments.download');
+    Route::delete('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'destroy'])
+        ->name('contracts.attachments.destroy');
+    Route::get('contracts/{contract}/delivery-pack', [ContractDeliveryController::class, 'downloadPack'])
+        ->name('contracts.delivery_pack');
+    Route::post('contracts/{contract}/deliveries', [ContractDeliveryController::class, 'store'])
+        ->name('contracts.deliveries.store');
+    Route::patch('contracts/{contract}/deliveries/{delivery}/mark-sent', [ContractDeliveryController::class, 'markSent'])
+        ->name('contracts.deliveries.mark_sent');
     Route::post('contracts/{contract}/revise', [ContractController::class, 'revise'])
         ->name('contracts.revise');
     Route::patch('contracts/{contract}/mark-sent', [ContractController::class, 'markSent'])

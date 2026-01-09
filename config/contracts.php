@@ -20,4 +20,9 @@ return [
         'exclusions_text' => "Sözleşme kapsamı dışında kalan işler ayrıca fiyatlandırılır.",
         'delivery_terms' => "Teslim ve tamamlanma süreleri satış siparişinde belirtilen plan doğrultusunda yürütülür.",
     ],
+    'attachments' => [
+        'disk' => 'public',
+        'max_size_kb' => 10240,
+        'mimes' => ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+    ],
 ];
