@@ -45,6 +45,7 @@
                     'canceled' => 'canceled',
                 ];
                 $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
+                $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
             @endphp
             <x-ui.table>
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -90,12 +91,22 @@
                                         </x-ui.tooltip>
                                     </x-slot>
                                     <x-slot name="content">
-                                        <x-ui.tooltip text="{{ __('Görüntüle') }}" class="w-full">
-                                            <a href="{{ route('sales-orders.show', $salesOrder) }}" class="{{ $actionItemClass }}">
-                                                <x-icon.info class="h-4 w-4 text-sky-600" />
-                                                {{ __('Görüntüle') }}
-                                            </a>
-                                        </x-ui.tooltip>
+                                        <a href="{{ route('sales-orders.show', $salesOrder) }}" class="{{ $actionItemClass }}">
+                                            <x-icon.info class="h-4 w-4 text-sky-600" />
+                                            {{ __('Görüntüle') }}
+                                        </a>
+                                        <a href="{{ route('sales-orders.edit', $salesOrder) }}" class="{{ $actionItemClass }}">
+                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                            {{ __('Düzenle') }}
+                                        </a>
+                                        <form method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Satış siparişi silinsin mi?')">
+                                                <x-icon.trash class="h-4 w-4" />
+                                                {{ __('Sil') }}
+                                            </button>
+                                        </form>
                                     </x-slot>
                                 </x-ui.dropdown>
                             </td>
