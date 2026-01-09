@@ -76,27 +76,21 @@
                                         </x-ui.tooltip>
                                     </x-slot>
                                     <x-slot name="content">
-                                        <x-ui.tooltip text="{{ __('Görüntüle') }}" class="w-full">
-                                            <a href="{{ route('quotes.show', $quote) }}" class="{{ $actionItemClass }}">
-                                                <x-icon.info class="h-4 w-4 text-sky-600" />
-                                                {{ __('Görüntüle') }}
-                                            </a>
-                                        </x-ui.tooltip>
-                                        <x-ui.tooltip text="{{ __('Düzenle') }}" class="w-full">
-                                            <a href="{{ route('quotes.edit', $quote) }}" class="{{ $actionItemClass }}">
-                                                <x-icon.pencil class="h-4 w-4 text-indigo-600" />
-                                                {{ __('Düzenle') }}
-                                            </a>
-                                        </x-ui.tooltip>
+                                        <a href="{{ route('quotes.show', $quote) }}" class="{{ $actionItemClass }}">
+                                            <x-icon.info class="h-4 w-4 text-sky-600" />
+                                            {{ __('Görüntüle') }}
+                                        </a>
+                                        <a href="{{ route('quotes.edit', $quote) }}" class="{{ $actionItemClass }}">
+                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                            {{ __('Düzenle') }}
+                                        </a>
                                         <form method="POST" action="{{ route('quotes.destroy', $quote) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <x-ui.tooltip text="{{ __('Sil') }}" class="w-full">
-                                                <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Teklif silinsin mi?')">
-                                                    <x-icon.trash class="h-4 w-4" />
-                                                    {{ __('Sil') }}
-                                                </button>
-                                            </x-ui.tooltip>
+                                            <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Teklif silinsin mi?')">
+                                                <x-icon.trash class="h-4 w-4" />
+                                                {{ __('Sil') }}
+                                            </button>
                                         </form>
                                     </x-slot>
                                 </x-ui.dropdown>
