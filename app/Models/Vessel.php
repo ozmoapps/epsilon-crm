@@ -34,4 +34,26 @@ class Vessel extends Model
     {
         return $this->hasMany(WorkOrder::class);
     }
+
+    public function getBoatTypeLabelAttribute(): ?string
+    {
+        if (! $this->boat_type) {
+            return null;
+        }
+
+        $boatTypes = config('vessels.boat_types', []);
+
+        return $boatTypes[$this->boat_type] ?? $this->boat_type;
+    }
+
+    public function getMaterialLabelAttribute(): ?string
+    {
+        if (! $this->material) {
+            return null;
+        }
+
+        $materials = config('vessels.materials', []);
+
+        return $materials[$this->material] ?? $this->material;
+    }
 }
