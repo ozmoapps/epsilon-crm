@@ -12,6 +12,11 @@ class Contract extends Model
 
     protected $fillable = [
         'sales_order_id',
+        'root_contract_id',
+        'revision_no',
+        'superseded_by_id',
+        'superseded_at',
+        'is_current',
         'contract_template_id',
         'contract_template_version_id',
         'contract_no',
@@ -43,14 +48,18 @@ class Contract extends Model
         'issued_at' => 'date',
         'signed_at' => 'datetime',
         'rendered_at' => 'datetime',
+        'superseded_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'tax_total' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'is_current' => 'boolean',
     ];
 
     protected $attributes = [
         'status' => 'draft',
         'locale' => 'tr',
+        'revision_no' => 1,
+        'is_current' => true,
     ];
 
     protected static function booted(): void
@@ -99,6 +108,21 @@ class Contract extends Model
         return $this->belongsTo(SalesOrder::class);
     }
 
+    public function rootContract()
+    {
+        return $this->belongsTo(self::class, 'root_contract_id');
+    }
+
+    public function revisions()
+    {
+        return $this->hasMany(self::class, 'root_contract_id');
+    }
+
+    public function supersededBy()
+    {
+        return $this->belongsTo(self::class, 'superseded_by_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -117,5 +141,20 @@ class Contract extends Model
     public function isEditable(): bool
     {
         return $this->status === 'draft';
+    }
+
+    public function isRoot(): bool
+    {
+        return $this->root_contract_id === null;
+    }
+
+    public function getRevisionLabelAttribute(): string
+    {
+        return 'R' . ($this->revision_no ?? 1);
+    }
+
+    public function canCreateRevision(): bool
+    {
+        return $this->is_current && in_array($this->status, ['draft', 'sent', 'signed'], true);
     }
 }

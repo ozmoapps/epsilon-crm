@@ -18,6 +18,15 @@
                     </x-button>
                 @endif
 
+                @if ($contract->canCreateRevision())
+                    <form method="POST" action="{{ route('contracts.revise', $contract) }}">
+                        @csrf
+                        <x-button type="submit" variant="secondary" size="sm">
+                            {{ __('Revizyon Oluştur') }}
+                        </x-button>
+                    </form>
+                @endif
+
                 @if ($canSend)
                     <form method="POST" action="{{ route('contracts.mark_sent', $contract) }}">
                         @csrf
@@ -72,6 +81,10 @@
                 <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Sözleşme No') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $contract->contract_no }}</p>
+                </div>
+                <div>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Revizyon') }}</p>
+                    <p class="text-base font-medium text-gray-900">{{ $contract->revision_label }}</p>
                 </div>
                 <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Durum') }}</p>
@@ -169,6 +182,41 @@
                     <p class="font-semibold text-gray-900">{{ __('Teslim Şartları') }}</p>
                     <p class="mt-1">{{ $contract->delivery_terms ?: '-' }}</p>
                 </div>
+            </div>
+        </x-card>
+
+        <x-card>
+            <x-slot name="header">{{ __('Revizyonlar') }}</x-slot>
+            <div class="space-y-3 text-sm">
+                @foreach ($revisions as $revision)
+                    <div class="flex flex-col gap-3 rounded-lg border border-gray-100 p-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="space-y-1">
+                            <p class="text-xs text-gray-500">{{ $revision->contract_no }}</p>
+                            <p class="text-base font-semibold text-gray-900">{{ $revision->revision_label }}</p>
+                            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                <span>{{ $revision->issued_at?->format('d.m.Y') ?? '-' }}</span>
+                                <span>·</span>
+                                <span>{{ $revision->signed_at?->format('d.m.Y H:i') ?? '-' }}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <x-ui.badge :variant="$statusVariants[$revision->status] ?? 'neutral'">
+                                {{ $revision->status_label }}
+                            </x-ui.badge>
+                            @if ($revision->is_current)
+                                <x-ui.badge variant="success">
+                                    {{ __('Güncel') }}
+                                </x-ui.badge>
+                            @endif
+                            <x-button href="{{ route('contracts.show', $revision) }}" variant="secondary" size="sm">
+                                {{ __('Görüntüle') }}
+                            </x-button>
+                            <x-button href="{{ route('contracts.pdf', $revision) }}" variant="secondary" size="sm">
+                                {{ __('PDF') }}
+                            </x-button>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </x-card>
 

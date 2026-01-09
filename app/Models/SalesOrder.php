@@ -121,7 +121,12 @@ class SalesOrder extends Model
 
     public function contract()
     {
-        return $this->hasOne(Contract::class);
+        return $this->hasOne(Contract::class)->where('is_current', true);
+    }
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class)->orderByDesc('revision_no');
     }
 
     public function recalculateTotals(): void
