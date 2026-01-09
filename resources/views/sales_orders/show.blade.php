@@ -2,9 +2,40 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Satış Siparişi Detayı') }}" subtitle="{{ $salesOrder->order_no }}">
             <x-slot name="actions">
-                <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
-                    {{ __('Tüm satış siparişleri') }}
-                </x-button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-badge status="{{ $salesOrder->status }}">{{ $salesOrder->status_label }}</x-badge>
+                    @if ($salesOrder->canConfirm())
+                        <form method="POST" action="{{ route('sales-orders.confirm', $salesOrder) }}">
+                            @csrf
+                            <x-button type="submit" size="sm">{{ __('Onayla') }}</x-button>
+                        </form>
+                        <form method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}">
+                            @csrf
+                            <x-button type="submit" size="sm" variant="secondary">{{ __('İptal') }}</x-button>
+                        </form>
+                    @elseif ($salesOrder->canStart())
+                        <form method="POST" action="{{ route('sales-orders.start', $salesOrder) }}">
+                            @csrf
+                            <x-button type="submit" size="sm">{{ __('Devam Ettir') }}</x-button>
+                        </form>
+                        <form method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}">
+                            @csrf
+                            <x-button type="submit" size="sm" variant="secondary">{{ __('İptal') }}</x-button>
+                        </form>
+                    @elseif ($salesOrder->canComplete())
+                        <form method="POST" action="{{ route('sales-orders.complete', $salesOrder) }}">
+                            @csrf
+                            <x-button type="submit" size="sm">{{ __('Tamamla') }}</x-button>
+                        </form>
+                        <form method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}">
+                            @csrf
+                            <x-button type="submit" size="sm" variant="secondary">{{ __('İptal') }}</x-button>
+                        </form>
+                    @endif
+                    <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
+                        {{ __('Tüm satış siparişleri') }}
+                    </x-button>
+                </div>
             </x-slot>
         </x-page-header>
     </x-slot>
@@ -46,6 +77,12 @@
                     </p>
                 </div>
                 <div>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Teslim Tarihi') }}</p>
+                    <p class="text-base font-medium text-gray-900">
+                        {{ $salesOrder->delivery_date ? $salesOrder->delivery_date->format('d.m.Y') : '-' }}
+                    </p>
+                </div>
+                <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Para Birimi') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $salesOrder->currency }}</p>
                 </div>
@@ -64,6 +101,33 @@
                     </div>
                 @endif
             </div>
+        </x-card>
+
+        <x-card>
+            <x-slot name="header">{{ __('Teslim Bilgileri') }}</x-slot>
+            <form method="POST" action="{{ route('sales-orders.update', $salesOrder) }}" class="grid gap-4 text-sm sm:grid-cols-2">
+                @csrf
+                @method('PUT')
+
+                <div>
+                    <x-input-label for="delivery_place" :value="__('Teslim Yeri')" />
+                    <x-input id="delivery_place" name="delivery_place" type="text" class="mt-1 w-full" :value="old('delivery_place', $salesOrder->delivery_place)" />
+                    <x-input-error :messages="$errors->get('delivery_place')" class="mt-2" />
+                </div>
+                <div>
+                    <x-input-label for="delivery_days" :value="__('Teslim Süresi (gün)')" />
+                    <x-input id="delivery_days" name="delivery_days" type="number" min="0" class="mt-1 w-full" :value="old('delivery_days', $salesOrder->delivery_days)" />
+                    <x-input-error :messages="$errors->get('delivery_days')" class="mt-2" />
+                </div>
+                <div>
+                    <x-input-label for="delivery_date" :value="__('Teslim Tarihi')" />
+                    <x-input id="delivery_date" name="delivery_date" type="date" class="mt-1 w-full" :value="old('delivery_date', $salesOrder->delivery_date?->format('Y-m-d'))" />
+                    <x-input-error :messages="$errors->get('delivery_date')" class="mt-2" />
+                </div>
+                <div class="sm:col-span-2 flex justify-end">
+                    <x-button type="submit">{{ __('Kaydet') }}</x-button>
+                </div>
+            </form>
         </x-card>
 
         <x-card>

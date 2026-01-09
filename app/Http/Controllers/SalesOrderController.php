@@ -15,6 +15,10 @@ class SalesOrderController extends Controller
     {
         $search = $request->input('search');
         $status = $request->input('status');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $customerId = $request->input('customer_id');
+        $vesselId = $request->input('vessel_id');
 
         $salesOrders = SalesOrder::query()
             ->with(['customer', 'vessel'])
@@ -26,13 +30,30 @@ class SalesOrderController extends Controller
                 });
             })
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($dateFrom, fn ($query) => $query->whereDate('order_date', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->whereDate('order_date', '<=', $dateTo))
+            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId))
+            ->when($vesselId, fn ($query) => $query->where('vessel_id', $vesselId))
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
         $statuses = SalesOrder::statusOptions();
+        $customers = Customer::orderBy('name')->get();
+        $vessels = Vessel::with('customer')->orderBy('name')->get();
 
-        return view('sales_orders.index', compact('salesOrders', 'search', 'status', 'statuses'));
+        return view('sales_orders.index', compact(
+            'salesOrders',
+            'search',
+            'status',
+            'statuses',
+            'dateFrom',
+            'dateTo',
+            'customerId',
+            'vesselId',
+            'customers',
+            'vessels'
+        ));
     }
 
     public function create()
@@ -82,12 +103,57 @@ class SalesOrderController extends Controller
 
     public function update(Request $request, SalesOrder $salesOrder)
     {
-        $validated = $request->validate($this->rules(), $this->messages());
+        $validated = $request->validate($this->deliveryRules(), $this->deliveryMessages());
 
-        $salesOrder->update($validated);
+        $salesOrder->fill($validated);
+        $salesOrder->save();
 
         return redirect()->route('sales-orders.show', $salesOrder)
-            ->with('success', 'Satış siparişi güncellendi.');
+            ->with('success', 'Teslim bilgileri güncellendi.');
+    }
+
+    public function confirm(SalesOrder $salesOrder)
+    {
+        if (! $salesOrder->canConfirm()) {
+            return back()->with('error', 'Sipariş onaylanamaz.');
+        }
+
+        $salesOrder->markConfirmed();
+
+        return back()->with('success', 'Sipariş onaylandı.');
+    }
+
+    public function start(SalesOrder $salesOrder)
+    {
+        if (! $salesOrder->canStart()) {
+            return back()->with('error', 'Sipariş devam ettirilemez.');
+        }
+
+        $salesOrder->markInProgress();
+
+        return back()->with('success', 'Sipariş devam ediyor.');
+    }
+
+    public function complete(SalesOrder $salesOrder)
+    {
+        if (! $salesOrder->canComplete()) {
+            return back()->with('error', 'Sipariş tamamlanamaz.');
+        }
+
+        $salesOrder->markCompleted();
+
+        return back()->with('success', 'Sipariş tamamlandı.');
+    }
+
+    public function cancel(SalesOrder $salesOrder)
+    {
+        if (! $salesOrder->canCancel()) {
+            return back()->with('error', 'Sipariş iptal edilemez.');
+        }
+
+        $salesOrder->markCanceled();
+
+        return back()->with('success', 'Sipariş iptal edildi.');
     }
 
     public function destroy(SalesOrder $salesOrder)
@@ -138,6 +204,28 @@ class SalesOrderController extends Controller
             'delivery_place.max' => 'Teslim yeri en fazla 255 karakter olabilir.',
             'delivery_days.integer' => 'Teslim günü sayısal olmalıdır.',
             'delivery_days.min' => 'Teslim günü negatif olamaz.',
+        ];
+    }
+
+    private function deliveryRules(): array
+    {
+        return [
+            'delivery_place' => ['nullable', 'string', 'max:255'],
+            'delivery_days' => ['nullable', 'integer', 'min:0'],
+            'delivery_date' => ['nullable', 'date'],
+            'title' => ['sometimes', 'string', 'max:255'],
+            'notes' => ['sometimes', 'nullable', 'string'],
+        ];
+    }
+
+    private function deliveryMessages(): array
+    {
+        return [
+            'delivery_place.max' => 'Teslim yeri en fazla 255 karakter olabilir.',
+            'delivery_days.integer' => 'Teslim günü sayısal olmalıdır.',
+            'delivery_days.min' => 'Teslim günü negatif olamaz.',
+            'delivery_date.date' => 'Teslim tarihi geçerli değil.',
+            'title.max' => 'Sipariş başlığı en fazla 255 karakter olabilir.',
         ];
     }
 }

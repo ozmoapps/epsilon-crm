@@ -22,6 +22,7 @@ class SalesOrder extends Model
         'order_date',
         'delivery_place',
         'delivery_days',
+        'delivery_date',
         'payment_terms',
         'warranty_text',
         'exclusions',
@@ -37,6 +38,11 @@ class SalesOrder extends Model
     protected $casts = [
         'order_date' => 'date',
         'delivery_days' => 'integer',
+        'delivery_date' => 'date',
+        'confirmed_at' => 'datetime',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'canceled_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'discount_total' => 'decimal:2',
         'vat_total' => 'decimal:2',
@@ -80,6 +86,71 @@ class SalesOrder extends Model
     public static function statusOptions(): array
     {
         return config('sales_orders.statuses', []);
+    }
+
+    public static function allowedStatuses(): array
+    {
+        return array_keys(self::statusOptions());
+    }
+
+    public function canConfirm(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function canStart(): bool
+    {
+        return $this->status === 'confirmed';
+    }
+
+    public function canComplete(): bool
+    {
+        return $this->status === 'in_progress';
+    }
+
+    public function canCancel(): bool
+    {
+        return in_array($this->status, ['draft', 'confirmed', 'in_progress'], true);
+    }
+
+    public function markConfirmed(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill([
+                'status' => 'confirmed',
+                'confirmed_at' => now(),
+            ])->save();
+        });
+    }
+
+    public function markInProgress(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill([
+                'status' => 'in_progress',
+                'started_at' => now(),
+            ])->save();
+        });
+    }
+
+    public function markCompleted(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill([
+                'status' => 'completed',
+                'completed_at' => now(),
+            ])->save();
+        });
+    }
+
+    public function markCanceled(): void
+    {
+        DB::transaction(function () {
+            $this->forceFill([
+                'status' => 'canceled',
+                'canceled_at' => now(),
+            ])->save();
+        });
     }
 
     public function getStatusLabelAttribute(): string

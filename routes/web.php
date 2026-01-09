@@ -27,7 +27,15 @@ Route::middleware('auth')->group(function () {
     Route::resource('vessels', VesselController::class);
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
-    Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show']);
+    Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show', 'update']);
+    Route::post('sales-orders/{salesOrder}/confirm', [SalesOrderController::class, 'confirm'])
+        ->name('sales-orders.confirm');
+    Route::post('sales-orders/{salesOrder}/start', [SalesOrderController::class, 'start'])
+        ->name('sales-orders.start');
+    Route::post('sales-orders/{salesOrder}/complete', [SalesOrderController::class, 'complete'])
+        ->name('sales-orders.complete');
+    Route::post('sales-orders/{salesOrder}/cancel', [SalesOrderController::class, 'cancel'])
+        ->name('sales-orders.cancel');
     Route::post('quotes/{quote}/mark-sent', [QuoteController::class, 'markAsSent'])
         ->name('quotes.mark_sent');
     Route::post('quotes/{quote}/mark-accepted', [QuoteController::class, 'markAsAccepted'])

@@ -8,14 +8,14 @@
 
     <div class="space-y-6">
         <x-card>
-            <form method="GET" action="{{ route('sales-orders.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <div class="flex-1">
+            <form method="GET" action="{{ route('sales-orders.index') }}" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6 lg:items-end">
+                <div class="sm:col-span-2">
                     <x-input-label for="search" :value="__('Ara (Sipariş No / Başlık)')" />
                     <x-input id="search" name="search" type="text" class="mt-1 w-full" :value="$search" placeholder="SO-2026-0001" />
                 </div>
                 <div>
                     <x-input-label for="status" :value="__('Durum')" />
-                    <x-select id="status" name="status" class="mt-1 w-full sm:w-48">
+                    <x-select id="status" name="status" class="mt-1 w-full">
                         <option value="">{{ __('Tümü') }}</option>
                         @foreach ($statuses as $value => $label)
                             <option value="{{ $value }}" @selected($status === $value)>
@@ -24,7 +24,37 @@
                         @endforeach
                     </x-select>
                 </div>
-                <div class="flex gap-2">
+                <div>
+                    <x-input-label for="date_from" :value="__('Tarih (Başlangıç)')" />
+                    <x-input id="date_from" name="date_from" type="date" class="mt-1 w-full" :value="$dateFrom" />
+                </div>
+                <div>
+                    <x-input-label for="date_to" :value="__('Tarih (Bitiş)')" />
+                    <x-input id="date_to" name="date_to" type="date" class="mt-1 w-full" :value="$dateTo" />
+                </div>
+                <div>
+                    <x-input-label for="customer_id" :value="__('Müşteri')" />
+                    <x-select id="customer_id" name="customer_id" class="mt-1 w-full">
+                        <option value="">{{ __('Tümü') }}</option>
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->id }}" @selected((string) $customerId === (string) $customer->id)>
+                                {{ $customer->name }}
+                            </option>
+                        @endforeach
+                    </x-select>
+                </div>
+                <div>
+                    <x-input-label for="vessel_id" :value="__('Tekne')" />
+                    <x-select id="vessel_id" name="vessel_id" class="mt-1 w-full">
+                        <option value="">{{ __('Tümü') }}</option>
+                        @foreach ($vessels as $vessel)
+                            <option value="{{ $vessel->id }}" @selected((string) $vesselId === (string) $vessel->id)>
+                                {{ $vessel->name }}{{ $vessel->customer ? ' · ' . $vessel->customer->name : '' }}
+                            </option>
+                        @endforeach
+                    </x-select>
+                </div>
+                <div class="flex gap-2 sm:col-span-2 lg:col-span-6">
                     <x-button type="submit">{{ __('Filtrele') }}</x-button>
                     <x-button href="{{ route('sales-orders.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
                 </div>
@@ -41,6 +71,9 @@
                             <p class="text-sm text-gray-600">{{ $salesOrder->title }}</p>
                             <p class="text-xs text-gray-500">
                                 {{ $salesOrder->customer?->name ?? '-' }} · {{ $salesOrder->vessel?->name ?? '-' }}
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                {{ __('Sipariş Tarihi') }}: {{ $salesOrder->order_date?->format('d.m.Y') ?? '-' }}
                             </p>
                         </div>
                         <div class="text-right">
