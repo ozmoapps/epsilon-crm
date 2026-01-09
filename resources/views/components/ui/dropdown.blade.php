@@ -15,7 +15,8 @@
     <div
         x-show="open"
         x-transition
-        @click.away="open = false"
+        @click.outside="open = false"
+        x-cloak
         class="absolute {{ $alignmentClasses }} z-20 mt-2 {{ $width }} rounded-lg border border-slate-200 bg-white shadow-lg ring-1 ring-black/5"
     >
         <div class="py-1">
