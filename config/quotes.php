@@ -19,4 +19,9 @@ return [
         'outsourced' => 'Taşeron',
         'other' => 'Diğer',
     ],
+    'currency_symbols' => [
+        'EUR' => '€',
+        'TRY' => '₺',
+        'USD' => '$',
+    ],
 ];
