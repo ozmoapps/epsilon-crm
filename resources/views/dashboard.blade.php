@@ -26,6 +26,10 @@
                                 <span>{{ __('Tekneler') }}</span>
                                 <span class="text-gray-400">→</span>
                             </a>
+                            <a href="{{ route('quotes.index') }}" class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-gray-100">
+                                <span>{{ __('Teklifler') }}</span>
+                                <span class="text-gray-400">→</span>
+                            </a>
                         </div>
                     </div>
                 </div>
