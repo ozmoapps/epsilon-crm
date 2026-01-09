@@ -17,6 +17,7 @@ class ContractTemplate extends Model
         'is_default',
         'is_active',
         'created_by',
+        'current_version_id',
     ];
 
     protected $casts = [
@@ -27,6 +28,43 @@ class ContractTemplate extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function versions()
+    {
+        return $this->hasMany(ContractTemplateVersion::class);
+    }
+
+    public function currentVersion()
+    {
+        return $this->belongsTo(ContractTemplateVersion::class, 'current_version_id');
+    }
+
+    public function latestVersion()
+    {
+        return $this->versions()->orderByDesc('version')->first();
+    }
+
+    public function createVersion(string $content, string $format, ?int $userId = null, ?string $changeNote = null): ContractTemplateVersion
+    {
+        $nextVersion = (int) $this->versions()->max('version');
+        $nextVersion = $nextVersion > 0 ? $nextVersion + 1 : 1;
+
+        $version = $this->versions()->create([
+            'version' => $nextVersion,
+            'content' => $content,
+            'format' => $format,
+            'change_note' => $changeNote,
+            'created_by' => $userId,
+        ]);
+
+        $this->forceFill([
+            'current_version_id' => $version->id,
+            'content' => $content,
+            'format' => $format,
+        ])->saveQuietly();
+
+        return $version;
     }
 
     public function scopeActive($query)

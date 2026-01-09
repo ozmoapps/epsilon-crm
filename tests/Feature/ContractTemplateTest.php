@@ -44,6 +44,11 @@ class ContractTemplateTest extends TestCase
             'is_default' => true,
             'is_active' => true,
         ]);
+        $this->assertDatabaseHas('contract_template_versions', [
+            'version' => 1,
+            'content' => '<p>{{contract.contract_no}}</p>',
+            'format' => 'html',
+        ]);
     }
 
     public function test_only_one_default_per_locale_is_kept(): void
@@ -111,7 +116,9 @@ class ContractTemplateTest extends TestCase
         $this->assertDatabaseHas('contracts', [
             'id' => $contract->id,
         ]);
-        $this->assertStringContainsString('Varsayılan Şablon', $contract->fresh()->rendered_body);
+        $contract->refresh();
+        $this->assertStringContainsString('Varsayılan Şablon', $contract->rendered_body);
+        $this->assertNotNull($contract->contract_template_version_id);
     }
 
     public function test_sent_contract_keeps_snapshot_when_template_changes(): void
@@ -131,13 +138,23 @@ class ContractTemplateTest extends TestCase
 
         $contract->refresh();
         $this->assertStringContainsString('İlk Sürüm', $contract->rendered_body);
+        $originalVersionId = $contract->contract_template_version_id;
 
-        $template->update(['content' => '<p>Yeni Sürüm</p>']);
+        $this->actingAs($user)->put(route('contract-templates.update', $template), [
+            'name' => $template->name,
+            'locale' => $template->locale,
+            'format' => $template->format,
+            'content' => '<p>Yeni Sürüm</p>',
+            'is_default' => true,
+            'is_active' => true,
+        ])->assertRedirect();
 
         $this->actingAs($user)->get(route('contracts.pdf', $contract))
             ->assertStatus(200);
 
-        $this->assertStringContainsString('İlk Sürüm', $contract->fresh()->rendered_body);
+        $contract->refresh();
+        $this->assertStringContainsString('İlk Sürüm', $contract->rendered_body);
+        $this->assertSame($originalVersionId, $contract->contract_template_version_id);
     }
 
     public function test_pdf_route_uses_rendered_body_if_present(): void
@@ -152,6 +169,59 @@ class ContractTemplateTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Hazır içerik', false);
+    }
+
+    public function test_template_update_creates_new_version_and_bumps_current(): void
+    {
+        $user = User::factory()->create();
+        $template = ContractTemplate::factory()->create([
+            'content' => '<p>İlk içerik</p>',
+            'format' => 'html',
+        ]);
+
+        $currentVersionId = $template->current_version_id;
+
+        $this->actingAs($user)->put(route('contract-templates.update', $template), [
+            'name' => $template->name,
+            'locale' => $template->locale,
+            'format' => 'html',
+            'content' => '<p>Yeni içerik</p>',
+            'is_default' => false,
+            'is_active' => true,
+            'change_note' => 'Güncelleme',
+        ])->assertRedirect();
+
+        $template->refresh();
+
+        $this->assertNotEquals($currentVersionId, $template->current_version_id);
+        $this->assertDatabaseHas('contract_template_versions', [
+            'contract_template_id' => $template->id,
+            'content' => '<p>Yeni içerik</p>',
+            'change_note' => 'Güncelleme',
+        ]);
+    }
+
+    public function test_restore_creates_new_version_from_selected(): void
+    {
+        $user = User::factory()->create();
+        $template = ContractTemplate::factory()->create([
+            'content' => '<p>İlk içerik</p>',
+            'format' => 'html',
+        ]);
+
+        $template->createVersion('<p>İkinci içerik</p>', 'html', $user->id, 'Yeni sürüm');
+        $versionToRestore = $template->versions()->orderBy('version')->first();
+
+        $this->actingAs($user)->post(route('contract-templates.versions.restore', [$template, $versionToRestore]))
+            ->assertRedirect();
+
+        $template->refresh();
+
+        $this->assertDatabaseHas('contract_template_versions', [
+            'contract_template_id' => $template->id,
+            'content' => $versionToRestore->content,
+        ]);
+        $this->assertNotEquals($versionToRestore->id, $template->current_version_id);
     }
 
     private function createContract(array $overrides = []): Contract

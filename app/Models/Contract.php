@@ -13,6 +13,7 @@ class Contract extends Model
     protected $fillable = [
         'sales_order_id',
         'contract_template_id',
+        'contract_template_version_id',
         'contract_no',
         'status',
         'issued_at',
@@ -106,6 +107,11 @@ class Contract extends Model
     public function contractTemplate()
     {
         return $this->belongsTo(ContractTemplate::class);
+    }
+
+    public function contractTemplateVersion()
+    {
+        return $this->belongsTo(ContractTemplateVersion::class);
     }
 
     public function isEditable(): bool

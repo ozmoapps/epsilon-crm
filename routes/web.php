@@ -30,9 +30,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
     Route::resource('contracts', ContractController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
-    Route::resource('contract-templates', ContractTemplateController::class)->except(['show', 'destroy']);
+    Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy']);
     Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])
         ->name('contract-templates.preview');
+    Route::post('contract-templates/{template}/versions/{version}/restore', [ContractTemplateController::class, 'restore'])
+        ->name('contract-templates.versions.restore');
     Route::post('contract-templates/{template}/make-default', [ContractTemplateController::class, 'makeDefault'])
         ->name('contract-templates.make_default');
     Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])

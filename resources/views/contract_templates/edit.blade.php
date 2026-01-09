@@ -26,4 +26,12 @@
             </div>
         </form>
     </x-card>
+
+    <x-card class="mt-6">
+        <x-slot name="header">{{ __('Sürüm Geçmişi') }}</x-slot>
+        @include('contract_templates._versions', ['template' => $template, 'versions' => $versions])
+        <div class="mt-4 text-sm text-gray-500">
+            {{ __('Önizleme için sürüm satırındaki butonu kullanabilirsiniz.') }}
+        </div>
+    </x-card>
 </x-app-layout>

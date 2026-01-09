@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use App\Models\ContractTemplateVersion;
 use App\Services\ContractTemplateRenderer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ContractTemplateController extends Controller
@@ -45,9 +48,21 @@ class ContractTemplateController extends Controller
             $request
         );
 
-        $template = ContractTemplate::create(array_merge($validated, [
-            'created_by' => $request->user()->id,
-        ]));
+        $template = null;
+
+        DB::transaction(function () use ($validated, $request, &$template) {
+            $template = ContractTemplate::create(array_merge(
+                Arr::except($validated, ['change_note']),
+                ['created_by' => $request->user()->id]
+            ));
+
+            $template->createVersion(
+                $validated['content'],
+                $validated['format'],
+                $request->user()->id,
+                $validated['change_note'] ?? null
+            );
+        });
 
         $this->syncDefault($template, $validated['is_default'] ?? false);
 
@@ -62,6 +77,7 @@ class ContractTemplateController extends Controller
             'locales' => config('contracts.locales', []),
             'formats' => $this->formats(),
             'previewHtml' => $this->buildPreview($renderer, $template),
+            'versions' => $template->versions()->with('creator')->orderByDesc('version')->get(),
         ]);
     }
 
@@ -72,11 +88,59 @@ class ContractTemplateController extends Controller
             $request
         );
 
-        $template->update($validated);
+        DB::transaction(function () use ($validated, $request, $template) {
+            $template->update(Arr::except($validated, ['change_note']));
+
+            $template->createVersion(
+                $validated['content'],
+                $validated['format'],
+                $request->user()->id,
+                $validated['change_note'] ?? null
+            );
+        });
+
         $this->syncDefault($template, $validated['is_default'] ?? false);
 
         return redirect()->route('contract-templates.edit', $template)
             ->with('success', 'Sözleşme şablonu güncellendi.');
+    }
+
+    public function show(Request $request, ContractTemplate $template, ContractTemplateRenderer $renderer)
+    {
+        $template->load(['currentVersion', 'versions.creator']);
+
+        $selectedVersion = $template->currentVersion;
+        $versionId = $request->input('version');
+
+        if ($versionId) {
+            $selectedVersion = $template->versions()->whereKey($versionId)->firstOrFail();
+        }
+
+        return view('contract_templates.show', [
+            'template' => $template,
+            'versions' => $template->versions->sortByDesc('version'),
+            'selectedVersion' => $selectedVersion,
+            'previewHtml' => $selectedVersion ? $this->buildPreview($renderer, $selectedVersion) : null,
+        ]);
+    }
+
+    public function restore(Request $request, ContractTemplate $template, ContractTemplateVersion $version)
+    {
+        $this->authorize('update', $template);
+
+        if ($version->contract_template_id !== $template->id) {
+            abort(404);
+        }
+
+        $template->createVersion(
+            $version->content,
+            $version->format,
+            $request->user()->id,
+            "Sürüm {$version->version} geri yüklendi."
+        );
+
+        return redirect()->route('contract-templates.show', $template)
+            ->with('success', 'Şablon önceki sürüme geri yüklendi.');
     }
 
     public function makeDefault(ContractTemplate $template)
@@ -103,18 +167,19 @@ class ContractTemplateController extends Controller
         );
 
         $templateId = $request->input('template_id');
-        $template = new ContractTemplate($validated);
+        $template = new ContractTemplate(Arr::except($validated, ['change_note']));
 
         if ($templateId) {
             $existing = ContractTemplate::query()->findOrFail($templateId);
             $this->authorize('update', $existing);
-            $existing->fill($validated);
+            $existing->fill(Arr::except($validated, ['change_note']));
 
             return view('contract_templates.edit', [
                 'template' => $existing,
                 'locales' => config('contracts.locales', []),
                 'formats' => $this->formats(),
                 'previewHtml' => $this->buildPreview($renderer, $template),
+                'versions' => $existing->versions()->with('creator')->orderByDesc('version')->get(),
             ]);
         }
 
@@ -128,18 +193,22 @@ class ContractTemplateController extends Controller
         ]);
     }
 
-    private function buildPreview(ContractTemplateRenderer $renderer, ContractTemplate $template): ?string
+    private function buildPreview(ContractTemplateRenderer $renderer, ContractTemplate|ContractTemplateVersion $template): ?string
     {
         $contract = Contract::query()
             ->with(['salesOrder.items', 'salesOrder.customer'])
             ->latest('id')
             ->first();
 
+        $locale = $template instanceof ContractTemplate
+            ? ($template->locale ?: 'tr')
+            : ($template->template?->locale ?: 'tr');
+
         if (! $contract) {
             $contract = new Contract([
                 'contract_no' => 'CT-2026-0001',
                 'issued_at' => now(),
-                'locale' => $template->locale ?: 'tr',
+                'locale' => $locale,
                 'currency' => 'EUR',
                 'customer_name' => 'Örnek Müşteri',
                 'customer_company' => 'Örnek Şirket',
@@ -174,6 +243,7 @@ class ContractTemplateController extends Controller
             'locale' => ['required', 'string', Rule::in($locales)],
             'format' => ['required', 'string', Rule::in(array_keys($this->formats()))],
             'content' => ['required', 'string'],
+            'change_note' => ['nullable', 'string', 'max:255'],
             'is_default' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ];

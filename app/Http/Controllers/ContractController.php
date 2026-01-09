@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use App\Models\ContractTemplateVersion;
 use App\Models\SalesOrder;
 use App\Services\ContractTemplateRenderer;
 use Illuminate\Http\Request;
@@ -126,7 +127,7 @@ class ContractController extends Controller
         $contract->update($validated);
 
         if ($request->boolean('apply_template')) {
-            $this->applyTemplate($contract);
+            $this->applyTemplate($contract, false, true);
 
             return redirect()->route('contracts.edit', $contract)
                 ->with('success', 'Şablon uygulandı ve önizleme güncellendi.');
@@ -279,23 +280,46 @@ class ContractController extends Controller
 
         $renderer = app(ContractTemplateRenderer::class);
 
-        return $renderer->render($contract, $template);
+        $version = $this->resolveTemplateVersion($contract, $template);
+
+        return $renderer->render($contract, $version ?? $template);
     }
 
-    private function applyTemplate(Contract $contract, bool $setRenderedAt = false): void
+    private function applyTemplate(Contract $contract, bool $setRenderedAt = false, bool $forceCurrentVersion = false): void
     {
         $template = $contract->contractTemplate
             ?: ContractTemplate::defaultForLocale($contract->locale);
 
-        if (! $template) {
+        $renderer = app(ContractTemplateRenderer::class);
+        $version = $this->resolveTemplateVersion($contract, $template, $forceCurrentVersion);
+
+        if (! $version) {
             return;
         }
 
-        $renderer = app(ContractTemplateRenderer::class);
-
         $contract->forceFill([
-            'rendered_body' => $renderer->render($contract, $template),
+            'rendered_body' => $renderer->render($contract, $version),
             'rendered_at' => $setRenderedAt ? now() : $contract->rendered_at,
+            'contract_template_version_id' => $version->id,
         ])->save();
+    }
+
+    private function resolveTemplateVersion(
+        Contract $contract,
+        ?ContractTemplate $template,
+        bool $forceCurrentVersion = false
+    ): ?ContractTemplateVersion
+    {
+        if (! $forceCurrentVersion && $contract->contract_template_version_id) {
+            return ContractTemplateVersion::query()->find($contract->contract_template_version_id);
+        }
+
+        if (! $template) {
+            return null;
+        }
+
+        $template->loadMissing('currentVersion');
+
+        return $template->currentVersion ?: $template->latestVersion();
     }
 }
