@@ -515,7 +515,7 @@
                             </div>
 
                             <div class="flex flex-wrap items-center justify-end gap-3">
-                                <x-button type="submit" :disabled="loading">
+                                <x-button type="submit" x-bind:disabled="loading">
                                     <span x-show="!loading">{{ __('Paketi Hazırla') }}</span>
                                     <span x-cloak x-show="loading">{{ __('Hazırlanıyor...') }}</span>
                                 </x-button>
@@ -567,7 +567,7 @@
                                     </div>
                                 </div>
                                 <div class="flex justify-end">
-                                    <x-button type="submit" variant="secondary" :disabled="uploading">
+                                    <x-button type="submit" variant="secondary" x-bind:disabled="uploading">
                                         <span x-show="!uploading">{{ __('Dosya Yükle') }}</span>
                                         <span x-cloak x-show="uploading">{{ __('Yükleniyor...') }}</span>
                                     </x-button>

@@ -106,6 +106,18 @@ class ContractTest extends TestCase
         ]);
     }
 
+    public function test_show_contract_returns_success(): void
+    {
+        $user = User::factory()->create();
+        $salesOrder = SalesOrder::factory()->create(['created_by' => $user->id]);
+
+        $contract = $this->createContract($user, $salesOrder);
+
+        $response = $this->actingAs($user)->get(route('contracts.show', $contract));
+
+        $response->assertStatus(200);
+    }
+
     public function test_pdf_route_returns_success(): void
     {
         $user = User::factory()->create();
