@@ -81,6 +81,14 @@ class VesselController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'type' => ['nullable', 'string', 'max:255'],
             'registration_number' => ['nullable', 'string', 'max:255'],
+            'boat_type' => ['nullable', 'string', 'max:255'],
+            'material' => ['nullable', 'string', 'max:255'],
+            'loa_m' => ['nullable', 'numeric', 'min:0'],
+            'beam_m' => ['nullable', 'numeric', 'min:0'],
+            'draft_m' => ['nullable', 'numeric', 'min:0'],
+            'net_tonnage' => ['nullable', 'numeric', 'min:0'],
+            'gross_tonnage' => ['nullable', 'numeric', 'min:0'],
+            'passenger_capacity' => ['nullable', 'integer', 'min:0'],
             'notes' => ['nullable', 'string'],
         ];
     }
@@ -94,6 +102,20 @@ class VesselController extends Controller
             'name.max' => 'Tekne adı en fazla 255 karakter olabilir.',
             'type.max' => 'Tekne tipi en fazla 255 karakter olabilir.',
             'registration_number.max' => 'Ruhsat numarası en fazla 255 karakter olabilir.',
+            'boat_type.max' => 'Tekne sınıfı en fazla 255 karakter olabilir.',
+            'material.max' => 'Gövde malzemesi en fazla 255 karakter olabilir.',
+            'loa_m.numeric' => 'LOA metre değeri sayısal olmalıdır.',
+            'loa_m.min' => 'LOA metre değeri sıfırdan küçük olamaz.',
+            'beam_m.numeric' => 'Genişlik metre değeri sayısal olmalıdır.',
+            'beam_m.min' => 'Genişlik metre değeri sıfırdan küçük olamaz.',
+            'draft_m.numeric' => 'Draft metre değeri sayısal olmalıdır.',
+            'draft_m.min' => 'Draft metre değeri sıfırdan küçük olamaz.',
+            'net_tonnage.numeric' => 'Net tonaj değeri sayısal olmalıdır.',
+            'net_tonnage.min' => 'Net tonaj değeri sıfırdan küçük olamaz.',
+            'gross_tonnage.numeric' => 'Brüt tonaj değeri sayısal olmalıdır.',
+            'gross_tonnage.min' => 'Brüt tonaj değeri sıfırdan küçük olamaz.',
+            'passenger_capacity.integer' => 'Yolcu kapasitesi tam sayı olmalıdır.',
+            'passenger_capacity.min' => 'Yolcu kapasitesi sıfırdan küçük olamaz.',
         ];
     }
 }

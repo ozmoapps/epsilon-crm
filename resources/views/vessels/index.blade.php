@@ -34,39 +34,55 @@
                 </div>
 
                 <div class="overflow-hidden rounded-lg bg-white shadow-sm">
-                    <div class="divide-y divide-gray-200">
-                        @forelse ($vessels as $vessel)
-                            <div class="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <p class="text-base font-semibold text-gray-900">{{ $vessel->name }}</p>
-                                    <p class="text-sm text-gray-500">
-                                        {{ $vessel->customer?->name ?? 'Müşteri yok' }}
-                                        @if ($vessel->type)
-                                            · {{ $vessel->type }}
-                                        @endif
-                                    </p>
-                                </div>
-                                <div class="flex flex-wrap gap-2 text-sm">
-                                    <a href="{{ route('vessels.show', $vessel) }}" class="rounded-md border border-gray-200 px-3 py-1 text-gray-700 hover:bg-gray-50">
-                                        {{ __('Detay') }}
-                                    </a>
-                                    <a href="{{ route('vessels.edit', $vessel) }}" class="rounded-md border border-gray-200 px-3 py-1 text-gray-700 hover:bg-gray-50">
-                                        {{ __('Düzenle') }}
-                                    </a>
-                                    <form method="POST" action="{{ route('vessels.destroy', $vessel) }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="rounded-md border border-red-200 px-3 py-1 text-red-600 hover:bg-red-50" onclick="return confirm('Tekne kaydı silinsin mi?')">
-                                            {{ __('Sil') }}
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="p-6 text-center text-sm text-gray-500">
-                                {{ __('Kayıt bulunamadı.') }}
-                            </div>
-                        @endforelse
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                <tr>
+                                    <th class="px-4 py-3">{{ __('Tekne Adı') }}</th>
+                                    <th class="px-4 py-3">{{ __('Müşteri') }}</th>
+                                    <th class="px-4 py-3">{{ __('Tip') }}</th>
+                                    <th class="px-4 py-3">{{ __('LOA') }}</th>
+                                    <th class="px-4 py-3">{{ __('Beam') }}</th>
+                                    <th class="px-4 py-3">{{ __('Draft') }}</th>
+                                    <th class="px-4 py-3 text-right">{{ __('İşlemler') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @forelse ($vessels as $vessel)
+                                    <tr class="bg-white">
+                                        <td class="px-4 py-3 font-semibold text-gray-900">{{ $vessel->name }}</td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $vessel->customer?->name ?? 'Müşteri yok' }}</td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $vessel->type ?: '—' }}</td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $vessel->loa_m ?? '—' }}</td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $vessel->beam_m ?? '—' }}</td>
+                                        <td class="px-4 py-3 text-gray-600">{{ $vessel->draft_m ?? '—' }}</td>
+                                        <td class="px-4 py-3 text-right">
+                                            <div class="flex flex-wrap justify-end gap-2">
+                                                <a href="{{ route('vessels.show', $vessel) }}" class="rounded-md border border-gray-200 px-3 py-1 text-gray-700 hover:bg-gray-50">
+                                                    {{ __('Detay') }}
+                                                </a>
+                                                <a href="{{ route('vessels.edit', $vessel) }}" class="rounded-md border border-gray-200 px-3 py-1 text-gray-700 hover:bg-gray-50">
+                                                    {{ __('Düzenle') }}
+                                                </a>
+                                                <form method="POST" action="{{ route('vessels.destroy', $vessel) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="rounded-md border border-red-200 px-3 py-1 text-red-600 hover:bg-red-50" onclick="return confirm('Tekne kaydı silinsin mi?')">
+                                                        {{ __('Sil') }}
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-4 py-6 text-center text-sm text-gray-500">
+                                            {{ __('Kayıt bulunamadı.') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
