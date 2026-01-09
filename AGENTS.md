@@ -17,3 +17,8 @@
 - Formlarda validation zorunlu; hata mesajları Türkçe olacak.
 - UI değiştiyse: npm run build
 - DB değiştiyse: php artisan migrate
+
+## Codex kuralları
+- Değişiklikler mümkün olduğunca küçük ve odaklı tutulmalı.
+- Yeni metinler Türkçe olmalı; mevcut ifadelerle tutarlılık korunmalı.
+- Gerekli komutlar tamamlandıktan sonra kısa bir özet ve çalıştırılan komutlar raporlanmalı.
