@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('status')->default('draft');
             $table->string('currency')->default('EUR');
-            $table->date('order_date')->default(DB::raw('CURRENT_DATE'));
+            $table->date('order_date')->default(new Expression('CURRENT_DATE'));
             $table->string('delivery_place')->nullable();
             $table->unsignedSmallInteger('delivery_days')->nullable();
             $table->text('payment_terms')->nullable();
