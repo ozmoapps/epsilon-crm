@@ -11,6 +11,7 @@ class QuoteItemController extends Controller
 {
     public function store(Request $request, Quote $quote)
     {
+        $this->normalizeNumericInputs($request);
         $validated = $request->validate($this->rules(), $this->messages());
         $validated['is_optional'] = $request->boolean('is_optional');
 
@@ -27,6 +28,7 @@ class QuoteItemController extends Controller
             abort(404);
         }
 
+        $this->normalizeNumericInputs($request);
         $validated = $request->validate($this->rules(), $this->messages());
         $validated['is_optional'] = $request->boolean('is_optional');
 
@@ -90,5 +92,23 @@ class QuoteItemController extends Controller
             'sort_order.integer' => 'Sıra bilgisi sayısal olmalıdır.',
             'sort_order.min' => 'Sıra bilgisi negatif olamaz.',
         ];
+    }
+
+    private function normalizeNumericInputs(Request $request): void
+    {
+        $fields = ['qty', 'unit_price', 'discount_amount', 'vat_rate'];
+        $normalized = [];
+
+        foreach ($fields as $field) {
+            $value = $request->input($field);
+
+            if (is_string($value)) {
+                $normalized[$field] = str_replace(',', '.', $value);
+            }
+        }
+
+        if ($normalized !== []) {
+            $request->merge($normalized);
+        }
     }
 }
