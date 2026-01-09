@@ -18,6 +18,21 @@
                 </x-select>
                 <x-input-error :messages="$errors->get('locale')" class="mt-2" />
             </div>
+            <div class="md:col-span-2">
+                <x-input-label for="contract_template_id" :value="__('Şablon')" />
+                <x-select id="contract_template_id" name="contract_template_id" class="mt-1">
+                    <option value="">{{ __('Varsayılan (dile göre)') }}</option>
+                    @foreach ($templates ?? [] as $template)
+                        <option value="{{ $template->id }}" @selected((int) old('contract_template_id', $contract->contract_template_id) === $template->id)>
+                            {{ $template->name }}
+                            @if ($template->is_default)
+                                ({{ __('Varsayılan') }})
+                            @endif
+                        </option>
+                    @endforeach
+                </x-select>
+                <x-input-error :messages="$errors->get('contract_template_id')" class="mt-2" />
+            </div>
         </div>
     </div>
 

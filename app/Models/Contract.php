@@ -12,6 +12,7 @@ class Contract extends Model
 
     protected $fillable = [
         'sales_order_id',
+        'contract_template_id',
         'contract_no',
         'status',
         'issued_at',
@@ -32,12 +33,15 @@ class Contract extends Model
         'scope_text',
         'exclusions_text',
         'delivery_terms',
+        'rendered_body',
+        'rendered_at',
         'created_by',
     ];
 
     protected $casts = [
         'issued_at' => 'date',
         'signed_at' => 'datetime',
+        'rendered_at' => 'datetime',
         'subtotal' => 'decimal:2',
         'tax_total' => 'decimal:2',
         'grand_total' => 'decimal:2',
@@ -97,6 +101,11 @@ class Contract extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function contractTemplate()
+    {
+        return $this->belongsTo(ContractTemplate::class);
     }
 
     public function isEditable(): bool
