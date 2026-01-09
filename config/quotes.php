@@ -24,4 +24,14 @@ return [
         'TRY' => '₺',
         'USD' => '$',
     ],
+    'unit_options' => [
+        'adet',
+        'saat',
+        'm²',
+        'lt',
+        'set',
+        'gün',
+        'paket',
+    ],
+    'vat_rates' => [0, 1, 10, 20],
 ];
