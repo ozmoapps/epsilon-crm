@@ -104,11 +104,8 @@
             <x-slot name="header">{{ __('Kalemler') }}</x-slot>
 
             <div class="space-y-6">
-                @forelse ($itemsBySection as $section => $items)
+                @if ($itemsBySection->isNotEmpty())
                     <div class="overflow-hidden rounded-lg border border-gray-200 bg-white">
-                        <div class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-                            <h4 class="text-xs font-semibold tracking-wide text-gray-600">{{ $section }}</h4>
-                        </div>
                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-gray-50">
                                 <tr class="text-left text-xs font-semibold tracking-wide text-gray-500">
@@ -119,44 +116,51 @@
                                     <th class="px-4 py-2 text-right">{{ __('Toplam') }}</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 bg-white">
-                                @foreach ($items as $item)
-                                    @php
-                                        $qty = (float) $item->qty;
-                                        $unitPrice = (float) $item->unit_price;
-                                        $lineBase = $qty * $unitPrice;
-                                        $lineDiscount = (float) ($item->discount_amount ?? 0);
-                                        $lineNet = max($lineBase - $lineDiscount, 0);
-                                        $vatRate = $item->vat_rate !== null ? (float) $item->vat_rate : null;
-                                        $lineVat = $vatRate !== null ? $lineNet * ($vatRate / 100) : 0;
-                                        $lineTotal = $lineNet + $lineVat;
-                                    @endphp
-                                    <tr>
-                                        <td class="px-4 py-3">
-                                            <div class="space-y-1">
-                                                <div class="flex flex-wrap items-center gap-2">
-                                                    <span class="text-xs font-semibold text-gray-500">
-                                                        {{ $itemTypes[$item->item_type] ?? $item->item_type }}
-                                                    </span>
-                                                    @if ($item->is_optional)
-                                                        <x-badge variant="warning">{{ __('Opsiyon') }}</x-badge>
-                                                    @endif
-                                                </div>
-                                                <p class="text-gray-900">{{ $item->description }}</p>
-                                            </div>
+                            @foreach ($itemsBySection as $section => $items)
+                                <tbody class="divide-y divide-gray-100 bg-white">
+                                    <tr class="bg-gray-50">
+                                        <td colspan="5" @class(['px-4 py-2 text-xs font-semibold tracking-wide text-gray-600', 'border-t border-gray-200' => ! $loop->first])>
+                                            {{ $section }}
                                         </td>
-                                        <td class="px-4 py-3 text-right tabular-nums text-gray-700">{{ $formatMoney($item->qty) }}</td>
-                                        <td class="px-4 py-3 text-gray-700">{{ $item->unit ?? '-' }}</td>
-                                        <td class="px-4 py-3 text-right tabular-nums text-gray-700">{{ $currencySymbol }} {{ $formatMoney($item->unit_price) }}</td>
-                                        <td class="px-4 py-3 text-right font-semibold text-gray-900">{{ $currencySymbol }} {{ $formatMoney($lineTotal) }}</td>
                                     </tr>
-                                @endforeach
-                            </tbody>
+                                    @foreach ($items as $item)
+                                        @php
+                                            $qty = (float) $item->qty;
+                                            $unitPrice = (float) $item->unit_price;
+                                            $lineBase = $qty * $unitPrice;
+                                            $lineDiscount = (float) ($item->discount_amount ?? 0);
+                                            $lineNet = max($lineBase - $lineDiscount, 0);
+                                            $vatRate = $item->vat_rate !== null ? (float) $item->vat_rate : null;
+                                            $lineVat = $vatRate !== null ? $lineNet * ($vatRate / 100) : 0;
+                                            $lineTotal = $lineNet + $lineVat;
+                                        @endphp
+                                        <tr>
+                                            <td class="px-4 py-3">
+                                                <div class="space-y-1">
+                                                    <div class="flex flex-wrap items-center gap-2">
+                                                        <span class="text-xs font-semibold text-gray-500">
+                                                            {{ $itemTypes[$item->item_type] ?? $item->item_type }}
+                                                        </span>
+                                                        @if ($item->is_optional)
+                                                            <x-badge variant="warning">{{ __('Opsiyon') }}</x-badge>
+                                                        @endif
+                                                    </div>
+                                                    <p class="text-gray-900">{{ $item->description }}</p>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-right tabular-nums text-gray-700">{{ $formatMoney($item->qty) }}</td>
+                                            <td class="px-4 py-3 text-gray-700">{{ $item->unit ?? '-' }}</td>
+                                            <td class="px-4 py-3 text-right tabular-nums text-gray-700">{{ $currencySymbol }} {{ $formatMoney($item->unit_price) }}</td>
+                                            <td class="px-4 py-3 text-right font-semibold text-gray-900">{{ $currencySymbol }} {{ $formatMoney($lineTotal) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            @endforeach
                         </table>
                     </div>
-                @empty
+                @else
                     <p class="text-sm text-gray-500">{{ __('Siparişe eklenmiş kalem bulunmuyor.') }}</p>
-                @endforelse
+                @endif
             </div>
 
             <div class="mt-6 rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm">

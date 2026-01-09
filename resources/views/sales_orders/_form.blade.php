@@ -7,7 +7,7 @@
                 <x-select id="customer_id" name="customer_id" class="mt-1" required>
                     <option value="">{{ __('Müşteri seçin') }}</option>
                     @foreach ($customers as $customer)
-                        <option value="{{ $customer->id }}" @selected(old('customer_id', $salesOrder->customer_id) === $customer->id)>
+                        <option value="{{ $customer->id }}" @selected((string) old('customer_id', $salesOrder->customer_id) === (string) $customer->id)>
                             {{ $customer->name }}
                         </option>
                     @endforeach
@@ -20,7 +20,7 @@
                 <x-select id="vessel_id" name="vessel_id" class="mt-1" required>
                     <option value="">{{ __('Tekne seçin') }}</option>
                     @foreach ($vessels as $vessel)
-                        <option value="{{ $vessel->id }}" @selected(old('vessel_id', $salesOrder->vessel_id) === $vessel->id)>
+                        <option value="{{ $vessel->id }}" @selected((string) old('vessel_id', $salesOrder->vessel_id) === (string) $vessel->id)>
                             {{ $vessel->name }}{{ $vessel->customer ? ' · ' . $vessel->customer->name : '' }}
                         </option>
                     @endforeach
@@ -33,7 +33,7 @@
                 <x-select id="work_order_id" name="work_order_id" class="mt-1">
                     <option value="">{{ __('İş emri seçin') }}</option>
                     @foreach ($workOrders as $workOrder)
-                        <option value="{{ $workOrder->id }}" @selected(old('work_order_id', $salesOrder->work_order_id) === $workOrder->id)>
+                        <option value="{{ $workOrder->id }}" @selected((string) old('work_order_id', $salesOrder->work_order_id) === (string) $workOrder->id)>
                             {{ $workOrder->title }}
                         </option>
                     @endforeach
