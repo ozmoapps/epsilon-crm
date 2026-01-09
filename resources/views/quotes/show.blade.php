@@ -6,7 +6,9 @@
                     <x-button href="{{ route('sales-orders.show', $quote->salesOrder) }}" variant="secondary" size="sm">
                         {{ __('Siparişi Gör') }}
                     </x-button>
-                @else
+                @endif
+
+                @if (! $quote->salesOrder)
                     @if ($quote->status === 'accepted')
                         <form method="POST" action="{{ route('quotes.convert_to_sales_order', $quote) }}">
                             @csrf
@@ -15,9 +17,12 @@
                             </x-button>
                         </form>
                     @elseif ($quote->status === 'draft')
-                        <span class="text-xs text-gray-500">{{ __('Satış siparişine çevirmek için önce onaylayın.') }}</span>
-                    @else
-                        <span class="text-xs text-gray-500">{{ __('Satış siparişine çevirmek için onay bekleniyor.') }}</span>
+                        <div class="flex flex-col items-start gap-1">
+                            <x-button type="button" size="sm" disabled class="disabled:cursor-not-allowed disabled:opacity-50">
+                                {{ __('Satış Siparişine Çevir') }}
+                            </x-button>
+                            <span class="text-xs text-gray-500">{{ __('Çevirmek için önce onaylayın.') }}</span>
+                        </div>
                     @endif
                 @endif
                 @if ($quote->status === 'draft')
@@ -27,8 +32,7 @@
                             {{ __('Gönderildi olarak işaretle') }}
                         </x-button>
                     </form>
-                @endif
-                @if (in_array($quote->status, ['draft', 'sent'], true))
+                @elseif ($quote->status === 'sent')
                     <form method="POST" action="{{ route('quotes.mark_accepted', $quote) }}">
                         @csrf
                         <x-button type="submit" variant="secondary" size="sm">
@@ -175,7 +179,6 @@
 
                                                 <div class="space-y-2 lg:col-span-4">
                                                     <div class="flex flex-wrap items-center gap-2">
-                                                        <x-badge variant="success">{{ __('Kayıtlı') }}</x-badge>
                                                         @if ($item->is_optional)
                                                             <x-badge variant="warning">{{ __('Opsiyon') }}</x-badge>
                                                         @endif
@@ -466,17 +469,15 @@
                         <h4 class="text-sm font-semibold text-gray-800">{{ __('Toplamlar') }}</h4>
                         <dl class="mt-3 space-y-2 text-sm text-gray-700">
                             <div class="flex items-center justify-between">
-                                <dt>{{ __('Ara Toplam (KDV hariç)') }}</dt>
+                                <dt>{{ __('Ara Toplam') }}</dt>
                                 <dd class="font-semibold">{{ $currencySymbol }} {{ $formatMoney($quote->subtotal) }}</dd>
                             </div>
-                            @if ($discountTotal > 0)
-                                <div class="flex items-center justify-between">
-                                    <dt>{{ __('İndirim') }}</dt>
-                                    <dd class="font-semibold">- {{ $currencySymbol }} {{ $formatMoney($discountTotal) }}</dd>
-                                </div>
-                            @endif
                             <div class="flex items-center justify-between">
-                                <dt>{{ __('Toplam KDV') }}</dt>
+                                <dt>{{ __('İndirim') }}</dt>
+                                <dd class="font-semibold">- {{ $currencySymbol }} {{ $formatMoney($discountTotal) }}</dd>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <dt>{{ __('KDV') }}</dt>
                                 <dd class="font-semibold">{{ $currencySymbol }} {{ $formatMoney($quote->vat_total) }}</dd>
                             </div>
                             <div class="flex items-center justify-between border-t border-gray-200 pt-2 text-base">
