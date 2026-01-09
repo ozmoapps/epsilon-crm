@@ -48,34 +48,26 @@
                             <td class="px-4 py-3 text-right">
                                 <x-ui.dropdown align="right" width="w-44">
                                     <x-slot name="trigger">
-                                        <x-ui.tooltip text="{{ __('İşlemler') }}">
-                                            <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900" aria-label="{{ __('İşlemler') }}">
-                                                <x-icon.dots class="h-4 w-4" />
-                                            </button>
-                                        </x-ui.tooltip>
+                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900" aria-label="{{ __('İşlemler') }}">
+                                            <x-icon.dots class="h-4 w-4" />
+                                        </button>
                                     </x-slot>
                                     <x-slot name="content">
-                                        <x-ui.tooltip text="{{ __('Görüntüle') }}" class="w-full">
-                                            <a href="{{ route('customers.show', $customer) }}" class="{{ $actionItemClass }}">
-                                                <x-icon.info class="h-4 w-4 text-sky-600" />
-                                                {{ __('Görüntüle') }}
-                                            </a>
-                                        </x-ui.tooltip>
-                                        <x-ui.tooltip text="{{ __('Düzenle') }}" class="w-full">
-                                            <a href="{{ route('customers.edit', $customer) }}" class="{{ $actionItemClass }}">
-                                                <x-icon.pencil class="h-4 w-4 text-indigo-600" />
-                                                {{ __('Düzenle') }}
-                                            </a>
-                                        </x-ui.tooltip>
+                                        <a href="{{ route('customers.show', $customer) }}" class="{{ $actionItemClass }}">
+                                            <x-icon.info class="h-4 w-4 text-sky-600" />
+                                            {{ __('Görüntüle') }}
+                                        </a>
+                                        <a href="{{ route('customers.edit', $customer) }}" class="{{ $actionItemClass }}">
+                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                            {{ __('Düzenle') }}
+                                        </a>
                                         <form method="POST" action="{{ route('customers.destroy', $customer) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <x-ui.tooltip text="{{ __('Sil') }}" class="w-full">
-                                                <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Müşteri kaydı silinsin mi?')">
-                                                    <x-icon.trash class="h-4 w-4" />
-                                                    {{ __('Sil') }}
-                                                </button>
-                                            </x-ui.tooltip>
+                                            <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Müşteri kaydı silinsin mi?')">
+                                                <x-icon.trash class="h-4 w-4" />
+                                                {{ __('Sil') }}
+                                            </button>
                                         </form>
                                     </x-slot>
                                 </x-ui.dropdown>
