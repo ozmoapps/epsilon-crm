@@ -2,19 +2,39 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Teklif Detayı') }}" subtitle="{{ $quote->quote_no }}">
             <x-slot name="actions">
-                @if (in_array($quote->status, ['accepted', 'sent'], true))
-                    @if ($quote->salesOrder)
-                        <x-button href="{{ route('sales-orders.show', $quote->salesOrder) }}" variant="secondary" size="sm">
-                            {{ __('Siparişi Gör') }}
-                        </x-button>
-                    @else
+                @if ($quote->salesOrder)
+                    <x-button href="{{ route('sales-orders.show', $quote->salesOrder) }}" variant="secondary" size="sm">
+                        {{ __('Siparişi Gör') }}
+                    </x-button>
+                @else
+                    @if ($quote->status === 'accepted')
                         <form method="POST" action="{{ route('quotes.convert_to_sales_order', $quote) }}">
                             @csrf
                             <x-button type="submit" size="sm">
                                 {{ __('Satış Siparişine Çevir') }}
                             </x-button>
                         </form>
+                    @elseif ($quote->status === 'draft')
+                        <span class="text-xs text-gray-500">{{ __('Satış siparişine çevirmek için önce onaylayın.') }}</span>
+                    @else
+                        <span class="text-xs text-gray-500">{{ __('Satış siparişine çevirmek için onay bekleniyor.') }}</span>
                     @endif
+                @endif
+                @if ($quote->status === 'draft')
+                    <form method="POST" action="{{ route('quotes.mark_sent', $quote) }}">
+                        @csrf
+                        <x-button type="submit" variant="secondary" size="sm">
+                            {{ __('Gönderildi olarak işaretle') }}
+                        </x-button>
+                    </form>
+                @endif
+                @if (in_array($quote->status, ['draft', 'sent'], true))
+                    <form method="POST" action="{{ route('quotes.mark_accepted', $quote) }}">
+                        @csrf
+                        <x-button type="submit" variant="secondary" size="sm">
+                            {{ __('Onaylandı olarak işaretle') }}
+                        </x-button>
+                    </form>
                 @endif
                 <x-button href="{{ route('quotes.edit', $quote) }}" variant="secondary" size="sm">
                     {{ __('Düzenle') }}
@@ -31,39 +51,39 @@
             <x-slot name="header">{{ __('Özet') }}</x-slot>
             <div class="grid gap-4 text-sm sm:grid-cols-2">
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('Müşteri') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Müşteri') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $quote->customer?->name ?? '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('Tekne') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Tekne') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $quote->vessel?->name ?? '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('İş Emri') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('İş Emri') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $quote->workOrder?->title ?? '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('Durum') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Durum') }}</p>
                     <x-badge status="{{ $quote->status }}">{{ $quote->status_label }}</x-badge>
                 </div>
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('Para Birimi') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Para Birimi') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $quote->currency }}</p>
                 </div>
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('Geçerlilik') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Geçerlilik') }}</p>
                     <p class="text-base font-medium text-gray-900">
                         {{ $quote->validity_days !== null ? $quote->validity_days . ' gün' : '-' }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('Tahmini Süre') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Tahmini Süre') }}</p>
                     <p class="text-base font-medium text-gray-900">
                         {{ $quote->estimated_duration_days !== null ? $quote->estimated_duration_days . ' gün' : '-' }}
                     </p>
                 </div>
                 <div class="sm:col-span-2">
-                    <p class="text-xs uppercase tracking-wide text-gray-500">{{ __('Teklif Konusu') }}</p>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Teklif Konusu') }}</p>
                     <p class="text-base font-medium text-gray-900">{{ $quote->title }}</p>
                 </div>
             </div>
@@ -117,11 +137,12 @@
 
             <div class="space-y-6">
                 <div class="space-y-6">
-                    <div class="hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 lg:grid lg:grid-cols-12 lg:items-center">
-                        <div class="lg:col-span-5">{{ __('Hizmet/Ürün') }}</div>
+                    <div class="hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold tracking-wide text-gray-500 lg:grid lg:grid-cols-12 lg:items-center">
+                        <div class="lg:col-span-4">{{ __('Hizmet/Ürün') }}</div>
                         <div class="lg:col-span-1 text-right">{{ __('Miktar') }}</div>
-                        <div class="lg:col-span-1">{{ __('Birim') }}</div>
+                        <div class="lg:col-span-1 border-l border-gray-200 pl-2">{{ __('Birim') }}</div>
                         <div class="lg:col-span-2 text-right">{{ __('Br. Fiyat') }}</div>
+                        <div class="lg:col-span-1 text-right">{{ __('İndirim') }}</div>
                         <div class="lg:col-span-1 text-right">{{ __('Vergi') }}</div>
                         <div class="lg:col-span-1 text-right">{{ __('Toplam') }}</div>
                         <div class="lg:col-span-1 text-right">{{ __('Aksiyonlar') }}</div>
@@ -131,7 +152,7 @@
                         @forelse ($itemsBySection as $section => $items)
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between">
-                                    <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ $section }}</h4>
+                                    <h4 class="text-xs font-semibold tracking-wide text-gray-500">{{ $section }}</h4>
                                 </div>
                                 <div class="space-y-3">
                                     @foreach ($items as $item)
@@ -152,12 +173,9 @@
                                                 @method('PUT')
                                                 <input type="hidden" name="form_context" value="item-{{ $item->id }}">
 
-                                                <div class="space-y-2 lg:col-span-5">
+                                                <div class="space-y-2 lg:col-span-4">
                                                     <div class="flex flex-wrap items-center gap-2">
                                                         <x-badge variant="success">{{ __('Kayıtlı') }}</x-badge>
-                                                        <x-badge variant="info">
-                                                            {{ $itemTypes[$item->item_type] ?? $item->item_type }}
-                                                        </x-badge>
                                                         @if ($item->is_optional)
                                                             <x-badge variant="warning">{{ __('Opsiyon') }}</x-badge>
                                                         @endif
@@ -229,6 +247,19 @@
                                                 </div>
 
                                                 <div class="space-y-2 lg:col-span-1">
+                                                    <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('İndirim') }}</label>
+                                                    <div class="relative">
+                                                        <x-input name="discount_amount" type="text" inputmode="decimal" class="mt-1 w-full pr-9 text-right tabular-nums" :value="old('discount_amount', $item->discount_amount)" />
+                                                        <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-gray-400">
+                                                            {{ $currencySymbol }}
+                                                        </span>
+                                                    </div>
+                                                    @if ($showErrors)
+                                                        <x-input-error :messages="$errors->get('discount_amount')" class="mt-2" />
+                                                    @endif
+                                                </div>
+
+                                                <div class="space-y-2 lg:col-span-1">
                                                     <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Vergi') }}</label>
                                                     <x-select name="vat_rate" class="mt-1">
                                                         <option value="">{{ __('KDV Yok') }}</option>
@@ -268,7 +299,7 @@
                                             @if ($showErrors)
                                                 <div class="mt-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600">
                                                     <ul class="list-disc space-y-1 pl-4">
-                                                        @foreach (['description', 'qty', 'unit', 'unit_price', 'vat_rate', 'item_type'] as $field)
+                                                        @foreach (['description', 'qty', 'unit', 'unit_price', 'discount_amount', 'vat_rate', 'item_type'] as $field)
                                                             @foreach ($errors->get($field) as $message)
                                                                 <li>{{ $message }}</li>
                                                             @endforeach
@@ -304,7 +335,7 @@
                                 @csrf
                                 <input type="hidden" name="form_context" value="new-item">
 
-                                <div class="space-y-2 lg:col-span-5">
+                                <div class="space-y-2 lg:col-span-4">
                                     <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Hizmet/Ürün') }}</label>
                                     <x-select name="item_type" class="mt-1">
                                         @foreach ($itemTypes as $value => $label)
@@ -370,6 +401,19 @@
                                 </div>
 
                                 <div class="space-y-2 lg:col-span-1">
+                                    <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('İndirim') }}</label>
+                                    <div class="relative">
+                                        <x-input name="discount_amount" type="text" inputmode="decimal" class="mt-1 w-full pr-9 text-right tabular-nums" :value="old('discount_amount', 0)" />
+                                        <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-gray-400">
+                                            {{ $currencySymbol }}
+                                        </span>
+                                    </div>
+                                    @if ($showNewErrors)
+                                        <x-input-error :messages="$errors->get('discount_amount')" class="mt-2" />
+                                    @endif
+                                </div>
+
+                                <div class="space-y-2 lg:col-span-1">
                                     <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Vergi') }}</label>
                                     <x-select name="vat_rate" class="mt-1">
                                         <option value="">{{ __('KDV Yok') }}</option>
@@ -397,7 +441,7 @@
                             @if ($showNewErrors)
                                 <div class="mt-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600">
                                     <ul class="list-disc space-y-1 pl-4">
-                                        @foreach (['description', 'qty', 'unit', 'unit_price', 'vat_rate', 'item_type'] as $field)
+                                        @foreach (['description', 'qty', 'unit', 'unit_price', 'discount_amount', 'vat_rate', 'item_type'] as $field)
                                             @foreach ($errors->get($field) as $message)
                                                 <li>{{ $message }}</li>
                                             @endforeach

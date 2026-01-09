@@ -27,6 +27,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
     Route::resource('sales-orders', SalesOrderController::class);
+    Route::post('quotes/{quote}/mark-sent', [QuoteController::class, 'markAsSent'])
+        ->name('quotes.mark_sent');
+    Route::post('quotes/{quote}/mark-accepted', [QuoteController::class, 'markAsAccepted'])
+        ->name('quotes.mark_accepted');
     Route::post('quotes/{quote}/convert-to-sales-order', [QuoteController::class, 'convertToSalesOrder'])
         ->name('quotes.convert_to_sales_order');
     Route::post('quotes/{quote}/items', [QuoteItemController::class, 'store'])->name('quotes.items.store');
