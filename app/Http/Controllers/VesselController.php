@@ -102,7 +102,7 @@ class VesselController extends Controller
             'name.max' => 'Tekne adı en fazla 255 karakter olabilir.',
             'type.max' => 'Marka en fazla 255 karakter olabilir.',
             'registration_number.max' => 'Model en fazla 255 karakter olabilir.',
-            'boat_type.in' => 'Tekne sınıfı seçimi geçersiz.',
+            'boat_type.in' => 'Tekne tipi seçimi geçersiz.',
             'material.in' => 'Gövde malzemesi seçimi geçersiz.',
             'loa_m.numeric' => 'LOA metre değeri sayısal olmalıdır.',
             'loa_m.min' => 'LOA metre değeri sıfırdan küçük olamaz.',
