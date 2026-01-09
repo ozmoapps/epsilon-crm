@@ -100,6 +100,32 @@ class QuoteController extends Controller
             ->with('success', 'Teklif silindi.');
     }
 
+    public function markAsSent(Quote $quote)
+    {
+        if ($quote->status !== 'sent') {
+            $quote->forceFill([
+                'status' => 'sent',
+                'sent_at' => now(),
+            ])->save();
+        }
+
+        return redirect()->route('quotes.show', $quote)
+            ->with('success', 'Teklif gönderildi olarak işaretlendi.');
+    }
+
+    public function markAsAccepted(Quote $quote)
+    {
+        if ($quote->status !== 'accepted') {
+            $quote->forceFill([
+                'status' => 'accepted',
+                'accepted_at' => now(),
+            ])->save();
+        }
+
+        return redirect()->route('quotes.show', $quote)
+            ->with('success', 'Teklif onaylandı olarak işaretlendi.');
+    }
+
     public function convertToSalesOrder(Request $request, Quote $quote)
     {
         $quote->loadMissing(['items', 'salesOrder']);

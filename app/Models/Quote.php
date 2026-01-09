@@ -114,7 +114,7 @@ class Quote extends Model
 
     public function salesOrder()
     {
-        return $this->hasOne(SalesOrder::class);
+        return $this->hasOne(SalesOrder::class, 'quote_id');
     }
 
     public function recalculateTotals(): void
