@@ -18,11 +18,11 @@
                             {{ __('Hızlı Menü') }}
                         </h3>
                         <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <a href="/customers" class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-gray-100">
+                            <a href="{{ route('customers.index') }}" class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-gray-100">
                                 <span>{{ __('Müşteriler') }}</span>
                                 <span class="text-gray-400">→</span>
                             </a>
-                            <a href="/vessels" class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-gray-100">
+                            <a href="{{ route('vessels.index') }}" class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-gray-100">
                                 <span>{{ __('Tekneler') }}</span>
                                 <span class="text-gray-400">→</span>
                             </a>

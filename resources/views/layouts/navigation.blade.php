@@ -15,6 +15,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Kontrol Paneli') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                        {{ __('Müşteriler') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('vessels.index')" :active="request()->routeIs('vessels.*')">
+                        {{ __('Tekneler') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -69,6 +75,12 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Kontrol Paneli') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                {{ __('Müşteriler') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('vessels.index')" :active="request()->routeIs('vessels.*')">
+                {{ __('Tekneler') }}
             </x-responsive-nav-link>
         </div>
 
