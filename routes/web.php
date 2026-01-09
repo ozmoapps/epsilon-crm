@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\QuoteItemController;
@@ -27,7 +28,19 @@ Route::middleware('auth')->group(function () {
     Route::resource('vessels', VesselController::class);
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
+    Route::resource('contracts', ContractController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
     Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show']);
+    Route::get('sales-orders/{salesOrder}/contracts/create', [ContractController::class, 'create'])
+        ->name('sales-orders.contracts.create');
+    Route::post('sales-orders/{salesOrder}/contracts', [ContractController::class, 'store'])
+        ->name('sales-orders.contracts.store');
+    Route::get('contracts/{contract}/pdf', [ContractController::class, 'pdf'])->name('contracts.pdf');
+    Route::patch('contracts/{contract}/mark-sent', [ContractController::class, 'markSent'])
+        ->name('contracts.mark_sent');
+    Route::patch('contracts/{contract}/mark-signed', [ContractController::class, 'markSigned'])
+        ->name('contracts.mark_signed');
+    Route::patch('contracts/{contract}/cancel', [ContractController::class, 'cancel'])
+        ->name('contracts.cancel');
     Route::patch('sales-orders/{salesOrder}/confirm', [SalesOrderController::class, 'confirm'])
         ->name('sales-orders.confirm');
     Route::patch('sales-orders/{salesOrder}/start', [SalesOrderController::class, 'start'])

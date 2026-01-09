@@ -30,6 +30,9 @@
                     <x-nav-link :href="route('sales-orders.index')" :active="request()->routeIs('sales-orders.*')">
                         {{ __('Satış Siparişleri') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('contracts.index')" :active="request()->routeIs('contracts.*')">
+                        {{ __('Sözleşmeler') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -102,6 +105,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('sales-orders.index')" :active="request()->routeIs('sales-orders.*')">
                 {{ __('Satış Siparişleri') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('contracts.index')" :active="request()->routeIs('contracts.*')">
+                {{ __('Sözleşmeler') }}
             </x-responsive-nav-link>
         </div>
 
