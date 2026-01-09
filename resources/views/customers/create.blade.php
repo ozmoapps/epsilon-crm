@@ -1,30 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 class="text-xl font-semibold text-gray-800 leading-tight">
-                {{ __('Yeni Müşteri') }}
-            </h2>
-            <a href="{{ route('customers.index') }}" class="text-sm text-gray-500 hover:text-gray-700">
-                {{ __('Listeye Dön') }}
-            </a>
-        </div>
+        <x-page-header title="{{ __('Yeni Müşteri') }}" subtitle="{{ __('Yeni müşteri kaydını oluşturun.') }}">
+            <x-slot name="actions">
+                <x-button href="{{ route('customers.index') }}" variant="secondary" size="sm">
+                    {{ __('Listeye Dön') }}
+                </x-button>
+            </x-slot>
+        </x-page-header>
     </x-slot>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-3xl sm:px-6 lg:px-8">
-            <div class="rounded-lg bg-white p-6 shadow-sm">
-                <form method="POST" action="{{ route('customers.store') }}" class="space-y-6">
-                    @csrf
+    <x-card class="max-w-4xl">
+        <x-slot name="header">{{ __('Müşteri Bilgileri') }}</x-slot>
+        <form method="POST" action="{{ route('customers.store') }}" class="space-y-6">
+            @csrf
 
-                    @include('customers._form')
+            @include('customers._form')
 
-                    <div class="flex items-center justify-end gap-3">
-                        <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
-                            {{ __('Kaydet') }}
-                        </button>
-                    </div>
-                </form>
+            <div class="flex items-center justify-end gap-3">
+                <x-button type="submit">{{ __('Kaydet') }}</x-button>
             </div>
-        </div>
-    </div>
+        </form>
+    </x-card>
 </x-app-layout>
