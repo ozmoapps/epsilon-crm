@@ -21,4 +21,9 @@ class Customer extends Model
     {
         return $this->hasMany(Vessel::class);
     }
+
+    public function workOrders()
+    {
+        return $this->hasMany(WorkOrder::class);
+    }
 }

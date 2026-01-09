@@ -39,7 +39,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        $customer->load('vessels');
+        $customer->load(['vessels', 'workOrders.vessel']);
 
         return view('customers.show', compact('customer'));
     }
