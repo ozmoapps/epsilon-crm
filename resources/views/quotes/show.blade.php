@@ -2,7 +2,11 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Teklif Detayı') }}" subtitle="{{ $quote->quote_no }}">
             <x-slot name="actions">
-                @if ($quote->salesOrder)
+                @php
+                    $hasSalesOrder = (bool) $quote->salesOrder;
+                @endphp
+
+                @if ($hasSalesOrder)
                     <x-button href="{{ route('sales-orders.show', $quote->salesOrder) }}" variant="secondary" size="sm">
                         {{ __('Siparişi Gör') }}
                     </x-button>

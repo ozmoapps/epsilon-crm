@@ -112,11 +112,11 @@
                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-gray-50">
                                 <tr class="text-left text-xs font-semibold tracking-wide text-gray-500">
-                                        <th class="px-4 py-2">{{ __('Kalem') }}</th>
-                                        <th class="px-4 py-2 text-right">{{ __('Miktar') }}</th>
-                                        <th class="px-4 py-2">{{ __('Birim') }}</th>
-                                        <th class="px-4 py-2 text-right">{{ __('Br. Fiyat') }}</th>
-                                        <th class="px-4 py-2 text-right">{{ __('Toplam') }}</th>
+                                    <th class="px-4 py-2">{{ __('Kalem') }}</th>
+                                    <th class="px-4 py-2 text-right">{{ __('Miktar') }}</th>
+                                    <th class="px-4 py-2">{{ __('Birim') }}</th>
+                                    <th class="px-4 py-2 text-right">{{ __('Br. Fiyat') }}</th>
+                                    <th class="px-4 py-2 text-right">{{ __('Toplam') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 bg-white">
