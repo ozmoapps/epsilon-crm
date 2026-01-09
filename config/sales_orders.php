@@ -6,6 +6,7 @@ return [
     'statuses' => [
         'draft' => 'Taslak',
         'confirmed' => 'Onaylı',
+        'in_progress' => 'Devam Ediyor',
         'completed' => 'Tamamlandı',
         'canceled' => 'İptal',
     ],

@@ -69,6 +69,32 @@ class SalesOrderController extends Controller
         return view('sales_orders.show', compact('salesOrder'));
     }
 
+    public function confirm(SalesOrder $salesOrder)
+    {
+        return $this->transitionStatus($salesOrder, 'draft', 'confirmed', 'Satış siparişi onaylandı.');
+    }
+
+    public function start(SalesOrder $salesOrder)
+    {
+        return $this->transitionStatus($salesOrder, 'confirmed', 'in_progress', 'Satış siparişi devam ediyor.');
+    }
+
+    public function complete(SalesOrder $salesOrder)
+    {
+        return $this->transitionStatus($salesOrder, 'in_progress', 'completed', 'Satış siparişi tamamlandı.');
+    }
+
+    public function cancel(SalesOrder $salesOrder)
+    {
+        if (in_array($salesOrder->status, ['completed', 'canceled'], true)) {
+            return back()->with('warning', 'Satış siparişi zaten kapalı.');
+        }
+
+        $salesOrder->update(['status' => 'canceled']);
+
+        return back()->with('success', 'Satış siparişi iptal edildi.');
+    }
+
     public function edit(SalesOrder $salesOrder)
     {
         return view('sales_orders.edit', [
@@ -139,5 +165,16 @@ class SalesOrderController extends Controller
             'delivery_days.integer' => 'Teslim günü sayısal olmalıdır.',
             'delivery_days.min' => 'Teslim günü negatif olamaz.',
         ];
+    }
+
+    private function transitionStatus(SalesOrder $salesOrder, string $from, string $to, string $message)
+    {
+        if ($salesOrder->status !== $from) {
+            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
+        }
+
+        $salesOrder->update(['status' => $to]);
+
+        return back()->with('success', $message);
     }
 }

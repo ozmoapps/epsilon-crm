@@ -26,7 +26,7 @@
                         </div>
                     @endisset
 
-                    <x-flash class="mb-6" />
+                    <x-ui.flash class="mb-6" />
 
                     {{ $slot }}
                 </div>
