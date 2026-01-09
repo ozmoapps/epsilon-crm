@@ -130,6 +130,11 @@ class QuoteController extends Controller
     {
         $quote->loadMissing(['items', 'salesOrder']);
 
+        if ($quote->status !== 'accepted') {
+            return redirect()->back()
+                ->with('error', 'Sipariş oluşturmak için teklif önce onaylanmalıdır.');
+        }
+
         if ($quote->salesOrder) {
             return redirect()->route('sales-orders.show', $quote->salesOrder)
                 ->with('success', 'Teklif zaten satış siparişine dönüştürülmüş.');

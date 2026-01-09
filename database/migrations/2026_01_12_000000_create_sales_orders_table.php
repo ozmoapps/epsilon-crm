@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,12 +14,12 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('vessel_id')->constrained()->cascadeOnDelete();
             $table->foreignId('work_order_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('quote_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('quote_id')->nullable()->constrained()->nullOnDelete()->unique();
             $table->string('order_no')->unique();
             $table->string('title');
             $table->string('status')->default('draft');
             $table->string('currency')->default('EUR');
-            $table->date('order_date')->nullable();
+            $table->date('order_date')->default(DB::raw('CURRENT_DATE'));
             $table->string('delivery_place')->nullable();
             $table->unsignedSmallInteger('delivery_days')->nullable();
             $table->text('payment_terms')->nullable();
