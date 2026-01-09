@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Quote;
+use App\Models\SalesOrder;
 use App\Models\Vessel;
 use App\Models\WorkOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class QuoteController extends Controller
@@ -64,7 +66,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote)
     {
-        $quote->load(['customer', 'vessel', 'workOrder', 'creator', 'items']);
+        $quote->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'salesOrder']);
 
         return view('quotes.show', compact('quote'));
     }
@@ -96,6 +98,63 @@ class QuoteController extends Controller
 
         return redirect()->route('quotes.index')
             ->with('success', 'Teklif silindi.');
+    }
+
+    public function convertToSalesOrder(Request $request, Quote $quote)
+    {
+        $quote->loadMissing(['items', 'salesOrder']);
+
+        if ($quote->salesOrder) {
+            return redirect()->route('sales-orders.show', $quote->salesOrder)
+                ->with('success', 'Teklif zaten satış siparişine dönüştürülmüş.');
+        }
+
+        $salesOrder = DB::transaction(function () use ($request, $quote) {
+            $salesOrder = SalesOrder::create([
+                'customer_id' => $quote->customer_id,
+                'vessel_id' => $quote->vessel_id,
+                'work_order_id' => $quote->work_order_id,
+                'quote_id' => $quote->id,
+                'title' => $quote->title,
+                'status' => 'draft',
+                'currency' => $quote->currency,
+                'order_date' => now()->toDateString(),
+                'delivery_place' => null,
+                'delivery_days' => null,
+                'payment_terms' => $quote->payment_terms,
+                'warranty_text' => $quote->warranty_text,
+                'exclusions' => $quote->exclusions,
+                'notes' => $quote->notes,
+                'fx_note' => $quote->fx_note,
+                'created_by' => $request->user()->id,
+            ]);
+
+            $items = $quote->items->where('is_optional', false)->map(function ($item) {
+                return [
+                    'section' => $item->section,
+                    'item_type' => $item->item_type,
+                    'description' => $item->description,
+                    'qty' => $item->qty,
+                    'unit' => $item->unit,
+                    'unit_price' => $item->unit_price,
+                    'discount_amount' => $item->discount_amount,
+                    'vat_rate' => $item->vat_rate,
+                    'is_optional' => $item->is_optional,
+                    'sort_order' => $item->sort_order,
+                ];
+            });
+
+            if ($items->isNotEmpty()) {
+                $salesOrder->items()->createMany($items->all());
+            }
+
+            $salesOrder->recalculateTotals();
+
+            return $salesOrder;
+        });
+
+        return redirect()->route('sales-orders.show', $salesOrder)
+            ->with('success', 'Satış siparişi oluşturuldu.');
     }
 
     private function rules(): array

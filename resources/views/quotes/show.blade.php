@@ -2,6 +2,20 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Teklif Detayı') }}" subtitle="{{ $quote->quote_no }}">
             <x-slot name="actions">
+                @if (in_array($quote->status, ['accepted', 'sent'], true))
+                    @if ($quote->salesOrder)
+                        <x-button href="{{ route('sales-orders.show', $quote->salesOrder) }}" variant="secondary" size="sm">
+                            {{ __('Siparişi Gör') }}
+                        </x-button>
+                    @else
+                        <form method="POST" action="{{ route('quotes.convert_to_sales_order', $quote) }}">
+                            @csrf
+                            <x-button type="submit" size="sm">
+                                {{ __('Satış Siparişine Çevir') }}
+                            </x-button>
+                        </form>
+                    @endif
+                @endif
                 <x-button href="{{ route('quotes.edit', $quote) }}" variant="secondary" size="sm">
                     {{ __('Düzenle') }}
                 </x-button>

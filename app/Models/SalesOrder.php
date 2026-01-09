@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Quote extends Model
+class SalesOrder extends Model
 {
     use HasFactory;
 
@@ -14,28 +14,29 @@ class Quote extends Model
         'customer_id',
         'vessel_id',
         'work_order_id',
+        'quote_id',
+        'order_no',
         'title',
         'status',
         'currency',
-        'validity_days',
-        'estimated_duration_days',
+        'order_date',
+        'delivery_place',
+        'delivery_days',
         'payment_terms',
         'warranty_text',
         'exclusions',
         'notes',
         'fx_note',
-        'sent_at',
-        'accepted_at',
-        'created_by',
         'subtotal',
         'discount_total',
         'vat_total',
         'grand_total',
+        'created_by',
     ];
 
     protected $casts = [
-        'sent_at' => 'datetime',
-        'accepted_at' => 'datetime',
+        'order_date' => 'date',
+        'delivery_days' => 'integer',
         'subtotal' => 'decimal:2',
         'discount_total' => 'decimal:2',
         'vat_total' => 'decimal:2',
@@ -44,24 +45,25 @@ class Quote extends Model
 
     protected $attributes = [
         'status' => 'draft',
+        'currency' => 'EUR',
     ];
 
     protected static function booted(): void
     {
-        static::creating(function (Quote $quote) {
-            if ($quote->quote_no) {
+        static::creating(function (SalesOrder $salesOrder) {
+            if ($salesOrder->order_no) {
                 return;
             }
 
             $year = now()->year;
-            $prefix = config('quotes.prefix');
-            $padding = config('quotes.padding');
+            $prefix = config('sales_orders.prefix');
+            $padding = config('sales_orders.padding');
 
-            DB::transaction(function () use ($quote, $year, $prefix, $padding) {
-                $sequence = QuoteSequence::lockForUpdate()->find($year);
+            DB::transaction(function () use ($salesOrder, $year, $prefix, $padding) {
+                $sequence = SalesOrderSequence::lockForUpdate()->find($year);
 
                 if (! $sequence) {
-                    $sequence = QuoteSequence::create([
+                    $sequence = SalesOrderSequence::create([
                         'year' => $year,
                         'last_number' => 0,
                     ]);
@@ -70,14 +72,14 @@ class Quote extends Model
                 $sequence->last_number += 1;
                 $sequence->save();
 
-                $quote->quote_no = sprintf('%s-%s-%0' . $padding . 'd', $prefix, $year, $sequence->last_number);
+                $salesOrder->order_no = sprintf('%s-%s-%0' . $padding . 'd', $prefix, $year, $sequence->last_number);
             });
         });
     }
 
     public static function statusOptions(): array
     {
-        return config('quotes.statuses', []);
+        return config('sales_orders.statuses', []);
     }
 
     public function getStatusLabelAttribute(): string
@@ -102,9 +104,9 @@ class Quote extends Model
         return $this->belongsTo(WorkOrder::class);
     }
 
-    public function items()
+    public function quote()
     {
-        return $this->hasMany(QuoteItem::class)->orderBy('sort_order');
+        return $this->belongsTo(Quote::class);
     }
 
     public function creator()
@@ -112,9 +114,9 @@ class Quote extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function salesOrder()
+    public function items()
     {
-        return $this->hasOne(SalesOrder::class);
+        return $this->hasMany(SalesOrderItem::class)->orderBy('sort_order');
     }
 
     public function recalculateTotals(): void
@@ -128,7 +130,7 @@ class Quote extends Model
 
         $this->items
             ->where('is_optional', false)
-            ->each(function (QuoteItem $item) use (&$subtotal, &$discountTotal, &$vatTotal, &$grandTotal) {
+            ->each(function (SalesOrderItem $item) use (&$subtotal, &$discountTotal, &$vatTotal, &$grandTotal) {
                 $qty = (float) $item->qty;
                 $unitPrice = (float) $item->unit_price;
                 $lineBase = $qty * $unitPrice;

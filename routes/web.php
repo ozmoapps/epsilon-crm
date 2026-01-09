@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\QuoteItemController;
+use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\VesselController;
 use App\Http\Controllers\WorkOrderController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('vessels', VesselController::class);
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
+    Route::resource('sales-orders', SalesOrderController::class);
+    Route::post('quotes/{quote}/convert-to-sales-order', [QuoteController::class, 'convertToSalesOrder'])
+        ->name('quotes.convert_to_sales_order');
     Route::post('quotes/{quote}/items', [QuoteItemController::class, 'store'])->name('quotes.items.store');
     Route::put('quotes/{quote}/items/{item}', [QuoteItemController::class, 'update'])->name('quotes.items.update');
     Route::delete('quotes/{quote}/items/{item}', [QuoteItemController::class, 'destroy'])->name('quotes.items.destroy');

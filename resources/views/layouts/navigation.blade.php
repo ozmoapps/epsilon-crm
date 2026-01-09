@@ -27,6 +27,9 @@
                     <x-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.*')">
                         {{ __('Teklifler') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('sales-orders.index')" :active="request()->routeIs('sales-orders.*')">
+                        {{ __('Satış Siparişleri') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -96,6 +99,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('quotes.index')" :active="request()->routeIs('quotes.*')">
                 {{ __('Teklifler') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('sales-orders.index')" :active="request()->routeIs('sales-orders.*')">
+                {{ __('Satış Siparişleri') }}
             </x-responsive-nav-link>
         </div>
 
