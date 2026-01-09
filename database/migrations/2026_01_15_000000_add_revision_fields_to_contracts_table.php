@@ -2,15 +2,43 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('contracts', function (Blueprint $table) {
-            $table->dropUnique('contracts_sales_order_id_unique');
-        });
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            $indexes = DB::select("PRAGMA index_list('contracts')");
+            foreach ($indexes as $index) {
+                if (!($index->unique ?? false)) {
+                    continue;
+                }
+
+                $indexName = $index->name ?? null;
+                if (!$indexName) {
+                    continue;
+                }
+
+                $columns = DB::select("PRAGMA index_info('{$indexName}')");
+                $hasSalesOrderId = collect($columns)
+                    ->pluck('name')
+                    ->contains('sales_order_id');
+
+                if ($hasSalesOrderId) {
+                    DB::statement("DROP INDEX IF EXISTS \"{$indexName}\"");
+                }
+            }
+        } else {
+            try {
+                Schema::table('contracts', function (Blueprint $table) {
+                    $table->dropUnique('contracts_sales_order_id_unique');
+                });
+            } catch (\Throwable $exception) {
+                // Safe to ignore missing index on non-sqlite drivers.
+            }
+        }
 
         Schema::table('contracts', function (Blueprint $table) {
             $table->foreignId('root_contract_id')->nullable()->after('sales_order_id')->constrained('contracts')->nullOnDelete();
