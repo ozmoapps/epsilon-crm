@@ -14,10 +14,24 @@
         .signature { margin-top: 30px; }
         .signature-box { width: 45%; display: inline-block; vertical-align: top; }
         .footer { margin-top: 24px; font-size: 10px; color: #6b7280; text-align: center; }
-    </style>
+</style>
 </head>
 <body>
-    <p class="muted">Revizyon: {{ $contract->revision_label }}</p>
+    @php
+        $preparedAt = $contract->rendered_at ?? now();
+        $isEnglish = $contract->locale === 'en';
+        $contractLabel = $isEnglish ? 'Contract No' : 'Sözleşme No';
+        $revisionLabel = $isEnglish ? 'Revision' : 'Revizyon';
+        $preparedLabel = $isEnglish ? 'Prepared on' : 'Hazırlandı';
+    @endphp
+
+    <p class="muted">{{ $revisionLabel }}: {{ $contract->revision_label }}</p>
     {!! $contract->rendered_body !!}
+
+    <div class="footer">
+        {{ $contractLabel }}: {{ $contract->contract_no }}
+        · {{ $revisionLabel }}: {{ $contract->revision_label }}
+        · {{ $preparedLabel }}: {{ $preparedAt->format('d.m.Y') }}
+    </div>
 </body>
 </html>

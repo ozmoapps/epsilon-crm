@@ -138,6 +138,16 @@ class Contract extends Model
         return $this->belongsTo(ContractTemplateVersion::class);
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(ContractAttachment::class);
+    }
+
+    public function deliveries()
+    {
+        return $this->hasMany(ContractDelivery::class);
+    }
+
     public function isEditable(): bool
     {
         return $this->status === 'draft';
