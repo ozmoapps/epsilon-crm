@@ -101,7 +101,7 @@
                 </div>
             </x-slot>
 
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div class="space-y-6">
                 <div class="space-y-6">
                     <div class="hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500 lg:grid lg:grid-cols-12 lg:items-center">
                         <div class="lg:col-span-5">{{ __('Hizmet/Ürün') }}</div>
@@ -393,9 +393,17 @@
                             @endif
                         </div>
                     </details>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-12 md:items-start">
+                <div class="space-y-2 text-xs text-gray-500 md:col-span-8">
+                    <p>
+                        {{ __('Ara Toplam - İndirim + KDV') }}: {{ $currencySymbol }} {{ $formatMoney($computedGrandTotal) }}
+                    </p>
+                    <p>{{ __('Opsiyon kalemler toplam dışında bırakılır.') }}</p>
                 </div>
 
-                <div class="lg:sticky lg:top-6">
+                <div class="md:col-span-4 md:justify-self-end">
                     <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
                         <h4 class="text-sm font-semibold text-gray-800">{{ __('Toplamlar') }}</h4>
                         <dl class="mt-3 space-y-2 text-sm text-gray-700">
@@ -418,10 +426,6 @@
                                 <dd class="font-semibold text-gray-900">{{ $currencySymbol }} {{ $formatMoney($computedGrandTotal) }}</dd>
                             </div>
                         </dl>
-                        <p class="mt-2 text-xs text-gray-500">
-                            {{ __('Ara Toplam - İndirim + KDV') }}: {{ $currencySymbol }} {{ $formatMoney($computedGrandTotal) }}
-                        </p>
-                        <p class="mt-2 text-xs text-gray-500">{{ __('Opsiyon kalemler toplam dışında bırakılır.') }}</p>
                     </div>
                 </div>
             </div>
