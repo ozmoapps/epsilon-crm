@@ -64,7 +64,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote)
     {
-        $quote->load(['customer', 'vessel', 'workOrder', 'creator']);
+        $quote->load(['customer', 'vessel', 'workOrder', 'creator', 'items']);
 
         return view('quotes.show', compact('quote'));
     }

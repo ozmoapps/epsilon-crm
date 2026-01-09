@@ -13,4 +13,10 @@ return [
         'expired' => 'Süresi Doldu',
         'canceled' => 'İptal',
     ],
+    'item_types' => [
+        'labor' => 'İşçilik',
+        'material' => 'Malzeme',
+        'outsourced' => 'Taşeron',
+        'other' => 'Diğer',
+    ],
 ];

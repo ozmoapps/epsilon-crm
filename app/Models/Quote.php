@@ -27,11 +27,19 @@ class Quote extends Model
         'sent_at',
         'accepted_at',
         'created_by',
+        'subtotal',
+        'discount_total',
+        'vat_total',
+        'grand_total',
     ];
 
     protected $casts = [
         'sent_at' => 'datetime',
         'accepted_at' => 'datetime',
+        'subtotal' => 'decimal:2',
+        'discount_total' => 'decimal:2',
+        'vat_total' => 'decimal:2',
+        'grand_total' => 'decimal:2',
     ];
 
     protected $attributes = [
@@ -94,8 +102,48 @@ class Quote extends Model
         return $this->belongsTo(WorkOrder::class);
     }
 
+    public function items()
+    {
+        return $this->hasMany(QuoteItem::class)->orderBy('sort_order');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function recalculateTotals(): void
+    {
+        $this->loadMissing('items');
+
+        $subtotal = 0;
+        $discountTotal = 0;
+        $vatTotal = 0;
+        $grandTotal = 0;
+
+        $this->items
+            ->where('is_optional', false)
+            ->each(function (QuoteItem $item) use (&$subtotal, &$discountTotal, &$vatTotal, &$grandTotal) {
+                $qty = (float) $item->qty;
+                $unitPrice = (float) $item->unit_price;
+                $lineBase = $qty * $unitPrice;
+                $lineDiscount = (float) ($item->discount_amount ?? 0);
+                $lineNet = max($lineBase - $lineDiscount, 0);
+                $vatRate = $item->vat_rate !== null ? (float) $item->vat_rate : null;
+                $lineVat = $vatRate !== null ? $lineNet * ($vatRate / 100) : 0;
+                $lineTotal = $lineNet + $lineVat;
+
+                $subtotal += $lineBase;
+                $discountTotal += $lineDiscount;
+                $vatTotal += $lineVat;
+                $grandTotal += $lineTotal;
+            });
+
+        $this->forceFill([
+            'subtotal' => $subtotal,
+            'discount_total' => $discountTotal,
+            'vat_total' => $vatTotal,
+            'grand_total' => $grandTotal,
+        ])->save();
     }
 }
