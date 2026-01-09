@@ -1,6 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-page-header title="{{ __('Satış Siparişi Düzenle') }}" subtitle="{{ $salesOrder->order_no }}">
+        <x-page-header
+            title="{{ __('Satış Siparişi Düzenle') }}"
+            subtitle="{{ $salesOrder->order_no }}"
+        >
             <x-slot name="actions">
                 <x-button href="{{ route('sales-orders.show', $salesOrder) }}" variant="secondary" size="sm">
                     {{ __('Detay') }}

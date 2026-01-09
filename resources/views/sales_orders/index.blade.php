@@ -1,6 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-page-header title="{{ __('Satış Siparişleri') }}" subtitle="{{ __('Tüm satış siparişlerini görüntüleyin.') }}" />
+        <x-page-header
+            title="{{ __('Satış Siparişleri') }}"
+            subtitle="{{ __('Tüm satış siparişlerini görüntüleyin.') }}"
+        />
     </x-slot>
 
     <div class="space-y-6">

@@ -38,4 +38,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('quotes/{quote}/items/{item}', [QuoteItemController::class, 'destroy'])->name('quotes.items.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
