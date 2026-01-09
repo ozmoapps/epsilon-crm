@@ -14,6 +14,14 @@ class Vessel extends Model
         'name',
         'type',
         'registration_number',
+        'boat_type',
+        'material',
+        'loa_m',
+        'beam_m',
+        'draft_m',
+        'net_tonnage',
+        'gross_tonnage',
+        'passenger_capacity',
         'notes',
     ];
 

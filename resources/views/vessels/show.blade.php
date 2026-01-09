@@ -25,32 +25,81 @@
                 @endif
 
                 <div class="rounded-lg bg-white p-6 shadow-sm">
-                    <dl class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+                    <div class="space-y-6">
                         <div>
-                            <dt class="text-gray-500">{{ __('Müşteri') }}</dt>
-                            <dd class="text-gray-900">
-                                @if ($vessel->customer)
-                                    <a href="{{ route('customers.show', $vessel->customer) }}" class="text-indigo-600 hover:text-indigo-500">
-                                        {{ $vessel->customer->name }}
-                                    </a>
-                                @else
-                                    —
-                                @endif
-                            </dd>
+                            <h3 class="text-base font-semibold text-gray-900">{{ __('Genel Bilgiler') }}</h3>
+                            <dl class="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Müşteri') }}</dt>
+                                    <dd class="text-gray-900">
+                                        @if ($vessel->customer)
+                                            <a href="{{ route('customers.show', $vessel->customer) }}" class="text-indigo-600 hover:text-indigo-500">
+                                                {{ $vessel->customer->name }}
+                                            </a>
+                                        @else
+                                            —
+                                        @endif
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Tekne Tipi') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->type ?: '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Tekne Sınıfı') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->boat_type ?: '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Gövde Malzemesi') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->material ?: '—' }}</dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="text-gray-500">{{ __('Ruhsat Numarası') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->registration_number ?: '—' }}</dd>
+                                </div>
+                            </dl>
                         </div>
+
                         <div>
-                            <dt class="text-gray-500">{{ __('Tekne Tipi') }}</dt>
-                            <dd class="text-gray-900">{{ $vessel->type ?: '—' }}</dd>
+                            <h3 class="text-base font-semibold text-gray-900">{{ __('Boyut, Ağırlık ve Kapasite Bilgileri') }}</h3>
+                            <dl class="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                                <div>
+                                    <dt class="text-gray-500">{{ __('LOA (m)') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->loa_m ?? '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Beam (m)') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->beam_m ?? '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Draft (m)') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->draft_m ?? '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Net Tonaj') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->net_tonnage ?? '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Brüt Tonaj') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->gross_tonnage ?? '—' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Yolcu Kapasitesi') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->passenger_capacity ?? '—' }}</dd>
+                                </div>
+                            </dl>
                         </div>
+
                         <div>
-                            <dt class="text-gray-500">{{ __('Ruhsat Numarası') }}</dt>
-                            <dd class="text-gray-900">{{ $vessel->registration_number ?: '—' }}</dd>
+                            <h3 class="text-base font-semibold text-gray-900">{{ __('Diğer Bilgiler ve Notlar') }}</h3>
+                            <dl class="mt-4 grid grid-cols-1 gap-4 text-sm">
+                                <div>
+                                    <dt class="text-gray-500">{{ __('Notlar') }}</dt>
+                                    <dd class="text-gray-900">{{ $vessel->notes ?: '—' }}</dd>
+                                </div>
+                            </dl>
                         </div>
-                        <div class="sm:col-span-2">
-                            <dt class="text-gray-500">{{ __('Notlar') }}</dt>
-                            <dd class="text-gray-900">{{ $vessel->notes ?: '—' }}</dd>
-                        </div>
-                    </dl>
+                    </div>
                 </div>
 
                 <form method="POST" action="{{ route('vessels.destroy', $vessel) }}">
