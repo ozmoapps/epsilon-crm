@@ -6,25 +6,22 @@
                     <x-button href="{{ route('sales-orders.show', $quote->salesOrder) }}" variant="secondary" size="sm">
                         {{ __('Siparişi Gör') }}
                     </x-button>
+                @elseif ($quote->status === 'accepted')
+                    <form method="POST" action="{{ route('quotes.convert_to_sales_order', $quote) }}">
+                        @csrf
+                        <x-button type="submit" size="sm">
+                            {{ __('Satış Siparişine Çevir') }}
+                        </x-button>
+                    </form>
+                @else
+                    <div class="flex flex-col items-start gap-1">
+                        <x-button type="button" size="sm" disabled class="disabled:cursor-not-allowed disabled:opacity-50">
+                            {{ __('Satış Siparişine Çevir') }}
+                        </x-button>
+                        <span class="text-xs text-gray-500">{{ __('Çevirmek için önce onaylayın.') }}</span>
+                    </div>
                 @endif
 
-                @if (! $quote->salesOrder)
-                    @if ($quote->status === 'accepted')
-                        <form method="POST" action="{{ route('quotes.convert_to_sales_order', $quote) }}">
-                            @csrf
-                            <x-button type="submit" size="sm">
-                                {{ __('Satış Siparişine Çevir') }}
-                            </x-button>
-                        </form>
-                    @elseif ($quote->status === 'draft')
-                        <div class="flex flex-col items-start gap-1">
-                            <x-button type="button" size="sm" disabled class="disabled:cursor-not-allowed disabled:opacity-50">
-                                {{ __('Satış Siparişine Çevir') }}
-                            </x-button>
-                            <span class="text-xs text-gray-500">{{ __('Çevirmek için önce onaylayın.') }}</span>
-                        </div>
-                    @endif
-                @endif
                 @if ($quote->status === 'draft')
                     <form method="POST" action="{{ route('quotes.mark_sent', $quote) }}">
                         @csrf

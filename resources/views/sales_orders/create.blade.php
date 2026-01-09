@@ -1,6 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-page-header title="{{ __('Yeni Satış Siparişi') }}">
+        <x-page-header
+            title="{{ __('Yeni Satış Siparişi') }}"
+        >
             <x-slot name="actions">
                 <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm satış siparişleri') }}
