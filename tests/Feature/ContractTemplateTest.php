@@ -24,6 +24,15 @@ class ContractTemplateTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
+    public function test_authenticated_user_can_view_template_index(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('contract-templates.index'))
+            ->assertOk();
+    }
+
     public function test_authorized_user_can_create_template(): void
     {
         $user = User::factory()->create();
