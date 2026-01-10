@@ -8,6 +8,11 @@ use Illuminate\Auth\Access\Response;
 
 class SalesOrderPolicy
 {
+    public function view(User $user, SalesOrder $salesOrder): bool
+    {
+        return true;
+    }
+
     public function update(User $user, SalesOrder $salesOrder): Response
     {
         return $salesOrder->isLocked()

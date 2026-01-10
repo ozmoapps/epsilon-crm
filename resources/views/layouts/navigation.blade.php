@@ -86,18 +86,7 @@
                         </svg>
                         <span>{{ __('Sözleşmeler') }}</span>
                     </a>
-                    <a
-                        href="{{ route('contract-templates.index') }}"
-                        class="{{ $navItemBase }} {{ request()->routeIs('contract-templates.*') ? $navItemActive : $navItemInactive }}"
-                        @if (request()->routeIs('contract-templates.*')) aria-current="page" @endif
-                    >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 3h7l5 5v10a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4" />
-                        </svg>
-                        <span>{{ __('Sözleşme Şablonları') }}</span>
-                    </a>
+
                     <a
                         href="{{ route('work-orders.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('work-orders.*') ? $navItemActive : $navItemInactive }}"
@@ -145,6 +134,28 @@
 
             <div>
                 <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Ayarlar') }}</p>
+                @php
+                    $isAdmin = auth()->user()->is_admin;
+                    $lockedClass = 'opacity-50 cursor-not-allowed';
+                    // We need to override the hover effect for locked items, or just accept they shine but do nothing.
+                    // Better validation:
+                    $itemClass = function($routePattern) use ($navItemBase, $navItemActive, $navItemInactive, $isAdmin, $lockedClass) {
+                        $base = $navItemBase;
+                        if (!$isAdmin) {
+                             // Remove hover effects if possible or just append locked class
+                             // Simple append is easiest for now, but to remove hover:
+                             // $navItemInactive has hover:bg-slate-100.
+                             // We can replace it.
+                             $base = str_replace('hover:bg-slate-100 hover:text-slate-900', '', $navItemInactive) . ' text-slate-400';
+                             return $navItemBase . ' ' . $base . ' ' . $lockedClass;
+                        }
+                        return $navItemBase . ' ' . (request()->routeIs($routePattern) ? $navItemActive : $navItemInactive);
+                    };
+
+                    $getHref = fn($route) => $isAdmin ? route($route) : '#';
+                    $getAttrs = fn() => $isAdmin ? '' : 'onclick="return false;" title="Sadece Admin"';
+                @endphp
+
                 <div class="mt-3 space-y-1">
                     <a
                         href="{{ route('profile.edit') }}"
@@ -157,10 +168,24 @@
                         </svg>
                         <span>{{ __('Profil') }}</span>
                     </a>
+
+                    <!-- Admin Users -->
                     <a
-                        href="{{ route('company-profiles.index') }}"
-                        class="{{ $navItemBase }} {{ request()->routeIs('company-profiles.*') ? $navItemActive : $navItemInactive }}"
-                        @if (request()->routeIs('company-profiles.*')) aria-current="page" @endif
+                        href="{{ $getHref('admin.users.index') }}"
+                        class="{{ $itemClass('admin.users.*') }}"
+                        {!! $getAttrs() !!}
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span>{{ __('Kullanıcılar') }}</span>
+                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
+                    </a>
+
+                    <a
+                        href="{{ $getHref('admin.company-profiles.index') }}"
+                        class="{{ $itemClass('admin.company-profiles.*') }}"
+                        {!! $getAttrs() !!}
                     >
                         <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14" />
@@ -168,11 +193,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 19h18" />
                         </svg>
                         <span>{{ __('Şirket Profili') }}</span>
+                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
                     </a>
+
                     <a
-                        href="{{ route('bank-accounts.index') }}"
-                        class="{{ $navItemBase }} {{ request()->routeIs('bank-accounts.*') ? $navItemActive : $navItemInactive }}"
-                        @if (request()->routeIs('bank-accounts.*')) aria-current="page" @endif
+                        href="{{ $getHref('admin.bank-accounts.index') }}"
+                        class="{{ $itemClass('admin.bank-accounts.*') }}"
+                        {!! $getAttrs() !!}
                     >
                         <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18" />
@@ -180,11 +207,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 10v8h14v-8" />
                         </svg>
                         <span>{{ __('Banka Hesapları') }}</span>
+                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
                     </a>
+
                     <a
-                        href="{{ route('currencies.index') }}"
-                        class="{{ $navItemBase }} {{ request()->routeIs('currencies.*') ? $navItemActive : $navItemInactive }}"
-                        @if (request()->routeIs('currencies.*')) aria-current="page" @endif
+                        href="{{ $getHref('admin.currencies.index') }}"
+                        class="{{ $itemClass('admin.currencies.*') }}"
+                        {!! $getAttrs() !!}
                     >
                         <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12" />
@@ -192,6 +221,21 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 7h5a3 3 0 010 6H7" />
                         </svg>
                         <span>{{ __('Para Birimleri') }}</span>
+                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
+                    </a>
+
+                     <a
+                        href="{{ $getHref('admin.contract-templates.index') }}"
+                        class="{{ $itemClass('admin.contract-templates.*') }}"
+                        {!! $getAttrs() !!}
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 3h7l5 5v10a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4" />
+                        </svg>
+                        <span>{{ __('Sözleşme Şablonları') }}</span>
+                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
                     </a>
                 </div>
             </div>

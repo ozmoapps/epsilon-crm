@@ -1,12 +1,10 @@
 @php
     $currencyCode = $quote->currencyRelation?->code ?? $quote->currency;
     $currencySymbol = $quote->currencyRelation?->symbol ?? $currencyCode;
-    $formatMoney = fn ($value) => number_format((float) $value, 2, ',', '.');
+    $formatMoney = fn ($value) => \App\Support\MoneyMath::formatTR($value);
     $itemsBySection = $quote->items
         ->where('is_optional', false)
         ->groupBy(fn ($item) => $item->section ?: 'Genel');
-    $discountTotal = (float) $quote->discount_total;
-    $computedGrandTotal = $quote->subtotal - $discountTotal + $quote->vat_total;
     $validityDays = $quote->validity_days ?? 5;
     $issuedAt = $quote->issued_at?->format('d.m.Y')
         ?? $quote->created_at?->format('d.m.Y')
@@ -67,7 +65,7 @@
 </div>
 
 <div class="section">
-    <table>
+    <table class="doc-table">
         <thead>
             <tr>
                 <th>{{ __('İŞİN KONUSU') }}</th>
@@ -79,23 +77,23 @@
                 <tr>
                     <td colspan="2" class="section-row">{{ $section }}</td>
                 </tr>
-                @foreach ($items as $item)
+            @foreach ($items as $item)
                     @php
-                        $qty = (float) $item->qty;
-                        $unitPrice = (float) $item->unit_price;
-                        $lineBase = $qty * $unitPrice;
-                        $lineDiscount = (float) ($item->discount_amount ?? 0);
-                        $lineNet = max($lineBase - $lineDiscount, 0);
-                        $vatRate = $item->vat_rate !== null ? (float) $item->vat_rate : null;
-                        $lineVat = $vatRate !== null ? $lineNet * ($vatRate / 100) : 0;
-                        $lineTotal = $lineNet + $lineVat;
+                        // MoneyMath Standardization
+                        $qty = \App\Support\MoneyMath::decimalToScaledInt($item->qty);
+                        $unitPrice = \App\Support\MoneyMath::decimalToScaledInt($item->unit_price);
+                        $discountAmount = \App\Support\MoneyMath::decimalToScaledInt($item->discount_amount ?? 0);
+                        $vatBp = \App\Support\MoneyMath::percentToBasisPoints($item->vat_rate ?? 0);
+
+                        $line = \App\Support\MoneyMath::calculateLineCents($qty, $unitPrice, $discountAmount, $vatBp);
+                        $format = fn($cents) => \App\Support\MoneyMath::formatTR($cents / 100);
                     @endphp
                     <tr>
                         <td>
                             <div>{{ $item->description }}</div>
                             <div class="muted">{{ $item->qty }} {{ $item->unit }} · {{ $formatMoney($item->unit_price) }} {{ $currencySymbol }}</div>
                         </td>
-                        <td class="text-right">{{ $formatMoney($lineTotal) }} {{ $currencySymbol }}</td>
+                        <td class="text-right">{{ $format($line['total_cents']) }} {{ $currencySymbol }}</td>
                     </tr>
                 @endforeach
             @empty
@@ -105,7 +103,7 @@
             @endforelse
             <tr class="total-row">
                 <td>{{ __('GENEL TOPLAM') }}</td>
-                <td class="text-right">{{ $formatMoney($computedGrandTotal) }} {{ $currencySymbol }}</td>
+                <td class="text-right">{{ $formatMoney($quote->grand_total) }} {{ $currencySymbol }}</td>
             </tr>
         </tbody>
     </table>

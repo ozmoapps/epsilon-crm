@@ -6,6 +6,9 @@ use App\Models\Customer;
 use App\Models\SalesOrder;
 use App\Models\Vessel;
 use App\Models\WorkOrder;
+use App\Models\Quote;
+use App\Models\Contract;
+use App\Models\ActivityLog;
 use App\Services\ActivityLogger;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
@@ -17,6 +20,14 @@ class SalesOrderController extends Controller
     {
         $search = $request->input('search');
         $status = $request->input('status');
+        $customerId = $request->input('customer_id');
+        $vesselId = $request->input('vessel_id');
+        $currency = $request->input('currency');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $totalMin = $request->input('total_min');
+        $totalMax = $request->input('total_max');
+        $hasContract = $request->input('has_contract');
 
         $salesOrders = SalesOrder::query()
             ->with(['customer', 'vessel', 'contract'])
@@ -28,13 +39,44 @@ class SalesOrderController extends Controller
                 });
             })
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($customerId, fn ($q) => $q->where('customer_id', $customerId))
+            ->when($vesselId, fn ($q) => $q->where('vessel_id', $vesselId))
+            ->when($currency, fn ($q) => $q->where('currency', $currency))
+            ->when($dateFrom, fn ($q) => $q->whereDate('order_date', '>=', $dateFrom))
+            ->when($dateTo, fn ($q) => $q->whereDate('order_date', '<=', $dateTo))
+            ->when($totalMin, function ($q) use ($totalMin) {
+                $val = \App\Support\MoneyMath::normalizeDecimalString($totalMin);
+                $q->where('grand_total', '>=', $val);
+            })
+            ->when($totalMax, function ($q) use ($totalMax) {
+                $val = \App\Support\MoneyMath::normalizeDecimalString($totalMax);
+                $q->where('grand_total', '<=', $val);
+            })
+            ->when($hasContract !== null, function ($q) use ($hasContract) {
+                if ($hasContract) {
+                    $q->has('contract');
+                } else {
+                    $q->doesntHave('contract');
+                }
+            })
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
         $statuses = SalesOrder::statusOptions();
+        $customers = Customer::orderBy('name')->get(['id', 'name']);
+        $vessels = Vessel::with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']);
+        // SalesOrder model uses string currency code, but we can list active currencies from DB
+        $currencies = \App\Models\Currency::where('is_active', true)->orderBy('code')->get(['code', 'name']);
+        
+        $savedViews = \App\Models\SavedView::allow('sales_orders')->visibleTo($request->user())->get();
 
-        return view('sales_orders.index', compact('salesOrders', 'search', 'status', 'statuses'));
+        return view('sales_orders.index', compact(
+            'salesOrders', 'search', 'status', 'statuses',
+            'customers', 'vessels', 'currencies', 'savedViews',
+            'customerId', 'vesselId', 'currency', 'dateFrom', 'dateTo',
+            'totalMin', 'totalMax', 'hasContract'
+        ));
     }
 
     public function create()
@@ -66,9 +108,33 @@ class SalesOrderController extends Controller
 
     public function show(SalesOrder $salesOrder)
     {
-        $salesOrder->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'quote', 'contract', 'activityLogs.actor']);
+        $this->authorize('view', $salesOrder);
 
-        return view('sales_orders.show', compact('salesOrder'));
+        $salesOrder->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'quote', 'contract', 'openFollowUps.creator']);
+
+        $quote = $salesOrder->quote;
+        $contract = $salesOrder->contract;
+        $workOrder = $salesOrder->workOrder;
+
+        $subjects = [[SalesOrder::class, $salesOrder->id]];
+        if ($quote) $subjects[] = [Quote::class, $quote->id];
+        if ($contract) $subjects[] = [Contract::class, $contract->id];
+        if ($workOrder) $subjects[] = [WorkOrder::class, $workOrder->id];
+
+        $timeline = ActivityLog::query()
+            ->with(['actor', 'subject'])
+            ->where(function ($q) use ($subjects) {
+                foreach ($subjects as [$type, $id]) {
+                    $q->orWhere(function ($sub) use ($type, $id) {
+                        $sub->where('subject_type', $type)->where('subject_id', $id);
+                    });
+                }
+            })
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('sales_orders.show', compact('salesOrder', 'quote', 'contract', 'workOrder', 'timeline'));
     }
 
     public function confirm(SalesOrder $salesOrder)
@@ -88,6 +154,10 @@ class SalesOrderController extends Controller
 
     public function cancel(SalesOrder $salesOrder)
     {
+        if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
+            return $response;
+        }
+
         if (in_array($salesOrder->status, ['completed', 'cancelled', 'contracted'], true)) {
             return back()->with('warning', 'Satış siparişi zaten kapalı.');
         }
@@ -165,7 +235,36 @@ class SalesOrderController extends Controller
             return $response;
         }
 
-        $salesOrder->delete();
+        $quote = $salesOrder->quote()->first();
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($salesOrder, $quote) {
+            $salesOrder->delete();
+
+            if ($quote && $quote->status === 'converted' && ! $quote->salesOrder()->exists()) {
+                // mümkünse ActivityLog’dan restore et
+                $restore = 'accepted';
+
+                $logs = ActivityLog::query()
+                    ->where('subject_type', $quote->getMorphClass())
+                    ->where('subject_id', $quote->getKey())
+                    ->where('action', 'status_changed')
+                    ->orderByDesc('created_at')
+                    ->limit(10)
+                    ->get();
+
+                $lastConverted = $logs->first(fn($l) => data_get($l->meta, 'to') === 'converted');
+                $restore = data_get($lastConverted?->meta, 'from') ?: 'accepted';
+
+                $quote->forceFill(['status' => $restore])->save();
+
+                // log
+                app(ActivityLogger::class)->log($quote, 'sales_order_deleted', [
+                    'restored_status' => $restore,
+                    'sales_order_id' => $salesOrder->id,
+                    'sales_order_no' => $salesOrder->order_no ?? null,
+                ]);
+            }
+        });
 
         return redirect()->route('sales-orders.index')
             ->with('success', 'Satış siparişi silindi.');
@@ -216,6 +315,10 @@ class SalesOrderController extends Controller
 
     private function transitionStatus(SalesOrder $salesOrder, string $from, string $to, string $message)
     {
+        if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
+            return $response;
+        }
+
         if ($salesOrder->status !== $from) {
             return back()->with('warning', 'Bu işlem için uygun durumda değil.');
         }

@@ -40,7 +40,10 @@
         <x-textarea id="content" name="content" rows="14" class="mt-1">{{ old('content', $template->content) }}</x-textarea>
         <x-input-error :messages="$errors->get('content')" class="mt-2" />
         <p class="mt-2 text-xs text-gray-500">
-            {{ __('Kullanılabilir alanlar: {{contract.contract_no}}, {{contract.issued_at}}, {{customer.name}}, {{customer.address}}, {{sales_order.no}}, {{totals.grand_total}}, {{currency}}, {{line_items_table}}') }}
+            @php
+                $helpText = __('Kullanılabilir alanlar: {{contract.contract_no}}, {{contract.issued_at}}, {{customer.name}}, {{customer.address}}, {{sales_order.no}}, {{totals.grand_total}}, {{currency}}, {{line_items_table}}');
+            @endphp
+            {{ $helpText }}
         </p>
     </div>
 

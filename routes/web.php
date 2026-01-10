@@ -31,31 +31,26 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/saved-views', [App\Http\Controllers\SavedViewController::class, 'index'])->name('saved-views.index');
+    Route::post('/saved-views', [App\Http\Controllers\SavedViewController::class, 'store'])->name('saved-views.store');
+    Route::delete('/saved-views/{savedView}', [App\Http\Controllers\SavedViewController::class, 'destroy'])->name('saved-views.destroy');
+
     Route::resource('customers', CustomerController::class);
     Route::resource('vessels', VesselController::class);
-    Route::resource('company-profiles', CompanyProfileController::class);
-    Route::resource('bank-accounts', BankAccountController::class);
-    Route::resource('currencies', CurrencyController::class);
     Route::resource('work-orders', WorkOrderController::class);
+    Route::get('work-orders/{workOrder}/print', [WorkOrderController::class, 'printView'])->name('work-orders.print');
     Route::resource('quotes', QuoteController::class);
     Route::get('quotes/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview');
     Route::get('quotes/{quote}/pdf', [QuoteController::class, 'pdf'])->name('quotes.pdf');
+    Route::get('quotes/{quote}/print', [QuoteController::class, 'printView'])->name('quotes.print');
     Route::resource('contracts', ContractController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
-    Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy']);
-    Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])
-        ->name('contract-templates.preview');
-    Route::post('contract-templates/{template}/versions/{version}/restore', [ContractTemplateController::class, 'restore'])
-        ->name('contract-templates.versions.restore');
-    Route::post('contract-templates/{template}/make-default', [ContractTemplateController::class, 'makeDefault'])
-        ->name('contract-templates.make_default');
-    Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])
-        ->name('contract-templates.toggle_active');
     Route::resource('sales-orders', SalesOrderController::class);
     Route::get('sales-orders/{salesOrder}/contracts/create', [ContractController::class, 'create'])
         ->name('sales-orders.contracts.create');
     Route::post('sales-orders/{salesOrder}/contracts', [ContractController::class, 'store'])
         ->name('sales-orders.contracts.store');
     Route::get('contracts/{contract}/pdf', [ContractController::class, 'pdf'])->name('contracts.pdf');
+    Route::get('contracts/{contract}/print', [ContractController::class, 'printView'])->name('contracts.print');
     Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])
         ->name('contracts.attachments.store');
     Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'download'])
@@ -96,6 +91,36 @@ Route::middleware('auth')->group(function () {
     Route::post('sales-orders/{salesOrder}/items', [SalesOrderItemController::class, 'store'])->name('sales-orders.items.store');
     Route::put('sales-orders/{salesOrder}/items/{item}', [SalesOrderItemController::class, 'update'])->name('sales-orders.items.update');
     Route::delete('sales-orders/{salesOrder}/items/{item}', [SalesOrderItemController::class, 'destroy'])->name('sales-orders.items.destroy');
+
+    Route::post('/follow-ups', [App\Http\Controllers\FollowUpController::class, 'store'])->name('follow-ups.store');
+    Route::post('/follow-ups/{followUp}/complete', [App\Http\Controllers\FollowUpController::class, 'complete'])->name('follow-ups.complete');
+    Route::delete('/follow-ups/{followUp}', [App\Http\Controllers\FollowUpController::class, 'destroy'])->name('follow-ups.destroy');
+
+    // Admin Routes
+    Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function () {
+        // Settings
+        Route::resource('company-profiles', CompanyProfileController::class);
+        Route::resource('bank-accounts', BankAccountController::class);
+        Route::resource('currencies', CurrencyController::class);
+        
+        Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy'])
+            ->parameters(['contract-templates' => 'template']);
+        Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])
+            ->name('contract-templates.preview');
+        Route::post('contract-templates/{template}/versions/{version}/restore', [ContractTemplateController::class, 'restore'])
+            ->name('contract-templates.versions.restore');
+        Route::post('contract-templates/{template}/make-default', [ContractTemplateController::class, 'makeDefault'])
+            ->name('contract-templates.make_default');
+        Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])
+            ->name('contract-templates.toggle_active');
+
+        // User Management
+        Route::get('users', [\App\Http\Controllers\Admin\UserAdminController::class, 'index'])->name('users.index');
+        Route::post('users', [\App\Http\Controllers\Admin\UserAdminController::class, 'store'])->name('users.store');
+        Route::patch('users/{user}', [\App\Http\Controllers\Admin\UserAdminController::class, 'update'])->name('users.update');
+        Route::patch('users/{user}/password', [\App\Http\Controllers\Admin\UserAdminController::class, 'password'])->name('users.password');
+        Route::delete('users/{user}', [\App\Http\Controllers\Admin\UserAdminController::class, 'destroy'])->name('users.destroy');
+    });
 });
 
 require __DIR__ . '/auth.php';

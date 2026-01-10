@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Banka Hesapları') }}" subtitle="{{ __('Banka hesaplarınızı hızlıca yönetin.') }}">
             <x-slot name="actions">
-                <x-ui.button href="{{ route('bank-accounts.create') }}" size="sm">
+                <x-ui.button href="{{ route('admin.bank-accounts.create') }}" size="sm">
                     {{ __('Yeni Hesap') }}
                 </x-ui.button>
             </x-slot>
@@ -12,14 +12,14 @@
     <div class="space-y-6">
         <x-ui.card>
             <x-slot name="header">{{ __('Filtreler') }}</x-slot>
-            <form method="GET" action="{{ route('bank-accounts.index') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <form method="GET" action="{{ route('admin.bank-accounts.index') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
                 <div class="flex-1">
                     <x-input-label for="search" :value="__('İsimle arayın')" />
                     <x-input id="search" name="search" type="text" class="mt-1" placeholder="{{ __('İsme göre ara') }}" :value="$search" />
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <x-ui.button type="submit" size="sm">{{ __('Ara') }}</x-ui.button>
-                    <x-ui.button href="{{ route('bank-accounts.index') }}" variant="secondary" size="sm">{{ __('Temizle') }}</x-ui.button>
+                    <x-ui.button href="{{ route('admin.bank-accounts.index') }}" variant="secondary" size="sm">{{ __('Temizle') }}</x-ui.button>
                 </div>
             </form>
         </x-ui.card>
@@ -60,15 +60,15 @@
                                         </button>
                                     </x-slot>
                                     <x-slot name="content">
-                                        <a href="{{ route('bank-accounts.show', $bankAccount) }}" class="{{ $actionItemClass }}">
+                                        <a href="{{ route('admin.bank-accounts.show', $bankAccount) }}" class="{{ $actionItemClass }}">
                                             <x-icon.info class="h-4 w-4 text-sky-600" />
                                             {{ __('Görüntüle') }}
                                         </a>
-                                        <a href="{{ route('bank-accounts.edit', $bankAccount) }}" class="{{ $actionItemClass }}">
+                                        <a href="{{ route('admin.bank-accounts.edit', $bankAccount) }}" class="{{ $actionItemClass }}">
                                             <x-icon.pencil class="h-4 w-4 text-indigo-600" />
                                             {{ __('Düzenle') }}
                                         </a>
-                                        <form id="bank-account-delete-{{ $bankAccount->id }}" method="POST" action="{{ route('bank-accounts.destroy', $bankAccount) }}" class="hidden">
+                                        <form id="bank-account-delete-{{ $bankAccount->id }}" method="POST" action="{{ route('admin.bank-accounts.destroy', $bankAccount) }}" class="hidden">
                                             @csrf
                                             @method('DELETE')
                                         </form>

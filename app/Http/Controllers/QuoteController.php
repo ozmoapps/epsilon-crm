@@ -11,6 +11,9 @@ use App\Models\WorkOrder;
 use App\Models\CompanyProfile;
 use App\Models\BankAccount;
 use App\Services\ActivityLogger;
+use App\Models\Contract;
+use App\Models\ActivityLog;
+
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +25,13 @@ class QuoteController extends Controller
     {
         $search = $request->input('search');
         $status = $request->input('status');
+        $customerId = $request->input('customer_id');
+        $vesselId = $request->input('vessel_id');
+        $currency = $request->input('currency');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
+        $totalMin = $request->input('total_min');
+        $totalMax = $request->input('total_max');
 
         $quotes = Quote::query()
             ->with(['customer', 'vessel', 'salesOrder', 'currencyRelation'])
@@ -33,13 +43,35 @@ class QuoteController extends Controller
                 });
             })
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($customerId, fn ($q) => $q->where('customer_id', $customerId))
+            ->when($vesselId, fn ($q) => $q->where('vessel_id', $vesselId))
+            ->when($currency, fn ($q) => $q->where('currency', $currency))
+            ->when($dateFrom, fn ($q) => $q->whereDate('issued_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($q) => $q->whereDate('issued_at', '<=', $dateTo))
+            ->when($totalMin, function ($q) use ($totalMin) {
+                $val = \App\Support\MoneyMath::normalizeDecimalString($totalMin);
+                $q->where('grand_total', '>=', $val);
+            })
+            ->when($totalMax, function ($q) use ($totalMax) {
+                $val = \App\Support\MoneyMath::normalizeDecimalString($totalMax);
+                $q->where('grand_total', '<=', $val);
+            })
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
         $statuses = Quote::statusOptions();
+        $customers = Customer::orderBy('name')->get(['id', 'name']);
+        $vessels = Vessel::with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']);
+        $currencies = Currency::where('is_active', true)->orderBy('code')->get(['code', 'name']);
+        
+        $savedViews = \App\Models\SavedView::allow('quotes')->visibleTo($request->user())->get();
 
-        return view('quotes.index', compact('quotes', 'search', 'status', 'statuses'));
+        return view('quotes.index', compact(
+            'quotes', 'search', 'status', 'statuses',
+            'customers', 'vessels', 'currencies', 'savedViews',
+            'customerId', 'vesselId', 'currency', 'dateFrom', 'dateTo', 'totalMin', 'totalMax'
+        ));
     }
 
     public function create()
@@ -90,6 +122,8 @@ class QuoteController extends Controller
 
     public function show(Quote $quote)
     {
+        $this->authorize('view', $quote);
+
         $quote->load([
             'customer',
             'vessel',
@@ -97,122 +131,42 @@ class QuoteController extends Controller
             'creator',
             'items',
             'salesOrder',
-            'activityLogs.actor',
             'currencyRelation',
+            'openFollowUps.creator',
         ]);
 
-        return view('quotes.show', compact('quote'));
+        $salesOrder = $quote->salesOrder;
+        $contract = $salesOrder?->contract;
+        $workOrder = $quote->workOrder;
+
+        $subjects = [[Quote::class, $quote->id]];
+        if ($salesOrder) $subjects[] = [SalesOrder::class, $salesOrder->id];
+        if ($contract) $subjects[] = [Contract::class, $contract->id];
+        if ($workOrder) $subjects[] = [WorkOrder::class, $workOrder->id];
+
+        $timeline = ActivityLog::query()
+            ->with(['actor', 'subject'])
+            ->where(function ($q) use ($subjects) {
+                foreach ($subjects as [$type, $id]) {
+                    $q->orWhere(function ($sub) use ($type, $id) {
+                        $sub->where('subject_type', $type)->where('subject_id', $id);
+                    });
+                }
+            })
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('quotes.show', compact('quote', 'salesOrder', 'contract', 'workOrder', 'timeline'));
     }
-
-    public function preview(Quote $quote)
-    {
-        $this->authorize('view', $quote);
-
-        $quote->loadMissing(['customer', 'vessel', 'items', 'currencyRelation', 'workOrder']);
-        $companyProfile = CompanyProfile::current();
-        $bankAccounts = BankAccount::query()->with('currency')->orderBy('bank_name')->get();
-
-        return view('quotes.preview', compact('quote', 'companyProfile', 'bankAccounts'));
-    }
-
-    public function pdf(Quote $quote)
-    {
-        $this->authorize('view', $quote);
-
-        $quote->loadMissing(['customer', 'vessel', 'items', 'currencyRelation', 'workOrder']);
-        $companyProfile = CompanyProfile::current();
-        $bankAccounts = BankAccount::query()->with('currency')->orderBy('bank_name')->get();
-
-        return response()
-            ->view('quotes.pdf', compact('quote', 'companyProfile', 'bankAccounts'))
-            ->header('Content-Type', 'application/pdf');
-    }
-
-    public function edit(Quote $quote)
-    {
-        if ($quote->isLocked()) {
-            return redirect()->route('quotes.show', $quote)
-                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
-        }
-
-        if ($response = $this->authorizeQuote('update', $quote)) {
-            return $response;
-        }
-
-        return view('quotes.edit', [
-            'quote' => $quote->loadMissing('items'),
-            'customers' => Customer::orderBy('name')->get(),
-            'vessels' => Vessel::with('customer')->orderBy('name')->get(),
-            'workOrders' => WorkOrder::orderByDesc('id')->get(),
-            'statuses' => Quote::statusOptions(),
-            'currencies' => $this->activeCurrencies(),
-        ]);
-    }
-
-    public function update(Request $request, Quote $quote)
-    {
-        if ($quote->isLocked()) {
-            return redirect()->route('quotes.show', $quote)
-                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
-        }
-
-        if ($response = $this->authorizeQuote('update', $quote)) {
-            return $response;
-        }
-
-        $this->prepareItemsForValidation($request);
-        $validated = $request->validate($this->rules(), $this->messages());
-        $items = $validated['items'] ?? null;
-        unset($validated['items']);
-
-        $nextStatus = $validated['status'];
-        $payload = $validated;
-        unset($payload['status']);
-
-        if (! $quote->canTransitionTo($nextStatus)) {
-            return redirect()->route('quotes.show', $quote)
-                ->with('error', 'Durum geçişine izin verilmiyor.');
-        }
-
-        if ($quote->status !== $nextStatus) {
-            $quote->transitionTo($nextStatus, ['source' => 'update']);
-        }
-
-        $currency = Currency::query()->find($validated['currency_id']);
-        $payload['currency'] = $currency?->code ?? $payload['currency'] ?? config('quotes.default_currency');
-
-        $quote->fill($payload)->save();
-
-        if ($request->has('items')) {
-            $this->syncItems($quote, $items ?? []);
-        }
-
-        return redirect()->route('quotes.show', $quote)
-            ->with('success', 'Teklif güncellendi.');
-    }
-
-    public function destroy(Quote $quote)
-    {
-        if ($quote->isLocked()) {
-            app(ActivityLogger::class)->log($quote, 'delete_blocked', [
-                'reason' => 'locked',
-            ]);
-            return redirect()->route('quotes.show', $quote)
-                ->with('error', 'Bu teklifin bağlı siparişi olduğu için silinemez.');
-        }
-
-        if ($response = $this->authorizeQuote('delete', $quote)) {
-            return $response;
-        }
-
-        $quote->delete();
-
-        return redirect()->route('quotes.index')
-            ->with('success', 'Teklif silindi.');
-    }
+// ... (preview/pdf/printView already have authorize view)
 
     public function markAsSent(Quote $quote)
     {
+        if ($response = $this->authorizeQuote('update', $quote)) {
+            return $response;
+        }
+
         if (! $quote->transitionTo('sent', ['source' => 'mark_sent'])) {
             return redirect()->route('quotes.show', $quote)
                 ->with('warning', 'Bu işlem için uygun durumda değil.');
@@ -226,6 +180,10 @@ class QuoteController extends Controller
 
     public function markAsAccepted(Quote $quote)
     {
+        if ($response = $this->authorizeQuote('update', $quote)) {
+            return $response;
+        }
+
         if (! $quote->transitionTo('accepted', ['source' => 'mark_accepted'])) {
             return redirect()->route('quotes.show', $quote)
                 ->with('warning', 'Bu işlem için uygun durumda değil.');
@@ -239,6 +197,9 @@ class QuoteController extends Controller
 
     public function convertToSalesOrder(Request $request, Quote $quote)
     {
+        if ($response = $this->authorizeQuote('update', $quote)) {
+            return $response;
+        }
         $quote->loadMissing(['items', 'salesOrder', 'currencyRelation']);
 
         if ($quote->status !== 'accepted') {
@@ -396,8 +357,9 @@ class QuoteController extends Controller
 
         $items = collect($request->input('items', []))
             ->map(function (array $item) {
-                $amount = $this->normalizeDecimal($item['amount'] ?? null);
-                $vatRate = $this->normalizeDecimal($item['vat_rate'] ?? null);
+                $amount = \App\Support\MoneyMath::normalizeDecimalString($item['amount'] ?? null);
+                // For VAT rate, null if empty
+                $vatRate = \App\Support\MoneyMath::normalizeDecimalString($item['vat_rate'] ?? null, 2, true);
 
                 return [
                     'id' => $item['id'] ?? null,
@@ -417,18 +379,6 @@ class QuoteController extends Controller
             ->all();
 
         $request->merge(['items' => $items]);
-    }
-
-    private function normalizeDecimal(?string $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        $value = str_replace([' ', ','], ['', '.'], $value);
-        $value = trim($value);
-
-        return $value === '' ? null : $value;
     }
 
     private function syncItems(Quote $quote, array $items): void

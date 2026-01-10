@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-page-header title="{{ $companyProfile->name }}" subtitle="{{ __('Şirket profili detayları.') }}">
             <x-slot name="actions">
-                <x-ui.button href="{{ route('company-profiles.edit', $companyProfile) }}" size="sm">
+                <x-ui.button href="{{ route('admin.company-profiles.edit', $companyProfile) }}" size="sm">
                     {{ __('Düzenle') }}
                 </x-ui.button>
             </x-slot>
@@ -43,8 +43,8 @@
         <x-ui.card>
             <x-slot name="header">{{ __('İşlemler') }}</x-slot>
             <div class="flex flex-wrap gap-3">
-                <x-ui.button href="{{ route('company-profiles.edit', $companyProfile) }}">{{ __('Düzenle') }}</x-ui.button>
-                <form id="company-profile-delete" method="POST" action="{{ route('company-profiles.destroy', $companyProfile) }}">
+                <x-ui.button href="{{ route('admin.company-profiles.edit', $companyProfile) }}">{{ __('Düzenle') }}</x-ui.button>
+                <form id="company-profile-delete" method="POST" action="{{ route('admin.company-profiles.destroy', $companyProfile) }}">
                     @csrf
                     @method('DELETE')
                 </form>

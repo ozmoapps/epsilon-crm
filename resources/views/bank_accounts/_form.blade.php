@@ -41,7 +41,7 @@
     <x-ui.button type="submit">
         {{ $isEdit ? __('Kaydet') : __('Oluştur') }}
     </x-ui.button>
-    <x-ui.button variant="secondary" href="{{ route('bank-accounts.index') }}">
+    <x-ui.button variant="secondary" href="{{ route('admin.bank-accounts.index') }}">
         {{ __('Vazgeç') }}
     </x-ui.button>
 </div>

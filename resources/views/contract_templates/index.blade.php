@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Sözleşme Şablonları') }}" subtitle="{{ __('Sözleşme şablonlarını yönetin.') }}">
             <x-slot name="actions">
-                <x-button href="{{ route('contract-templates.create') }}">
+                <x-button href="{{ route('admin.contract-templates.create') }}">
                     {{ __('Yeni Şablon') }}
                 </x-button>
             </x-slot>
@@ -12,12 +12,12 @@
     <div class="space-y-6">
         <x-card>
             <x-slot name="header">{{ __('Filtreler') }}</x-slot>
-            <form method="GET" action="{{ route('contract-templates.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <form method="GET" action="{{ route('admin.contract-templates.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div class="flex-1">
                     <x-input name="search" type="text" placeholder="İsme göre ara" :value="$search" />
                 </div>
                 <x-button type="submit">{{ __('Ara') }}</x-button>
-                <x-button href="{{ route('contract-templates.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
+                <x-button href="{{ route('admin.contract-templates.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
             </form>
         </x-card>
 
@@ -60,18 +60,18 @@
                                         </button>
                                     </x-slot>
                                     <x-slot name="content">
-                                        <a href="{{ route('contract-templates.edit', $template) }}" class="{{ $actionItemClass }}">
+                                        <a href="{{ route('admin.contract-templates.edit', $template) }}" class="{{ $actionItemClass }}">
                                             <x-icon.pencil class="h-4 w-4 text-indigo-600" />
                                             {{ __('Düzenle') }}
                                         </a>
-                                        <form method="POST" action="{{ route('contract-templates.make_default', $template) }}">
+                                        <form method="POST" action="{{ route('admin.contract-templates.make_default', $template) }}">
                                             @csrf
                                             <button type="submit" class="{{ $actionItemClass }}">
                                                 <x-icon.check class="h-4 w-4 text-emerald-600" />
                                                 {{ __('Varsayılan Yap') }}
                                             </button>
                                         </form>
-                                        <form method="POST" action="{{ route('contract-templates.toggle_active', $template) }}">
+                                        <form method="POST" action="{{ route('admin.contract-templates.toggle_active', $template) }}">
                                             @csrf
                                             <button type="submit" class="{{ $actionItemClass }}">
                                                 <x-icon.x class="h-4 w-4 text-amber-500" />

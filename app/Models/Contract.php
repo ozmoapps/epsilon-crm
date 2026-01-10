@@ -223,4 +223,13 @@ class Contract extends Model
     {
         return $this->is_current && in_array($this->status, ['draft', 'sent', 'signed'], true);
     }
+    public function followUps()
+    {
+        return $this->morphMany(\App\Models\FollowUp::class, 'subject')->latest('next_at');
+    }
+
+    public function openFollowUps()
+    {
+        return $this->followUps()->whereNull('completed_at')->orderBy('next_at');
+    }
 }

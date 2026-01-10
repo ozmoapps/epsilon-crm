@@ -54,11 +54,13 @@
     };
 @endphp
 
-<x-ui.card>
-    <x-slot name="header">{{ $title }}</x-slot>
+    <div class="space-y-0">
+        @php
+            $limitedLogs = $logs->take(8);
+            $hasMore = $logs->count() > 8;
+        @endphp
 
-    <div class="space-y-4">
-        @forelse ($logs as $log)
+        @forelse ($limitedLogs as $log)
             @php
                 $icon = $actionIcons[$log->action] ?? 'info';
                 $label = $actionLabels[$log->action] ?? $log->action;
@@ -72,51 +74,83 @@
                 $fallbackIdentifier = $subject?->title ?? $subject?->name ?? $subject?->id;
                 $subjectIdentifier = $subjectIdentifier ?: $fallbackIdentifier;
             @endphp
-            <div class="flex gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-                <div class="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+            <div class="flex gap-3 relative pb-6 last:pb-0">
+                 <!-- Line -->
+                <div class="absolute left-[1.125rem] top-8 bottom-0 w-px bg-slate-100 last:hidden"></div>
+                
+                <div class="relative z-10 mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-500 ring-4 ring-white">
                     <x-dynamic-component :component="'icon.' . $icon" class="h-4 w-4" />
                 </div>
-                <div class="flex-1 space-y-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <p class="text-sm font-semibold text-slate-900">{{ $label }}</p>
+                
+                <div class="flex-1 min-w-0 pt-1.5">
+                    <div class="text-sm text-slate-900 leading-snug">
+                        <span class="font-medium">{{ $label }}</span>
                         @if ($log->action === 'status_changed')
-                            <x-ui.badge variant="neutral">
+                           <span class="mx-1 text-slate-300">·</span>
+                            <x-ui.badge variant="neutral" class="scale-90 origin-left border border-slate-200 !px-1.5 !py-0.5">
                                 {{ $formatStatus($log, $meta['from'] ?? '-') }}
                             </x-ui.badge>
-                            <span class="text-xs text-slate-400">→</span>
-                            <x-ui.badge variant="neutral">
+                            <span class="text-slate-300 mx-1">→</span>
+                            <x-ui.badge variant="neutral" class="scale-90 origin-left border border-slate-200 !px-1.5 !py-0.5">
                                 {{ $formatStatus($log, $meta['to'] ?? '-') }}
                             </x-ui.badge>
                         @endif
                     </div>
-                    <p class="text-xs text-slate-500">
-                        {{ $actorName }} · {{ $log->created_at?->format('d.m.Y H:i') ?? '-' }}
-                    </p>
+                    
+                    <div class="mt-1 text-xs text-slate-500 flex items-center gap-2">
+                        <span class="font-medium text-slate-600">{{ $actorName }}</span>
+                        <span class="text-slate-300">•</span>
+                        <span>{{ $log->created_at?->format('d.m.Y H:i') ?? '-' }}</span>
+                    </div>
+
                     @if ($showSubject)
-                        <p class="text-xs text-slate-500">
-                            {{ $subjectLabel }}@if ($subjectIdentifier) · {{ $subjectIdentifier }}@endif
-                        </p>
+                        <div class="mt-1.5 text-xs font-medium text-slate-600 bg-slate-50 px-2 py-1 rounded inline-block border border-slate-100">
+                            {{ $subjectLabel }}@if ($subjectIdentifier): {{ $subjectIdentifier }}@endif
+                        </div>
                     @endif
+                    
                     @if ($log->action === 'converted_to_sales_order' && ! empty($meta['sales_order_no']))
-                        <p class="text-xs text-slate-500">{{ __('Sipariş No') }}: {{ $meta['sales_order_no'] }}</p>
+                         <div class="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                            {{ __('Sipariş No') }}: <span class="font-medium font-mono">{{ $meta['sales_order_no'] }}</span>
+                        </div>
                     @elseif ($log->action === 'created_from_quote' && ! empty($meta['quote_no']))
-                        <p class="text-xs text-slate-500">{{ __('Teklif No') }}: {{ $meta['quote_no'] }}</p>
+                        <div class="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                            {{ __('Teklif No') }}: <span class="font-medium font-mono">{{ $meta['quote_no'] }}</span>
+                        </div>
                     @elseif ($log->action === 'converted_to_contract' && ! empty($meta['contract_no']))
-                        <p class="text-xs text-slate-500">{{ __('Sözleşme No') }}: {{ $meta['contract_no'] }}</p>
+                         <div class="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                            {{ __('Sözleşme No') }}: <span class="font-medium font-mono">{{ $meta['contract_no'] }}</span>
+                        </div>
                     @elseif ($log->action === 'created_from_sales_order' && ! empty($meta['sales_order_no']))
-                        <p class="text-xs text-slate-500">{{ __('Sipariş No') }}: {{ $meta['sales_order_no'] }}</p>
+                         <div class="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                            {{ __('Sipariş No') }}: <span class="font-medium font-mono">{{ $meta['sales_order_no'] }}</span>
+                        </div>
                     @elseif ($log->action === 'updated' && ! empty($meta['fields']))
-                        <p class="text-xs text-slate-500">
-                            {{ __('Güncellenen alanlar') }}:
-                            {{ implode(', ', $meta['fields']) }}
-                        </p>
+                        <div class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100">
+                            {{ __('Güncellenenler') }}: <span class="font-medium text-slate-700">{{ implode(', ', $meta['fields']) }}</span>
+                        </div>
                     @elseif ($log->action === 'delete_blocked')
-                        <p class="text-xs text-slate-500">{{ __('Silme isteği kilit nedeniyle engellendi.') }}</p>
+                         <div class="mt-2 text-xs text-rose-600 bg-rose-50 p-2 rounded border border-rose-100">
+                            {{ __('Silme isteği kilit nedeniyle engellendi.') }}
+                        </div>
                     @endif
                 </div>
             </div>
         @empty
-            <p class="text-sm text-slate-500">{{ __('Henüz aktivite kaydı bulunmuyor.') }}</p>
+            <div class="flex flex-col items-center justify-center py-8 text-center">
+                <div class="rounded-full bg-slate-50 p-3 mb-3">
+                    <x-icon.clock class="h-6 w-6 text-slate-300" />
+                </div>
+                <p class="text-sm font-medium text-slate-900">{{ __('Henüz aktivite yok') }}</p>
+            </div>
         @endforelse
+        
+        @if($hasMore)
+            <div class="pt-4 text-center border-t border-slate-50 mt-2">
+                <a href="#" class="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+                    {{ __('Tüm Aktiviteleri Görüntüle') }}
+                </a>
+            </div>
+        @endif
     </div>
-</x-ui.card>
+

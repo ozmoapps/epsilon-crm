@@ -10,12 +10,18 @@ class Customer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'created_by',
         'name',
         'phone',
         'email',
         'address',
         'notes',
     ];
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function vessels()
     {

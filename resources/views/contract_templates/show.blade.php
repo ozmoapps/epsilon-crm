@@ -2,10 +2,10 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Sözleşme Şablonu Detayı') }}" subtitle="{{ $template->name }}">
             <x-slot name="actions">
-                <x-button href="{{ route('contract-templates.edit', $template) }}" variant="secondary" size="sm">
+                <x-button href="{{ route('admin.contract-templates.edit', $template) }}" variant="secondary" size="sm">
                     {{ __('Düzenle') }}
                 </x-button>
-                <x-button href="{{ route('contract-templates.index') }}" variant="secondary" size="sm">
+                <x-button href="{{ route('admin.contract-templates.index') }}" variant="secondary" size="sm">
                     {{ __('Listeye Dön') }}
                 </x-button>
             </x-slot>

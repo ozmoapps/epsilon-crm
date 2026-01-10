@@ -66,7 +66,7 @@ class ContractTemplateController extends Controller
 
         $this->syncDefault($template, $validated['is_default'] ?? false);
 
-        return redirect()->route('contract-templates.edit', $template)
+        return redirect()->route('admin.contract-templates.edit', $template)
             ->with('success', 'Sözleşme şablonu oluşturuldu.');
     }
 
@@ -101,7 +101,7 @@ class ContractTemplateController extends Controller
 
         $this->syncDefault($template, $validated['is_default'] ?? false);
 
-        return redirect()->route('contract-templates.edit', $template)
+        return redirect()->route('admin.contract-templates.edit', $template)
             ->with('success', 'Sözleşme şablonu güncellendi.');
     }
 
@@ -139,7 +139,7 @@ class ContractTemplateController extends Controller
             "Sürüm {$version->version} geri yüklendi."
         );
 
-        return redirect()->route('contract-templates.show', $template)
+        return redirect()->route('admin.contract-templates.show', $template)
             ->with('success', 'Şablon önceki sürüme geri yüklendi.');
     }
 

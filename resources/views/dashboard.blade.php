@@ -29,8 +29,8 @@
                 'title' => __('Teklifler'),
                 'total' => $quotesCount,
                 'statuses' => [
-                    ['label' => $quoteStatusLabels['sent'] ?? __('Gönderildi'), 'count' => $quoteStatusCounts->get('sent', 0)],
-                    ['label' => $quoteStatusLabels['accepted'] ?? __('Onaylandı'), 'count' => $quoteStatusCounts->get('accepted', 0)],
+                    ['label' => $quoteStatusLabels['sent'] ?? __('Gönderildi'), 'count' => $quoteStatusCounts->get('sent', 0), 'route' => route('quotes.index', ['status' => 'sent'])],
+                    ['label' => $quoteStatusLabels['accepted'] ?? __('Onaylandı'), 'count' => $quoteStatusCounts->get('accepted', 0), 'route' => route('quotes.index', ['status' => 'accepted'])],
                 ],
                 'accent' => 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white',
                 'icon' => 'document',
@@ -39,8 +39,8 @@
                 'title' => __('Satış Siparişleri'),
                 'total' => $salesOrdersCount,
                 'statuses' => [
-                    ['label' => $salesOrderStatusLabels['in_progress'] ?? __('Devam Ediyor'), 'count' => $salesOrderStatusCounts->get('in_progress', 0)],
-                    ['label' => $salesOrderStatusLabels['completed'] ?? __('Tamamlandı'), 'count' => $salesOrderStatusCounts->get('completed', 0)],
+                    ['label' => $salesOrderStatusLabels['in_progress'] ?? __('Devam Ediyor'), 'count' => $salesOrderStatusCounts->get('in_progress', 0), 'route' => route('sales-orders.index', ['status' => 'in_progress'])],
+                    ['label' => $salesOrderStatusLabels['completed'] ?? __('Tamamlandı'), 'count' => $salesOrderStatusCounts->get('completed', 0), 'route' => route('sales-orders.index', ['status' => 'completed'])],
                 ],
                 'accent' => 'bg-gradient-to-br from-brand-600 via-brand-500 to-brand-600 text-white',
                 'icon' => 'clipboard',
@@ -49,8 +49,8 @@
                 'title' => __('Sözleşmeler'),
                 'total' => $contractsCount,
                 'statuses' => [
-                    ['label' => $contractStatusLabels['sent'] ?? __('Gönderildi'), 'count' => $contractStatusCounts->get('sent', 0)],
-                    ['label' => $contractStatusLabels['signed'] ?? __('İmzalandı'), 'count' => $contractStatusCounts->get('signed', 0)],
+                    ['label' => $contractStatusLabels['sent'] ?? __('Gönderildi'), 'count' => $contractStatusCounts->get('sent', 0), 'route' => route('contracts.index', ['status' => 'sent'])],
+                    ['label' => $contractStatusLabels['signed'] ?? __('İmzalandı'), 'count' => $contractStatusCounts->get('signed', 0), 'route' => route('contracts.index', ['status' => 'signed'])],
                 ],
                 'accent' => 'bg-gradient-to-br from-emerald-600 via-emerald-500 to-emerald-600 text-white',
                 'icon' => 'file',
@@ -59,8 +59,8 @@
                 'title' => __('İş Emirleri'),
                 'total' => $workOrdersCount,
                 'statuses' => [
-                    ['label' => $workOrderStatusLabels['planned'] ?? __('Planlandı'), 'count' => $workOrderStatusCounts->get('planned', 0)],
-                    ['label' => $workOrderStatusLabels['in_progress'] ?? __('Devam Ediyor'), 'count' => $workOrderStatusCounts->get('in_progress', 0)],
+                    ['label' => $workOrderStatusLabels['planned'] ?? __('Planlandı'), 'count' => $workOrderStatusCounts->get('planned', 0), 'route' => route('work-orders.index', ['status' => 'planned'])],
+                    ['label' => $workOrderStatusLabels['in_progress'] ?? __('Devam Ediyor'), 'count' => $workOrderStatusCounts->get('in_progress', 0), 'route' => route('work-orders.index', ['status' => 'in_progress'])],
                 ],
                 'accent' => 'bg-gradient-to-br from-sky-600 via-sky-500 to-sky-600 text-white',
                 'icon' => 'tools',
@@ -95,10 +95,10 @@
                                 <p class="mt-3 text-3xl font-semibold text-white">{{ number_format($card['total']) }}</p>
                                 <div class="mt-4 flex flex-wrap gap-2">
                                     @foreach ($card['statuses'] as $status)
-                                        <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-2.5 py-1 text-xs text-white">
+                                        <a href="{{ $status['route'] }}" class="inline-flex items-center gap-2 rounded-full bg-white/15 px-2.5 py-1 text-xs text-white transition hover:bg-white/20 ui-focus">
                                             <span class="font-semibold">{{ number_format($status['count']) }}</span>
                                             <span class="text-white/80">{{ $status['label'] }}</span>
-                                        </span>
+                                        </a>
                                     @endforeach
                                 </div>
                             </div>
@@ -182,7 +182,7 @@
                                                 </x-ui.badge>
                                             </td>
                                             <td class="px-4 py-3 text-right text-sm font-semibold text-slate-900">
-                                                {{ number_format((float) $salesOrder->grand_total, 2, ',', '.') }} {{ $salesOrder->currency }}
+                                                {{ \App\Support\MoneyMath::formatTR($salesOrder->grand_total) }} {{ $salesOrder->currency }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -203,6 +203,78 @@
                             </div>
                             <x-ui.button href="{{ route('sales-orders.create') }}" size="sm">
                                 {{ __('Satış Siparişi Oluştur') }}
+                            </x-ui.button>
+                        </div>
+                    @endif
+                </x-ui.card>
+
+                <x-ui.card>
+                    <x-slot name="header">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <span>{{ __('Son Teklifler') }}</span>
+                            <x-ui.button href="{{ route('quotes.index') }}" variant="secondary" size="sm">
+                                {{ __('Tümünü Gör') }}
+                            </x-ui.button>
+                        </div>
+                    </x-slot>
+
+                    @if ($recentQuotes->isNotEmpty())
+                        @php
+                            $quoteStatusVariants = [
+                                'draft' => 'draft',
+                                'sent' => 'neutral',
+                                'accepted' => 'confirmed',
+                                'converted' => 'success',
+                                'cancelled' => 'cancelled',
+                            ];
+                        @endphp
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm text-slate-700">
+                                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left">{{ __('Teklif No') }}</th>
+                                        <th scope="col" class="px-4 py-3 text-left">{{ __('Müşteri') }}</th>
+                                        <th scope="col" class="px-4 py-3 text-left">{{ __('Durum') }}</th>
+                                        <th scope="col" class="px-4 py-3 text-right">{{ __('Tutar') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @foreach ($recentQuotes as $quote)
+                                        <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
+                                            <td class="px-4 py-3">
+                                                <a href="{{ route('quotes.show', $quote) }}" class="font-semibold text-slate-900 transition hover:text-brand-600 ui-focus">
+                                                    {{ $quote->quote_no }}
+                                                </a>
+                                                <div class="text-xs text-slate-500">{{ $quote->title }}</div>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-slate-600">{{ $quote->customer?->name ?? '-' }}</td>
+                                            <td class="px-4 py-3">
+                                                <x-ui.badge :variant="$quoteStatusVariants[$quote->status] ?? 'neutral'">
+                                                    {{ $quote->status_label }}
+                                                </x-ui.badge>
+                                            </td>
+                                            <td class="px-4 py-3 text-right text-sm font-semibold text-slate-900">
+                                                {{ \App\Support\MoneyMath::formatTR($quote->grand_total) }} {{ $quote->currency }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center gap-3 py-8 text-center">
+                            <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                                <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 12h8M7 17h6" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 4h11l3 3v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                                </svg>
+                            </span>
+                            <div>
+                                <p class="text-sm font-semibold text-slate-700">{{ __('Henüz teklif yok') }}</p>
+                                <p class="text-xs text-slate-500">{{ __('Yeni bir teklif oluşturarak başlayın.') }}</p>
+                            </div>
+                            <x-ui.button href="{{ route('quotes.create') }}" size="sm">
+                                {{ __('Yeni Teklif') }}
                             </x-ui.button>
                         </div>
                     @endif
@@ -284,6 +356,180 @@
             </div>
 
             <div class="space-y-6">
+                <!-- Follow Ups Card -->
+                <x-ui.card>
+                    <x-slot name="header">
+                        <div class="flex items-center justify-between">
+                            <span>{{ __('Takipte (Yaklaşan)') }}</span>
+                        </div>
+                    </x-slot>
+                    @if($upcomingFollowUps->isNotEmpty())
+                        <div class="space-y-3">
+                            @foreach($upcomingFollowUps as $followUp)
+                                @if(! $followUp->subject)
+                                    @continue
+                                @endif
+                                <div class="flex items-start gap-3 rounded-lg border border-slate-100 p-3 hover:bg-slate-50">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="mb-1 flex items-center gap-2 text-xs text-slate-500">
+                                             <span class="font-medium text-slate-900">{{ $followUp->next_at->format('d M H:i') }}</span>
+                                             <span>&bull;</span>
+                                             <span>{{ class_basename($followUp->subject_type) }}</span>
+                                        </div>
+                                        <a href="{{ route(str_replace('_', '-', $followUp->subject->getTable()) . '.show', $followUp->subject_id) }}" class="block truncate text-sm font-medium text-slate-900 hover:text-brand-600">
+                                             @if($followUp->subject_type === \App\Models\Quote::class) {{ $followUp->subject->quote_no }}
+                                             @elseif($followUp->subject_type === \App\Models\SalesOrder::class) {{ $followUp->subject->order_no }}
+                                             @elseif($followUp->subject_type === \App\Models\Contract::class) {{ $followUp->subject->contract_no }}
+                                             @elseif($followUp->subject_type === \App\Models\WorkOrder::class) {{ $followUp->subject->title }}
+                                             @endif
+                                        </a>
+                                        @if($followUp->note)
+                                            <p class="mt-1 line-clamp-1 text-xs text-slate-500">{{ $followUp->note }}</p>
+                                        @endif
+                                    </div>
+                                    <form action="{{ route('follow-ups.complete', $followUp) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="text-slate-400 hover:text-emerald-600" title="{{ __('Tamamla') }}">
+                                            <x-dynamic-component :component="'icon.check'" class="h-5 w-5" />
+                                        </button>
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="py-4 text-center text-sm text-slate-500">{{ __('Yaklaşan takip bulunmuyor.') }}</p>
+                    @endif
+                </x-ui.card>
+
+                <!-- Suggestions Card -->
+                @if($staleSentQuotes->isNotEmpty() || $staleSentContracts->isNotEmpty() || $upcomingPlannedWorkOrders->isNotEmpty())
+                    <x-ui.card>
+                        <x-slot name="header">
+                            <span>{{ __('Otomatik Takip Önerileri') }}</span>
+                        </x-slot>
+                        <div class="space-y-4">
+                            @if($staleSentQuotes->isNotEmpty())
+                                <div>
+                                    <h4 class="mb-2 text-xs font-semibold uppercase text-slate-500">{{ __('Yanıt Bekleyen Teklifler') }}</h4>
+                                    <ul class="space-y-2">
+                                        @foreach($staleSentQuotes as $quote)
+                                            <li class="flex items-center justify-between text-sm">
+                                                <a href="{{ route('quotes.show', $quote) }}" class="truncate text-slate-700 hover:text-brand-600">{{ $quote->quote_no }}</a>
+                                                <form action="{{ route('follow-ups.store') }}" method="POST" class="flex-shrink-0">
+                                                    @csrf
+                                                    <input type="hidden" name="subject_type" value="{{ \App\Models\Quote::class }}">
+                                                    <input type="hidden" name="subject_id" value="{{ $quote->id }}">
+                                                    <input type="hidden" name="next_at" value="{{ now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s') }}">
+                                                    <input type="hidden" name="note" value="Otomatik Öneri Takibi">
+                                                    <button type="submit" class="text-xs text-brand-600 hover:underline">{{ __('Takip Oluştur') }}</button>
+                                                </form>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                    
+                            @if($staleSentContracts->isNotEmpty())
+                                 <div class="border-t border-slate-100 pt-2">
+                                    <h4 class="mb-2 mt-2 text-xs font-semibold uppercase text-slate-500">{{ __('İmza Bekleyen Sözleşmeler') }}</h4>
+                                    <ul class="space-y-2">
+                                        @foreach($staleSentContracts as $contract)
+                                            <li class="flex items-center justify-between text-sm">
+                                                 <a href="{{ route('contracts.show', $contract) }}" class="truncate text-slate-700 hover:text-brand-600">{{ $contract->contract_no }}</a>
+                                                 <form action="{{ route('follow-ups.store') }}" method="POST" class="flex-shrink-0">
+                                                    @csrf
+                                                    <input type="hidden" name="subject_type" value="{{ \App\Models\Contract::class }}">
+                                                    <input type="hidden" name="subject_id" value="{{ $contract->id }}">
+                                                    <input type="hidden" name="next_at" value="{{ now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s') }}">
+                                                    <input type="hidden" name="note" value="Otomatik Öneri Takibi">
+                                                    <button type="submit" class="text-xs text-brand-600 hover:underline">{{ __('Takip Oluştur') }}</button>
+                                                </form>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                    
+                            @if($upcomingPlannedWorkOrders->isNotEmpty())
+                                 <div class="border-t border-slate-100 pt-2">
+                                    <h4 class="mb-2 mt-2 text-xs font-semibold uppercase text-slate-500">{{ __('Yaklaşan İş Emirleri') }}</h4>
+                                    <ul class="space-y-2">
+                                        @foreach($upcomingPlannedWorkOrders as $wo)
+                                            <li class="flex items-center justify-between text-sm">
+                                                 <a href="{{ route('work-orders.show', $wo) }}" class="truncate text-slate-700 hover:text-brand-600">{{ $wo->title }}</a>
+                                                 <form action="{{ route('follow-ups.store') }}" method="POST" class="flex-shrink-0">
+                                                    @csrf
+                                                    <input type="hidden" name="subject_type" value="{{ \App\Models\WorkOrder::class }}">
+                                                    <input type="hidden" name="subject_id" value="{{ $wo->id }}">
+                                                    <input type="hidden" name="next_at" value="{{ now()->addDay()->setTime(10, 0)->format('Y-m-d H:i:s') }}">
+                                                    <input type="hidden" name="note" value="Otomatik Öneri Takibi">
+                                                    <button type="submit" class="text-xs text-brand-600 hover:underline">{{ __('Takip Oluştur') }}</button>
+                                                </form>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    </x-ui.card>
+                @endif
+                <x-ui.card>
+                    <x-slot name="header">
+                        <div class="flex items-center justify-between">
+                            <span>{{ __('Sistem Kurulum Durumu') }}</span>
+                        </div>
+                    </x-slot>
+
+                    <nav class="space-y-1" aria-label="{{ __('Sistem Kurulum Adımları') }}">
+                        @php
+                            $setupItems = [
+                                [
+                                    'label' => __('Şirket Profili'),
+                                    'status' => $hasCompanyProfile,
+                                    'route' => route('admin.company-profiles.index'),
+                                    'action' => $hasCompanyProfile ? __('Yönet') : __('Ekle'),
+                                ],
+                                [
+                                    'label' => __('Banka Hesapları'),
+                                    'status' => $bankAccountsCount > 0,
+                                    'route' => route('admin.bank-accounts.index'),
+                                    'action' => $bankAccountsCount > 0 ? __('Yönet') : __('Ekle'),
+                                ],
+                                [
+                                    'label' => __('Aktif Para Birimi'),
+                                    'status' => $activeCurrenciesCount > 0,
+                                    'route' => route('admin.currencies.index'),
+                                    'action' => $activeCurrenciesCount > 0 ? __('Yönet') : __('Ekle'),
+                                ],
+                                [
+                                    'label' => __('Varsayılan Sözleşme Şablonu'),
+                                    'status' => $hasDefaultContractTemplate,
+                                    'route' => route('admin.contract-templates.index'),
+                                    'action' => $hasDefaultContractTemplate ? __('Yönet') : __('Ekle'),
+                                ],
+                            ];
+                        @endphp
+                        
+                        @foreach ($setupItems as $item)
+                            <div class="@if(!$item['status']) bg-amber-50/50 @endif flex items-center justify-between rounded-lg p-3 transition hover:bg-slate-50">
+                                <div class="flex items-center gap-3">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full @if($item['status']) bg-emerald-100 text-emerald-600 @else bg-slate-100 text-slate-400 @endif">
+                                        @if($item['status'])
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        @else
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        @endif
+                                    </span>
+                                    <span class="text-sm font-medium text-slate-700">{{ $item['label'] }}</span>
+                                </div>
+                                <a href="{{ $item['route'] }}" class="text-xs font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+                                    {{ $item['action'] }}
+                                </a>
+                            </div>
+                        @endforeach
+                    </nav>
+                </x-ui.card>
+
                 <x-ui.card>
                     <x-slot name="header">
                         <div class="flex items-center justify-between">
