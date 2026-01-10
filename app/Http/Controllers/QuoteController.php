@@ -74,6 +74,11 @@ class QuoteController extends Controller
 
     public function edit(Quote $quote)
     {
+        if ($quote->isLocked()) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        }
+
         if ($response = $this->authorizeQuote('update', $quote)) {
             return $response;
         }
@@ -89,6 +94,11 @@ class QuoteController extends Controller
 
     public function update(Request $request, Quote $quote)
     {
+        if ($quote->isLocked()) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        }
+
         if ($response = $this->authorizeQuote('update', $quote)) {
             return $response;
         }
@@ -103,6 +113,11 @@ class QuoteController extends Controller
 
     public function destroy(Quote $quote)
     {
+        if ($quote->isLocked()) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'Bu teklifin bağlı siparişi olduğu için silinemez.');
+        }
+
         if ($response = $this->authorizeQuote('delete', $quote)) {
             return $response;
         }
