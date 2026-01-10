@@ -157,6 +157,42 @@
                         </svg>
                         <span>{{ __('Profil') }}</span>
                     </a>
+                    <a
+                        href="{{ route('company-profiles.index') }}"
+                        class="{{ $navItemBase }} {{ request()->routeIs('company-profiles.*') ? $navItemActive : $navItemInactive }}"
+                        @if (request()->routeIs('company-profiles.*')) aria-current="page" @endif
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6M9 11h6M9 15h6" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 19h18" />
+                        </svg>
+                        <span>{{ __('Şirket Profili') }}</span>
+                    </a>
+                    <a
+                        href="{{ route('bank-accounts.index') }}"
+                        class="{{ $navItemBase }} {{ request()->routeIs('bank-accounts.*') ? $navItemActive : $navItemInactive }}"
+                        @if (request()->routeIs('bank-accounts.*')) aria-current="page" @endif
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 10V6l7-3 7 3v4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 10v8h14v-8" />
+                        </svg>
+                        <span>{{ __('Banka Hesapları') }}</span>
+                    </a>
+                    <a
+                        href="{{ route('currencies.index') }}"
+                        class="{{ $navItemBase }} {{ request()->routeIs('currencies.*') ? $navItemActive : $navItemInactive }}"
+                        @if (request()->routeIs('currencies.*')) aria-current="page" @endif
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h7a3 3 0 010 6H8" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 7h5a3 3 0 010 6H7" />
+                        </svg>
+                        <span>{{ __('Para Birimleri') }}</span>
+                    </a>
                 </div>
             </div>
         </div>

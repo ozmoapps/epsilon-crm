@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CompanyProfile;
 use App\Models\Contract;
 use App\Models\ContractTemplate;
 use App\Models\ContractTemplateVersion;
@@ -21,7 +22,8 @@ class ContractTemplateRenderer
         $formatMoney = fn ($value) => number_format((float) $value, 2, ',', '.');
 
         $customerName = $contract->customer_name;
-        $companyDefaults = config('company', []);
+        $companyProfile = CompanyProfile::current();
+        $companyDefaults = $companyProfile?->toArray() ?? config('company', []);
 
         $replacements = [
             'contract.contract_no' => $contract->contract_no,
@@ -44,6 +46,7 @@ class ContractTemplateRenderer
             'company.phone' => Arr::get($companyDefaults, 'phone', ''),
             'company.email' => Arr::get($companyDefaults, 'email', ''),
             'company.tax_no' => Arr::get($companyDefaults, 'tax_no', ''),
+            'company.footer_text' => Arr::get($companyDefaults, 'footer_text', ''),
             'line_items_table' => $this->lineItemsTable($contract, $currencySymbol, $formatMoney),
         ];
 
