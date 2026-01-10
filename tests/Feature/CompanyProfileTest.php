@@ -26,6 +26,42 @@ class CompanyProfileTest extends TestCase
             ->assertOk();
     }
 
+    public function test_authenticated_user_can_view_company_profile_edit_page(): void
+    {
+        $user = User::factory()->create();
+        $companyProfile = CompanyProfile::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('company-profiles.edit', $companyProfile))
+            ->assertOk();
+    }
+
+    public function test_authenticated_user_can_patch_company_profile(): void
+    {
+        $user = User::factory()->create();
+        $companyProfile = CompanyProfile::factory()->create([
+            'name' => 'Epsilon Denizcilik',
+            'email' => 'info@epsilon.test',
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('company-profiles.update', $companyProfile), [
+                'name' => 'Epsilon Servis',
+                'address' => 'İzmir',
+                'phone' => '+90 555 000 11 11',
+                'email' => 'servis@epsilon.test',
+                'tax_no' => '0987654321',
+                'footer_text' => 'Epsilon Servis · İzmir',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('company_profiles', [
+            'id' => $companyProfile->id,
+            'name' => 'Epsilon Servis',
+            'email' => 'servis@epsilon.test',
+        ]);
+    }
+
     public function test_authenticated_user_can_create_update_and_delete_company_profile(): void
     {
         $user = User::factory()->create();
