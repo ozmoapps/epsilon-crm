@@ -67,6 +67,9 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($salesOrders as $salesOrder)
+                        @php
+                            $isLocked = $salesOrder->isLocked();
+                        @endphp
                         <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
                             <td class="px-4 py-3">
                                 <div class="text-sm font-semibold text-slate-900">{{ $salesOrder->order_no }}</div>
@@ -101,18 +104,57 @@
                                             <x-icon.info class="h-4 w-4 text-sky-600" />
                                             {{ __('Görüntüle') }}
                                         </a>
-                                        <a href="{{ route('sales-orders.edit', $salesOrder) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
-                                            {{ __('Düzenle') }}
-                                        </a>
-                                        <form method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Satış siparişi silinsin mi?')">
+                                        @if ($isLocked)
+                                            <button
+                                                type="button"
+                                                class="{{ $actionItemClass }} cursor-not-allowed opacity-60"
+                                                aria-disabled="true"
+                                                title="{{ __('Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.') }}"
+                                                @click.prevent
+                                            >
+                                                <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                                {{ __('Düzenle') }}
+                                                <x-ui.badge variant="neutral" class="ml-auto text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
+                                            </button>
+                                        @else
+                                            <a href="{{ route('sales-orders.edit', $salesOrder) }}" class="{{ $actionItemClass }}">
+                                                <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                                {{ __('Düzenle') }}
+                                            </a>
+                                        @endif
+                                        @if ($isLocked)
+                                            <button
+                                                type="button"
+                                                class="{{ $actionDangerClass }} cursor-not-allowed opacity-60"
+                                                aria-disabled="true"
+                                                title="{{ __('Bu siparişin bağlı sözleşmesi olduğu için silinemez.') }}"
+                                                @click.prevent
+                                            >
                                                 <x-icon.trash class="h-4 w-4" />
                                                 {{ __('Sil') }}
+                                                <x-ui.badge variant="neutral" class="ml-auto text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
                                             </button>
-                                        </form>
+                                        @else
+                                            <form id="sales-order-delete-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}" class="hidden">
+                                                @csrf
+                                                @method('DELETE')
+                                            </form>
+                                            <x-ui.confirm-dialog
+                                                title="{{ __('Silme işlemini onayla') }}"
+                                                message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
+                                                confirm-text="{{ __('Evet, sil') }}"
+                                                cancel-text="{{ __('Vazgeç') }}"
+                                                variant="danger"
+                                                form-id="sales-order-delete-{{ $salesOrder->id }}"
+                                            >
+                                                <x-slot name="trigger">
+                                                    <button type="button" class="{{ $actionDangerClass }}">
+                                                        <x-icon.trash class="h-4 w-4" />
+                                                        {{ __('Sil') }}
+                                                    </button>
+                                                </x-slot>
+                                            </x-ui.confirm-dialog>
+                                        @endif
                                     </x-slot>
                                 </x-ui.dropdown>
                             </td>

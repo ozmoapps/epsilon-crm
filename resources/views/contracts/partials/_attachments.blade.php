@@ -72,13 +72,24 @@
                         >
                             {{ __('İndir') }}
                         </x-button>
-                        <form method="POST" action="{{ route('contracts.attachments.destroy', [$contract, $attachment]) }}">
+                        <form id="contract-attachment-delete-{{ $attachment->id }}" method="POST" action="{{ route('contracts.attachments.destroy', [$contract, $attachment]) }}" class="hidden">
                             @csrf
                             @method('DELETE')
-                            <x-button type="submit" variant="danger" size="sm" onclick="return confirm('Ek dosya silinsin mi?')">
-                                {{ __('Sil') }}
-                            </x-button>
                         </form>
+                        <x-ui.confirm-dialog
+                            title="{{ __('Silme işlemini onayla') }}"
+                            message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
+                            confirm-text="{{ __('Evet, sil') }}"
+                            cancel-text="{{ __('Vazgeç') }}"
+                            variant="danger"
+                            form-id="contract-attachment-delete-{{ $attachment->id }}"
+                        >
+                            <x-slot name="trigger">
+                                <x-button type="button" variant="danger" size="sm">
+                                    {{ __('Sil') }}
+                                </x-button>
+                            </x-slot>
+                        </x-ui.confirm-dialog>
                     </div>
                 </div>
             @empty

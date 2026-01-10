@@ -17,7 +17,7 @@ class SalesOrderController extends Controller
         $status = $request->input('status');
 
         $salesOrders = SalesOrder::query()
-            ->with(['customer', 'vessel'])
+            ->with(['customer', 'vessel', 'contract'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -97,6 +97,11 @@ class SalesOrderController extends Controller
 
     public function edit(SalesOrder $salesOrder)
     {
+        if ($salesOrder->isLocked()) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        }
+
         return view('sales_orders.edit', [
             'salesOrder' => $salesOrder,
             'customers' => Customer::orderBy('name')->get(),
@@ -108,6 +113,11 @@ class SalesOrderController extends Controller
 
     public function update(Request $request, SalesOrder $salesOrder)
     {
+        if ($salesOrder->isLocked()) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        }
+
         $validated = $request->validate($this->rules(), $this->messages());
 
         $salesOrder->update($validated);
@@ -118,6 +128,11 @@ class SalesOrderController extends Controller
 
     public function destroy(SalesOrder $salesOrder)
     {
+        if ($salesOrder->isLocked()) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Bu siparişin bağlı sözleşmesi olduğu için silinemez.');
+        }
+
         $salesOrder->delete();
 
         return redirect()->route('sales-orders.index')

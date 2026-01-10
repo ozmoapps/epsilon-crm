@@ -64,14 +64,25 @@
                                             <x-icon.pencil class="h-4 w-4 text-indigo-600" />
                                             {{ __('Düzenle') }}
                                         </a>
-                                        <form method="POST" action="{{ route('customers.destroy', $customer) }}">
+                                        <form id="customer-delete-{{ $customer->id }}" method="POST" action="{{ route('customers.destroy', $customer) }}" class="hidden">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Müşteri kaydı silinsin mi?')">
-                                                <x-icon.trash class="h-4 w-4" />
-                                                {{ __('Sil') }}
-                                            </button>
                                         </form>
+                                        <x-ui.confirm-dialog
+                                            title="{{ __('Silme işlemini onayla') }}"
+                                            message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
+                                            confirm-text="{{ __('Evet, sil') }}"
+                                            cancel-text="{{ __('Vazgeç') }}"
+                                            variant="danger"
+                                            form-id="customer-delete-{{ $customer->id }}"
+                                        >
+                                            <x-slot name="trigger">
+                                                <button type="button" class="{{ $actionDangerClass }}">
+                                                    <x-icon.trash class="h-4 w-4" />
+                                                    {{ __('Sil') }}
+                                                </button>
+                                            </x-slot>
+                                        </x-ui.confirm-dialog>
                                     </x-slot>
                                 </x-ui.dropdown>
                             </td>

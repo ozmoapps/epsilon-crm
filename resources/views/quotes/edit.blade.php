@@ -11,14 +11,25 @@
 
     <x-card>
         <x-slot name="header">{{ __('Teklif Bilgileri') }}</x-slot>
-        <form method="POST" action="{{ route('quotes.update', $quote) }}" class="space-y-6">
+        <form id="quote-update-{{ $quote->id }}" method="POST" action="{{ route('quotes.update', $quote) }}" class="space-y-6">
             @csrf
             @method('PUT')
 
             @include('quotes._form')
 
             <div class="flex items-center justify-end">
-                <x-button type="submit">{{ __('Güncelle') }}</x-button>
+                <x-ui.confirm-dialog
+                    title="{{ __('Değişiklikleri kaydet') }}"
+                    message="{{ __('Yaptığınız değişiklikler kaydedilecek. Devam edilsin mi?') }}"
+                    confirm-text="{{ __('Kaydet') }}"
+                    cancel-text="{{ __('Vazgeç') }}"
+                    variant="primary"
+                    form-id="quote-update-{{ $quote->id }}"
+                >
+                    <x-slot name="trigger">
+                        <x-button type="button">{{ __('Güncelle') }}</x-button>
+                    </x-slot>
+                </x-ui.confirm-dialog>
             </div>
         </form>
     </x-card>

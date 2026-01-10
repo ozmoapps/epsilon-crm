@@ -129,6 +129,15 @@ class SalesOrder extends Model
         return $this->hasMany(Contract::class)->orderByDesc('revision_no');
     }
 
+    public function isLocked(): bool
+    {
+        if ($this->relationLoaded('contract')) {
+            return $this->contract !== null;
+        }
+
+        return $this->contract()->exists();
+    }
+
     public function recalculateTotals(): void
     {
         $this->loadMissing('items');

@@ -8,6 +8,7 @@
                     $canComplete = $salesOrder->status === 'in_progress';
                     $canCancel = ! in_array($salesOrder->status, ['completed', 'canceled'], true);
                     $hasContract = (bool) $salesOrder->contract;
+                    $isLocked = $salesOrder->isLocked();
                     $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
                     $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
                 @endphp
@@ -17,9 +18,21 @@
                         {{ __('Sözleşmeyi Görüntüle') }}
                     </x-button>
                 @else
-                    <x-button href="{{ route('sales-orders.contracts.create', $salesOrder) }}" size="sm">
-                        {{ __('Sözleşme Oluştur') }}
-                    </x-button>
+                    <form id="sales-order-contract-create-{{ $salesOrder->id }}" method="GET" action="{{ route('sales-orders.contracts.create', $salesOrder) }}" class="hidden"></form>
+                    <x-ui.confirm-dialog
+                        title="{{ __('Sözleşme oluşturmayı onayla') }}"
+                        message="{{ __('Bu siparişten yeni bir sözleşme oluşturulacak. Devam etmek istiyor musunuz?') }}"
+                        confirm-text="{{ __('Sözleşme oluştur') }}"
+                        cancel-text="{{ __('Vazgeç') }}"
+                        variant="primary"
+                        form-id="sales-order-contract-create-{{ $salesOrder->id }}"
+                    >
+                        <x-slot name="trigger">
+                            <x-button type="button" size="sm">
+                                {{ __('Sözleşme Oluştur') }}
+                            </x-button>
+                        </x-slot>
+                    </x-ui.confirm-dialog>
                 @endif
 
                 <x-ui.dropdown align="right" width="w-60">
@@ -77,6 +90,58 @@
                                     </button>
                                 </x-ui.tooltip>
                             </form>
+                        @endif
+                        <div class="my-1 h-px bg-slate-100"></div>
+                        @if ($isLocked)
+                            <button
+                                type="button"
+                                class="{{ $actionItemClass }} cursor-not-allowed opacity-60"
+                                aria-disabled="true"
+                                title="{{ __('Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.') }}"
+                                @click.prevent
+                            >
+                                <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                {{ __('Düzenle') }}
+                                <x-ui.badge variant="neutral" class="ml-auto text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
+                            </button>
+                        @else
+                            <a href="{{ route('sales-orders.edit', $salesOrder) }}" class="{{ $actionItemClass }}">
+                                <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                {{ __('Düzenle') }}
+                            </a>
+                        @endif
+                        @if ($isLocked)
+                            <button
+                                type="button"
+                                class="{{ $actionDangerClass }} cursor-not-allowed opacity-60"
+                                aria-disabled="true"
+                                title="{{ __('Bu siparişin bağlı sözleşmesi olduğu için silinemez.') }}"
+                                @click.prevent
+                            >
+                                <x-icon.trash class="h-4 w-4" />
+                                {{ __('Sil') }}
+                                <x-ui.badge variant="neutral" class="ml-auto text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
+                            </button>
+                        @else
+                            <form id="sales-order-delete-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}" class="hidden">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+                            <x-ui.confirm-dialog
+                                title="{{ __('Silme işlemini onayla') }}"
+                                message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
+                                confirm-text="{{ __('Evet, sil') }}"
+                                cancel-text="{{ __('Vazgeç') }}"
+                                variant="danger"
+                                form-id="sales-order-delete-{{ $salesOrder->id }}"
+                            >
+                                <x-slot name="trigger">
+                                    <button type="button" class="{{ $actionDangerClass }}">
+                                        <x-icon.trash class="h-4 w-4" />
+                                        {{ __('Sil') }}
+                                    </button>
+                                </x-slot>
+                            </x-ui.confirm-dialog>
                         @endif
                     </x-slot>
                 </x-ui.dropdown>

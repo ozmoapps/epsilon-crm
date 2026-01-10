@@ -11,6 +11,11 @@ class QuoteItemController extends Controller
 {
     public function store(Request $request, Quote $quote)
     {
+        if ($quote->isLocked()) {
+            return redirect()->back()
+                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        }
+
         $this->normalizeNumericInputs($request);
         $validated = $request->validate($this->rules(), $this->messages());
         $validated['is_optional'] = $request->boolean('is_optional');
@@ -28,6 +33,11 @@ class QuoteItemController extends Controller
             abort(404);
         }
 
+        if ($quote->isLocked()) {
+            return redirect()->back()
+                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        }
+
         $this->normalizeNumericInputs($request);
         $validated = $request->validate($this->rules(), $this->messages());
         $validated['is_optional'] = $request->boolean('is_optional');
@@ -43,6 +53,11 @@ class QuoteItemController extends Controller
     {
         if ($item->quote_id !== $quote->id) {
             abort(404);
+        }
+
+        if ($quote->isLocked()) {
+            return redirect()->back()
+                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
         }
 
         $item->delete();

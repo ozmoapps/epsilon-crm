@@ -11,14 +11,25 @@
 
     <x-card class="max-w-4xl">
         <x-slot name="header">{{ __('Müşteri Bilgileri') }}</x-slot>
-        <form method="POST" action="{{ route('customers.update', $customer) }}" class="space-y-6">
+        <form id="customer-update-{{ $customer->id }}" method="POST" action="{{ route('customers.update', $customer) }}" class="space-y-6">
             @csrf
             @method('PUT')
 
             @include('customers._form', ['customer' => $customer])
 
             <div class="flex items-center justify-end gap-3">
-                <x-button type="submit" size="sm">{{ __('Güncelle') }}</x-button>
+                <x-ui.confirm-dialog
+                    title="{{ __('Değişiklikleri kaydet') }}"
+                    message="{{ __('Yaptığınız değişiklikler kaydedilecek. Devam edilsin mi?') }}"
+                    confirm-text="{{ __('Kaydet') }}"
+                    cancel-text="{{ __('Vazgeç') }}"
+                    variant="primary"
+                    form-id="customer-update-{{ $customer->id }}"
+                >
+                    <x-slot name="trigger">
+                        <x-button type="button" size="sm">{{ __('Güncelle') }}</x-button>
+                    </x-slot>
+                </x-ui.confirm-dialog>
             </div>
         </form>
     </x-card>

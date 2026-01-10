@@ -4,6 +4,7 @@
             <x-slot name="actions">
                 @php
                     $hasSalesOrder = (bool) $quote->salesOrder;
+                    $isLocked = $quote->isLocked();
                 @endphp
 
                 @if ($hasSalesOrder)
@@ -41,9 +42,26 @@
                         </x-button>
                     </form>
                 @endif
-                <x-button href="{{ route('quotes.edit', $quote) }}" variant="secondary" size="sm">
-                    {{ __('Düzenle') }}
-                </x-button>
+                @if ($isLocked)
+                    <div class="flex flex-col items-start gap-1">
+                        <x-button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            class="cursor-not-allowed opacity-60"
+                            aria-disabled="true"
+                            title="{{ __('Bu teklif siparişe dönüştürüldüğü için düzenlenemez.') }}"
+                            @click.prevent
+                        >
+                            {{ __('Düzenle') }}
+                        </x-button>
+                        <x-ui.badge variant="neutral" class="text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
+                    </div>
+                @else
+                    <x-button href="{{ route('quotes.edit', $quote) }}" variant="secondary" size="sm">
+                        {{ __('Düzenle') }}
+                    </x-button>
+                @endif
                 <x-button href="{{ route('quotes.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm teklifler') }}
                 </x-button>
