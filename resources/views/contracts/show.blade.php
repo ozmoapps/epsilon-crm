@@ -59,6 +59,25 @@
                     </form>
                 @endif
 
+                <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}" class="hidden">
+                    @csrf
+                    @method('DELETE')
+                </form>
+                <x-ui.confirm-dialog
+                    title="{{ __('Silme işlemini onayla') }}"
+                    message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
+                    confirm-text="{{ __('Evet, sil') }}"
+                    cancel-text="{{ __('Vazgeç') }}"
+                    variant="danger"
+                    form-id="contract-delete-{{ $contract->id }}"
+                >
+                    <x-slot name="trigger">
+                        <x-button type="button" variant="danger" size="sm">
+                            {{ __('Sil') }}
+                        </x-button>
+                    </x-slot>
+                </x-ui.confirm-dialog>
+
                 <x-button href="{{ route('contracts.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm sözleşmeler') }}
                 </x-button>

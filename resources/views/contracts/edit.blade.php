@@ -14,7 +14,7 @@
 
         <x-card>
             <x-slot name="header">{{ __('Sözleşme Detayları') }}</x-slot>
-            <form method="POST" action="{{ route('contracts.update', $contract) }}" class="space-y-6">
+            <form id="contract-update-{{ $contract->id }}" method="POST" action="{{ route('contracts.update', $contract) }}" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -24,7 +24,18 @@
                     <x-button type="submit" name="apply_template" value="1" variant="secondary">
                         {{ __('Şablonu Uygula') }}
                     </x-button>
-                    <x-button type="submit">{{ __('Güncelle') }}</x-button>
+                    <x-ui.confirm-dialog
+                        title="{{ __('Değişiklikleri kaydet') }}"
+                        message="{{ __('Yaptığınız değişiklikler kaydedilecek. Devam edilsin mi?') }}"
+                        confirm-text="{{ __('Kaydet') }}"
+                        cancel-text="{{ __('Vazgeç') }}"
+                        variant="primary"
+                        form-id="contract-update-{{ $contract->id }}"
+                    >
+                        <x-slot name="trigger">
+                            <x-button type="button">{{ __('Güncelle') }}</x-button>
+                        </x-slot>
+                    </x-ui.confirm-dialog>
                 </div>
             </form>
         </x-card>

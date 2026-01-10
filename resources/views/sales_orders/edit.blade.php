@@ -15,13 +15,24 @@
         </x-page-header>
     </x-slot>
 
-    <form method="POST" action="{{ route('sales-orders.update', $salesOrder) }}" class="space-y-6">
+    <form id="sales-order-update-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.update', $salesOrder) }}" class="space-y-6">
         @csrf
         @method('PUT')
         @include('sales_orders._form', ['salesOrder' => $salesOrder])
 
         <div class="flex justify-end gap-3">
-            <x-button type="submit">{{ __('Kaydet') }}</x-button>
+            <x-ui.confirm-dialog
+                title="{{ __('Değişiklikleri kaydet') }}"
+                message="{{ __('Yaptığınız değişiklikler kaydedilecek. Devam edilsin mi?') }}"
+                confirm-text="{{ __('Kaydet') }}"
+                cancel-text="{{ __('Vazgeç') }}"
+                variant="primary"
+                form-id="sales-order-update-{{ $salesOrder->id }}"
+            >
+                <x-slot name="trigger">
+                    <x-button type="button">{{ __('Kaydet') }}</x-button>
+                </x-slot>
+            </x-ui.confirm-dialog>
         </div>
     </form>
 </x-app-layout>

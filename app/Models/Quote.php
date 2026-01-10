@@ -117,6 +117,15 @@ class Quote extends Model
         return $this->hasOne(SalesOrder::class, 'quote_id');
     }
 
+    public function isLocked(): bool
+    {
+        if ($this->relationLoaded('salesOrder')) {
+            return $this->salesOrder !== null;
+        }
+
+        return $this->salesOrder()->exists();
+    }
+
     public function recalculateTotals(): void
     {
         $this->loadMissing('items');

@@ -11,6 +11,11 @@ class SalesOrderItemController extends Controller
 {
     public function store(Request $request, SalesOrder $salesOrder)
     {
+        if ($salesOrder->isLocked()) {
+            return redirect()->back()
+                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        }
+
         $this->normalizeNumericInputs($request);
         $validated = $request->validate($this->rules(), $this->messages());
         $validated['is_optional'] = $request->boolean('is_optional');
@@ -28,6 +33,11 @@ class SalesOrderItemController extends Controller
             abort(404);
         }
 
+        if ($salesOrder->isLocked()) {
+            return redirect()->back()
+                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        }
+
         $this->normalizeNumericInputs($request);
         $validated = $request->validate($this->rules(), $this->messages());
         $validated['is_optional'] = $request->boolean('is_optional');
@@ -43,6 +53,11 @@ class SalesOrderItemController extends Controller
     {
         if ($item->sales_order_id !== $salesOrder->id) {
             abort(404);
+        }
+
+        if ($salesOrder->isLocked()) {
+            return redirect()->back()
+                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
         }
 
         $item->delete();

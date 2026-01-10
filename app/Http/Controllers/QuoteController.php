@@ -19,7 +19,7 @@ class QuoteController extends Controller
         $status = $request->input('status');
 
         $quotes = Quote::query()
-            ->with(['customer', 'vessel'])
+            ->with(['customer', 'vessel', 'salesOrder'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -73,6 +73,11 @@ class QuoteController extends Controller
 
     public function edit(Quote $quote)
     {
+        if ($quote->isLocked()) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        }
+
         return view('quotes.edit', [
             'quote' => $quote,
             'customers' => Customer::orderBy('name')->get(),
@@ -84,6 +89,11 @@ class QuoteController extends Controller
 
     public function update(Request $request, Quote $quote)
     {
+        if ($quote->isLocked()) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        }
+
         $validated = $request->validate($this->rules(), $this->messages());
 
         $quote->update($validated);
@@ -94,6 +104,11 @@ class QuoteController extends Controller
 
     public function destroy(Quote $quote)
     {
+        if ($quote->isLocked()) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'Bu teklifin bağlı siparişi olduğu için silinemez.');
+        }
+
         $quote->delete();
 
         return redirect()->route('quotes.index')

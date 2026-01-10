@@ -87,12 +87,23 @@
             </div>
         </x-card>
 
-        <form method="POST" action="{{ route('customers.destroy', $customer) }}">
+        <form id="customer-delete-{{ $customer->id }}" method="POST" action="{{ route('customers.destroy', $customer) }}" class="hidden">
             @csrf
             @method('DELETE')
-            <x-button type="submit" variant="danger" class="w-full" onclick="return confirm('Müşteri kaydı silinsin mi?')">
-                {{ __('Müşteri Kaydını Sil') }}
-            </x-button>
         </form>
+        <x-ui.confirm-dialog
+            title="{{ __('Silme işlemini onayla') }}"
+            message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
+            confirm-text="{{ __('Evet, sil') }}"
+            cancel-text="{{ __('Vazgeç') }}"
+            variant="danger"
+            form-id="customer-delete-{{ $customer->id }}"
+        >
+            <x-slot name="trigger">
+                <x-button type="button" variant="danger" class="w-full">
+                    {{ __('Müşteri Kaydını Sil') }}
+                </x-button>
+            </x-slot>
+        </x-ui.confirm-dialog>
     </div>
 </x-app-layout>
