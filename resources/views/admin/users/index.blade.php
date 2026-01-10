@@ -74,41 +74,41 @@
             <!-- Users List -->
             <x-ui.card>
                 <header class="mb-4">
-                    <h2 class="text-lg font-medium text-gray-900">
+                    <h2 class="text-base font-semibold text-slate-900">
                         {{ __('Kullanıcı Listesi') }}
                     </h2>
                 </header>
 
-                <div class="overflow-x-auto sm:overflow-visible">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto sm:overflow-x-hidden">
+                    <table class="w-full table-fixed divide-y divide-slate-200 text-sm text-slate-700">
+                        <thead class="bg-slate-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">İsim</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">E-posta</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Rol</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Kayıt Tarihi</th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">İşlemler</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-500 tracking-wide">İsim</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-500 tracking-wide">E-posta</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-500 tracking-wide">Rol</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-slate-500 tracking-wide">Kayıt Tarihi</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-slate-500 tracking-wide w-32">İşlemler</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white divide-y divide-slate-200">
                             @foreach ($users as $user)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <tr class="hover:bg-slate-50/70 transition-colors">
+                                    <td class="px-6 py-3 text-sm font-medium text-slate-900 max-w-0 truncate">
                                         {{ $user->name }}
                                         @if(auth()->id() === $user->id) 
-                                            <span class="text-xs text-gray-500 ms-1">(Siz)</span>
+                                            <span class="text-xs text-slate-500 ms-1">(Siz)</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->email }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $user->email }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm">
                                         @if($user->is_admin)
                                             <x-ui.badge color="purple">Admin</x-ui.badge>
                                         @else
                                             <x-ui.badge color="gray">Staff</x-ui.badge>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $user->created_at->format('d.m.Y H:i') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-slate-600">{{ $user->created_at->format('d.m.Y H:i') }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex items-center justify-end gap-2">
                                             
                                             <!-- Role Toggle -->

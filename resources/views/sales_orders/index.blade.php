@@ -181,41 +181,41 @@
                 ];
             @endphp
             <x-ui.table class="ui-table-sticky">
-                <thead class="bg-gray-50 border-b border-gray-100">
+                <thead class="bg-slate-50 border-b border-slate-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Sipariş No') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Başlık') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Tekne') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Durum') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Genel Toplam') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Sipariş No') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Başlık') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Müşteri') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Tekne') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Durum') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold tracking-wide text-slate-500">{{ __('Genel Toplam') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold tracking-wide text-slate-500 w-32">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 bg-white">
+                <tbody class="divide-y divide-slate-100 bg-white">
                     @forelse ($salesOrders as $salesOrder)
                         @php
                             $isLocked = $salesOrder->isLocked();
                         @endphp
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $salesOrder->order_no }}</div>
-                                <div class="text-xs text-gray-500">
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-6 py-3 whitespace-nowrap max-w-0">
+                                <div class="text-sm font-medium text-slate-900 truncate">{{ $salesOrder->order_no }}</div>
+                                <div class="text-xs text-slate-500">
                                     {{ $salesOrder->order_date ? $salesOrder->order_date->format('d.m.Y') : '-' }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $salesOrder->title }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $salesOrder->customer?->name ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $salesOrder->vessel?->name ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $salesOrder->title }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $salesOrder->customer?->name ?? '-' }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $salesOrder->vessel?->name ?? '-' }}</td>
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 <x-ui.badge :variant="$statusVariants[$salesOrder->status] ?? 'neutral'">
                                     {{ $salesOrder->status_label }}
                                 </x-ui.badge>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                            <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium text-slate-900">
                                 {{ \App\Support\MoneyMath::formatTR($salesOrder->grand_total) }} {{ $salesOrder->currency }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
                                 <form id="sales-order-delete-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}" class="hidden">
                                     @csrf
                                     @method('DELETE')

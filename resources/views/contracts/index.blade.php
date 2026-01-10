@@ -150,27 +150,27 @@
 
         <x-card class="!p-0 overflow-hidden">
              <x-ui.table>
-                <thead class="bg-gray-50 border-b border-gray-100">
+                <thead class="bg-slate-50 border-b border-slate-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Sözleşme No') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Tarih') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Durum') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Sözleşme No') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Müşteri') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Tarih') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Durum') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold tracking-wide text-slate-500 w-32">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 bg-white">
+                <tbody class="divide-y divide-slate-100 bg-white">
                     @forelse ($contracts as $contract)
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $contract->contract_no }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $contract->customer_name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $contract->issued_at?->format('d.m.Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-6 py-3 text-sm font-medium text-slate-900 max-w-0 truncate">{{ $contract->contract_no }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $contract->customer_name }}</td>
+                            <td class="px-6 py-3 whitespace-nowrap text-sm text-slate-600">{{ $contract->issued_at?->format('d.m.Y') }}</td>
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 <x-ui.badge :variant="$statusVariants[$contract->status] ?? 'neutral'">
                                     {{ $contract->status_label }}
                                 </x-ui.badge>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
                                 <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}" class="hidden">
                                     @csrf
                                     @method('DELETE')

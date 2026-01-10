@@ -30,14 +30,14 @@
                         <th class="px-4 py-3 text-left">{{ __('LOA') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Beam') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Draft') }}</th>
-                        <th class="px-4 py-3 text-right">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-4 py-3 text-right w-28">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($vessels as $vessel)
                         <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $vessel->name }}</td>
-                            <td class="px-4 py-3 text-sm text-slate-600">{{ $vessel->customer?->name ?? 'Müşteri yok' }}</td>
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-900 max-w-0 truncate">{{ $vessel->name }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $vessel->customer?->name ?? 'Müşteri yok' }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $vessel->boat_type_label ?: '—' }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $vessel->loa_m ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $vessel->beam_m ?? '—' }}</td>

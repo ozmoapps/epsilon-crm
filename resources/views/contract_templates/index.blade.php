@@ -30,19 +30,21 @@
                         <th class="px-4 py-3 text-left">{{ __('Dil') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Durum') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Güncelleme') }}</th>
-                        <th class="px-4 py-3 text-right">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-4 py-3 text-right w-32">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($templates as $template)
                         <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-900">
-                                {{ $template->name }}
-                                @if ($template->is_default)
-                                    <span class="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                                        {{ __('Varsayılan') }}
-                                    </span>
-                                @endif
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-900 max-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="truncate">{{ $template->name }}</span>
+                                    @if ($template->is_default)
+                                        <span class="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                            {{ __('Varsayılan') }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ config('contracts.locales')[$template->locale] ?? $template->locale }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">

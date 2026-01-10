@@ -150,35 +150,35 @@
                 ];
             @endphp
             <x-ui.table>
-                <thead class="bg-gray-50 border-b border-gray-100">
+                <thead class="bg-slate-50 border-b border-slate-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('İş Emri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Tekne') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Durum') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Planlanan Başlangıç') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Planlanan Bitiş') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('İş Emri') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Müşteri') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Tekne') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Durum') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Planlanan Başlangıç') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Planlanan Bitiş') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold tracking-wide text-slate-500 w-32">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 bg-white">
+                <tbody class="divide-y divide-slate-100 bg-white">
                     @forelse ($workOrders as $workOrder)
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $workOrder->title }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $workOrder->customer?->name ?? 'Müşteri yok' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $workOrder->vessel?->name ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-6 py-3 text-sm font-medium text-slate-900 max-w-0 truncate">{{ $workOrder->title }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $workOrder->customer?->name ?? 'Müşteri yok' }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $workOrder->vessel?->name ?? '-' }}</td>
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 <x-ui.badge :variant="$statusVariants[$workOrder->status] ?? 'neutral'">
                                     {{ $workOrder->status_label }}
                                 </x-ui.badge>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-6 py-3 whitespace-nowrap text-sm text-slate-600">
                                 {{ $workOrder->planned_start_at ? $workOrder->planned_start_at->format('d.m.Y') : '—' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-6 py-3 whitespace-nowrap text-sm text-slate-600">
                                 {{ $workOrder->planned_end_at ? $workOrder->planned_end_at->format('d.m.Y') : '—' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
                                 <form id="work-order-delete-{{ $workOrder->id }}" method="POST" action="{{ route('work-orders.destroy', $workOrder) }}" class="hidden">
                                     @csrf
                                     @method('DELETE')

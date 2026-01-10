@@ -32,13 +32,13 @@
                         <th class="px-4 py-3 text-left">{{ __('Para Birimi') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Kod') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Durum') }}</th>
-                        <th class="px-4 py-3 text-right">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-4 py-3 text-right w-28">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($currencies as $currency)
                         <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $currency->name }}</td>
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-900 max-w-0 truncate">{{ $currency->name }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $currency->code }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">
                                 {{ $currency->is_active ? __('Aktif') : __('Pasif') }}

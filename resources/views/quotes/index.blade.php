@@ -172,34 +172,34 @@
                 ];
             @endphp
             <x-ui.table>
-                <thead class="bg-gray-50 border-b border-gray-100">
+                <thead class="bg-slate-50 border-b border-slate-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Teklif No') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Başlık') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Tekne') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Durum') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Teklif No') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Başlık') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Müşteri') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Tekne') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold tracking-wide text-slate-500">{{ __('Durum') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold tracking-wide text-slate-500 w-32">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 bg-white">
+                <tbody class="divide-y divide-slate-100 bg-white">
                     @forelse ($quotes as $quote)
                         @php
                             $isLocked = $quote->isLocked();
                         @endphp
-                        <tr class="hover:bg-gray-50/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-normal text-sm font-medium text-gray-900">{{ $quote->quote_no }}</td>
-                            <td class="px-6 py-4 whitespace-normal text-sm text-gray-600">{{ $quote->title }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $quote->customer?->name ?? 'Müşteri yok' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $quote->vessel?->name ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-6 py-3 text-sm font-medium text-slate-900 max-w-0 truncate">{{ $quote->quote_no }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $quote->title }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $quote->customer?->name ?? 'Müşteri yok' }}</td>
+                            <td class="px-6 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $quote->vessel?->name ?? '-' }}</td>
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 @if ($quote->status)
                                     <x-ui.badge :variant="$statusVariants[$quote->status] ?? 'neutral'">
                                         {{ $quote->status_label }}
                                     </x-ui.badge>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
                                 <form id="quote-delete-{{ $quote->id }}" method="POST" action="{{ route('quotes.destroy', $quote) }}" class="hidden">
                                     @csrf
                                     @method('DELETE')
