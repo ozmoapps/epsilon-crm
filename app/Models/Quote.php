@@ -18,6 +18,10 @@ class Quote extends Model
         'work_order_id',
         'title',
         'status',
+        'issued_at',
+        'contact_name',
+        'contact_phone',
+        'location',
         'currency_id',
         'currency',
         'validity_days',
@@ -39,6 +43,7 @@ class Quote extends Model
     protected $casts = [
         'sent_at' => 'datetime',
         'accepted_at' => 'datetime',
+        'issued_at' => 'date',
         'subtotal' => 'decimal:2',
         'discount_total' => 'decimal:2',
         'vat_total' => 'decimal:2',

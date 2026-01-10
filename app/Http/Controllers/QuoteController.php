@@ -52,9 +52,11 @@ class QuoteController extends Controller
         return view('quotes.create', [
             'quote' => new Quote([
                 'status' => 'draft',
+                'issued_at' => now()->toDateString(),
                 'currency_id' => $defaultCurrencyId,
                 'currency' => $defaultCurrencyCode,
                 'validity_days' => config('quotes.default_validity_days'),
+                'payment_terms' => config('quotes.default_payment_terms'),
             ]),
             'customers' => Customer::orderBy('name')->get(),
             'vessels' => Vessel::with('customer')->orderBy('name')->get(),
@@ -66,13 +68,21 @@ class QuoteController extends Controller
 
     public function store(Request $request)
     {
+        $this->prepareItemsForValidation($request);
         $validated = $request->validate($this->rules(), $this->messages());
 
         $currency = Currency::query()->find($validated['currency_id']);
         $validated['currency'] = $currency?->code ?? config('quotes.default_currency');
         $validated['created_by'] = $request->user()->id;
 
-        Quote::create($validated);
+        $items = $validated['items'] ?? null;
+        unset($validated['items']);
+
+        $quote = Quote::create($validated);
+
+        if ($items !== null) {
+            $this->syncItems($quote, $items);
+        }
 
         return redirect()->route('quotes.index')
             ->with('success', 'Teklif oluşturuldu.');
@@ -130,7 +140,7 @@ class QuoteController extends Controller
         }
 
         return view('quotes.edit', [
-            'quote' => $quote,
+            'quote' => $quote->loadMissing('items'),
             'customers' => Customer::orderBy('name')->get(),
             'vessels' => Vessel::with('customer')->orderBy('name')->get(),
             'workOrders' => WorkOrder::orderByDesc('id')->get(),
@@ -150,7 +160,10 @@ class QuoteController extends Controller
             return $response;
         }
 
+        $this->prepareItemsForValidation($request);
         $validated = $request->validate($this->rules(), $this->messages());
+        $items = $validated['items'] ?? null;
+        unset($validated['items']);
 
         $nextStatus = $validated['status'];
         $payload = $validated;
@@ -169,6 +182,10 @@ class QuoteController extends Controller
         $payload['currency'] = $currency?->code ?? $payload['currency'] ?? config('quotes.default_currency');
 
         $quote->fill($payload)->save();
+
+        if ($request->has('items')) {
+            $this->syncItems($quote, $items ?? []);
+        }
 
         return redirect()->route('quotes.show', $quote)
             ->with('success', 'Teklif güncellendi.');
@@ -307,6 +324,10 @@ class QuoteController extends Controller
             'work_order_id' => ['nullable', 'exists:work_orders,id'],
             'title' => ['required', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in($statuses)],
+            'issued_at' => ['required', 'date'],
+            'contact_name' => ['nullable', 'string', 'max:255'],
+            'contact_phone' => ['nullable', 'string', 'max:255'],
+            'location' => ['nullable', 'string', 'max:255'],
             'currency_id' => ['required', Rule::exists('currencies', 'id')->where('is_active', true)],
             'validity_days' => ['nullable', 'integer', 'min:0'],
             'estimated_duration_days' => ['nullable', 'integer', 'min:0'],
@@ -315,6 +336,12 @@ class QuoteController extends Controller
             'exclusions' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'fx_note' => ['nullable', 'string'],
+            'items' => ['nullable', 'array'],
+            'items.*.id' => ['nullable', 'integer', 'exists:quote_items,id'],
+            'items.*.title' => ['required', 'string', 'max:255'],
+            'items.*.description' => ['required', 'string'],
+            'items.*.amount' => ['required', 'numeric', 'min:0'],
+            'items.*.vat_rate' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 
@@ -330,12 +357,26 @@ class QuoteController extends Controller
             'title.max' => 'Teklif konusu en fazla 255 karakter olabilir.',
             'status.required' => 'Durum alanı zorunludur.',
             'status.in' => 'Durum seçimi geçersiz.',
+            'issued_at.required' => 'Teklif tarihi zorunludur.',
+            'issued_at.date' => 'Teklif tarihi geçerli değil.',
+            'contact_name.max' => 'İletişim kişisi en fazla 255 karakter olabilir.',
+            'contact_phone.max' => 'İletişim telefonu en fazla 255 karakter olabilir.',
+            'location.max' => 'Lokasyon en fazla 255 karakter olabilir.',
             'currency_id.required' => 'Para birimi zorunludur.',
             'currency_id.exists' => 'Seçilen para birimi geçersiz.',
             'validity_days.integer' => 'Geçerlilik günü sayısal olmalıdır.',
             'validity_days.min' => 'Geçerlilik günü negatif olamaz.',
             'estimated_duration_days.integer' => 'Tahmini süre sayısal olmalıdır.',
             'estimated_duration_days.min' => 'Tahmini süre negatif olamaz.',
+            'items.array' => 'Kalem listesi geçerli değil.',
+            'items.*.title.required' => 'Kalem başlığı zorunludur.',
+            'items.*.title.max' => 'Kalem başlığı en fazla 255 karakter olabilir.',
+            'items.*.description.required' => 'Kalem açıklaması zorunludur.',
+            'items.*.amount.required' => 'Kalem tutarı zorunludur.',
+            'items.*.amount.numeric' => 'Kalem tutarı sayısal olmalıdır.',
+            'items.*.amount.min' => 'Kalem tutarı negatif olamaz.',
+            'items.*.vat_rate.numeric' => 'KDV oranı sayısal olmalıdır.',
+            'items.*.vat_rate.min' => 'KDV oranı negatif olamaz.',
         ];
     }
 
@@ -345,6 +386,101 @@ class QuoteController extends Controller
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
+    }
+
+    private function prepareItemsForValidation(Request $request): void
+    {
+        if (! $request->has('items')) {
+            return;
+        }
+
+        $items = collect($request->input('items', []))
+            ->map(function (array $item) {
+                $amount = $this->normalizeDecimal($item['amount'] ?? null);
+                $vatRate = $this->normalizeDecimal($item['vat_rate'] ?? null);
+
+                return [
+                    'id' => $item['id'] ?? null,
+                    'title' => isset($item['title']) ? trim((string) $item['title']) : null,
+                    'description' => isset($item['description']) ? trim((string) $item['description']) : null,
+                    'amount' => $amount,
+                    'vat_rate' => $vatRate,
+                ];
+            })
+            ->filter(function (array $item) {
+                return filled($item['title'])
+                    || filled($item['description'])
+                    || filled($item['amount'])
+                    || filled($item['vat_rate']);
+            })
+            ->values()
+            ->all();
+
+        $request->merge(['items' => $items]);
+    }
+
+    private function normalizeDecimal(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = str_replace([' ', ','], ['', '.'], $value);
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
+    }
+
+    private function syncItems(Quote $quote, array $items): void
+    {
+        $normalizedItems = collect($items)->map(function (array $item, int $index) {
+            $amount = (float) $item['amount'];
+            $vatRate = $item['vat_rate'] !== null && $item['vat_rate'] !== ''
+                ? (float) $item['vat_rate']
+                : null;
+
+            return [
+                'id' => $item['id'] ?? null,
+                'payload' => [
+                    'section' => $item['title'],
+                    'item_type' => 'other',
+                    'description' => $item['description'],
+                    'qty' => 1,
+                    'unit' => null,
+                    'unit_price' => $amount,
+                    'discount_amount' => 0,
+                    'vat_rate' => $vatRate,
+                    'is_optional' => false,
+                    'sort_order' => $index,
+                ],
+            ];
+        })->values();
+
+        if ($normalizedItems->isEmpty()) {
+            $quote->items()->delete();
+            $quote->recalculateTotals();
+            return;
+        }
+
+        $keptIds = [];
+
+        $normalizedItems->each(function (array $item) use ($quote, &$keptIds) {
+            if ($item['id']) {
+                $existing = $quote->items()->whereKey($item['id'])->first();
+
+                if ($existing) {
+                    $existing->update($item['payload']);
+                    $keptIds[] = $existing->id;
+                    return;
+                }
+            }
+
+            $created = $quote->items()->create($item['payload']);
+            $keptIds[] = $created->id;
+        });
+
+        $quote->items()->whereNotIn('id', $keptIds)->delete();
+        $quote->recalculateTotals();
     }
 
     private function authorizeQuote(string $ability, Quote $quote)
