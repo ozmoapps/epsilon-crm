@@ -6,6 +6,7 @@ use App\Models\Contract;
 use App\Models\ContractTemplate;
 use App\Models\ContractTemplateVersion;
 use App\Models\SalesOrder;
+use App\Services\ActivityLogger;
 use App\Services\ContractTemplateRenderer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -77,6 +78,11 @@ class ContractController extends Controller
                 ->with('warning', 'Bu satış siparişi için sözleşme zaten oluşturuldu.');
         }
 
+        if (! $salesOrder->canTransitionTo('contracted')) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Bu satış siparişi sözleşmeye dönüştürülemez.');
+        }
+
         $validated = $request->validate($this->rules(), $this->messages());
 
         $salesOrder->load('customer');
@@ -87,6 +93,21 @@ class ContractController extends Controller
         ]);
 
         $contract = Contract::create($data);
+
+        $salesOrder->transitionTo('contracted', [
+            'contract_id' => $contract->id,
+            'contract_no' => $contract->contract_no,
+        ]);
+
+        app(ActivityLogger::class)->log($salesOrder, 'converted_to_contract', [
+            'contract_id' => $contract->id,
+            'contract_no' => $contract->contract_no,
+        ]);
+
+        app(ActivityLogger::class)->log($contract, 'created_from_sales_order', [
+            'sales_order_id' => $salesOrder->id,
+            'sales_order_no' => $salesOrder->order_no,
+        ]);
 
         return redirect()->route('contracts.show', $contract)
             ->with('success', 'Sözleşme oluşturuldu.');
@@ -103,6 +124,7 @@ class ContractController extends Controller
             'attachments.uploader',
             'deliveries' => fn ($query) => $query->latest(),
             'deliveries.creator',
+            'activityLogs.actor',
         ]);
         $rootId = $contract->root_contract_id ?? $contract->id;
         $revisions = Contract::query()
@@ -155,6 +177,14 @@ class ContractController extends Controller
 
     public function destroy(Contract $contract)
     {
+        if ($contract->isLocked()) {
+            app(ActivityLogger::class)->log($contract, 'delete_blocked', [
+                'reason' => 'locked',
+            ]);
+            return redirect()->route('contracts.show', $contract)
+                ->with('error', 'İmzalı sözleşmeler silinemez.');
+        }
+
         $contract->delete();
 
         return redirect()->route('contracts.index')
@@ -183,9 +213,9 @@ class ContractController extends Controller
             return back()->with('warning', 'Sözleşme zaten iptal edildi.');
         }
 
-        $contract->update([
-            'status' => 'cancelled',
-        ]);
+        if (! $contract->transitionTo('cancelled', ['source' => 'cancel'])) {
+            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
+        }
 
         return back()->with('success', 'Sözleşme iptal edildi.');
     }
@@ -210,6 +240,8 @@ class ContractController extends Controller
         if (! $contract->canCreateRevision()) {
             return back()->with('warning', 'Bu sözleşme için revizyon oluşturulamaz.');
         }
+
+        $contract->loadMissing('salesOrder');
 
         $rootContract = $contract->root_contract_id
             ? Contract::query()->findOrFail($contract->root_contract_id)
@@ -270,6 +302,11 @@ class ContractController extends Controller
                     'superseded_by_id' => $newContract->id,
                     'superseded_at' => now(),
                 ])->save();
+
+                $current->transitionTo('superseded', [
+                    'superseded_by_id' => $newContract->id,
+                    'superseded_contract_no' => $newContract->contract_no,
+                ]);
             }
 
             return $newContract;
@@ -285,10 +322,13 @@ class ContractController extends Controller
             return back()->with('warning', 'Bu işlem için uygun durumda değil.');
         }
 
-        $contract->update([
-            'status' => $to,
+        if (! $contract->transitionTo($to, ['source' => 'status_action'])) {
+            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
+        }
+
+        $contract->forceFill([
             'signed_at' => $signedAt,
-        ]);
+        ])->save();
 
         return back()->with('success', $message);
     }

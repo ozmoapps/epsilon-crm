@@ -89,7 +89,8 @@
                             'confirmed' => 'confirmed',
                             'in_progress' => 'in_progress',
                             'completed' => 'completed',
-                            'canceled' => 'canceled',
+                            'contracted' => 'success',
+                            'cancelled' => 'cancelled',
                         ];
                     @endphp
                     <div class="overflow-x-auto">
@@ -158,8 +159,10 @@
                     @php
                         $statusVariants = [
                             'draft' => 'draft',
+                            'issued' => 'neutral',
                             'sent' => 'sent',
                             'signed' => 'signed',
+                            'superseded' => 'neutral',
                             'cancelled' => 'cancelled',
                         ];
                     @endphp

@@ -9,9 +9,8 @@ return [
         'draft' => 'Taslak',
         'sent' => 'Gönderildi',
         'accepted' => 'Onaylandı',
-        'rejected' => 'Reddedildi',
-        'expired' => 'Süresi Doldu',
-        'canceled' => 'İptal',
+        'converted' => 'Siparişe Dönüştü',
+        'cancelled' => 'İptal',
     ],
     'item_types' => [
         'labor' => 'İşçilik',

@@ -48,7 +48,8 @@
                     'confirmed' => 'confirmed',
                     'in_progress' => 'in_progress',
                     'completed' => 'completed',
-                    'canceled' => 'canceled',
+                    'contracted' => 'success',
+                    'cancelled' => 'cancelled',
                 ];
                 $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
                 $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';

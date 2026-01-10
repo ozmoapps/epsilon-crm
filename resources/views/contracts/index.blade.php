@@ -42,8 +42,10 @@
         @php
             $statusVariants = [
                 'draft' => 'draft',
+                'issued' => 'neutral',
                 'sent' => 'sent',
                 'signed' => 'signed',
+                'superseded' => 'neutral',
                 'cancelled' => 'cancelled',
             ];
         @endphp
