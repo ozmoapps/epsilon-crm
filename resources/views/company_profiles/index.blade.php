@@ -31,14 +31,14 @@
                     <tr>
                         <th class="px-4 py-3 text-left">{{ __('Şirket') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('İletişim') }}</th>
-                        <th class="px-4 py-3 text-right">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-4 py-3 text-right w-28">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($companyProfiles as $companyProfile)
                         <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $companyProfile->name }}</td>
-                            <td class="px-4 py-3 text-sm text-slate-600">
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-900 max-w-0 truncate">{{ $companyProfile->name }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 max-w-0 truncate">
                                 {{ $companyProfile->phone ?: __('Telefon yok') }}
                                 @if ($companyProfile->email)
                                     · {{ $companyProfile->email }}

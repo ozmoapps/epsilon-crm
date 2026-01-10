@@ -1,7 +1,7 @@
 @php
-    $navItemBase = 'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition ui-focus';
-    $navItemActive = 'relative bg-brand-50 text-brand-700 shadow-soft before:absolute before:inset-y-2 before:left-1 before:w-1 before:rounded-full before:bg-brand-500';
-    $navItemInactive = 'text-slate-600 hover:bg-slate-100 hover:text-slate-900';
+    $navItemBase = 'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ui-focus';
+    $navItemActive = 'relative bg-slate-50 text-slate-900 before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-slate-900/70 [&>svg]:text-slate-700';
+    $navItemInactive = 'text-slate-600 hover:bg-slate-50 hover:text-slate-900';
 @endphp
 
 <div class="relative">
@@ -39,14 +39,14 @@
 
         <div class="flex-1 space-y-8 overflow-y-auto px-4 pb-8">
             <div>
-                <p class="px-3 text-xs font-semibold tracking-[0.2em] text-slate-500">{{ __('Operasyonlar') }}</p>
+                <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Operasyonlar') }}</p>
                 <div class="mt-3 space-y-1">
                     <a
                         href="{{ route('dashboard') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('dashboard') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('dashboard')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5V21h6v-6h3v6h6V10.5" />
                         </svg>
@@ -57,7 +57,7 @@
                         class="{{ $navItemBase }} {{ request()->routeIs('quotes.*') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('quotes.*')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 12h8M7 17h6" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 4h11l3 3v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
                         </svg>
@@ -68,7 +68,7 @@
                         class="{{ $navItemBase }} {{ request()->routeIs('sales-orders.*') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('sales-orders.*')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 12h10M7 17h6" />
                             <rect x="3.5" y="4" width="17" height="16" rx="2" />
                         </svg>
@@ -79,7 +79,7 @@
                         class="{{ $navItemBase }} {{ request()->routeIs('contracts.*') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('contracts.*')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 3h6l4 4v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 3v5h5" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6M9 17h4" />
@@ -92,7 +92,7 @@
                         class="{{ $navItemBase }} {{ request()->routeIs('work-orders.*') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('work-orders.*')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h12l4 5-4 5H4a2 2 0 01-2-2V9a2 2 0 012-2z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 12h5" />
                         </svg>
@@ -101,15 +101,15 @@
                 </div>
             </div>
 
-            <div>
-                <p class="px-3 text-xs font-semibold tracking-[0.2em] text-slate-500">{{ __('Ana Veriler') }}</p>
+            <div class="border-t border-slate-100/80 pt-6">
+                <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Ana Veriler') }}</p>
                 <div class="mt-3 space-y-1">
                     <a
                         href="{{ route('customers.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('customers.*') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('customers.*')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5S14.343 11 16 11z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 11C9.433 11 11 9.433 11 7.5S9.433 4 7.5 4 4 5.567 4 7.5 5.567 11 7.5 11z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 20v-1c0-2.209 1.791-4 4-4h3" />
@@ -122,7 +122,7 @@
                         class="{{ $navItemBase }} {{ request()->routeIs('vessels.*') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('vessels.*')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 17l4-6h10l4 6" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 17l3 4h8l3-4" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 11V6a2 2 0 012-2h6a2 2 0 012 2v5" />
@@ -132,8 +132,8 @@
                 </div>
             </div>
 
-            <div>
-                <p class="px-3 text-xs font-semibold tracking-[0.2em] text-slate-500">{{ __('Ayarlar') }}</p>
+            <div class="border-t border-slate-100/80 pt-6">
+                <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Ayarlar') }}</p>
                 @php
                     $isAdmin = auth()->user()->is_admin;
                     $lockedClass = 'opacity-50 cursor-not-allowed';
@@ -146,7 +146,7 @@
                              // Simple append is easiest for now, but to remove hover:
                              // $navItemInactive has hover:bg-slate-100.
                              // We can replace it.
-                             $base = str_replace('hover:bg-slate-100 hover:text-slate-900', '', $navItemInactive) . ' text-slate-400';
+                             $base = str_replace('hover:bg-slate-50 hover:text-slate-900', '', $navItemInactive) . ' text-slate-400';
                              return $navItemBase . ' ' . $base . ' ' . $lockedClass;
                         }
                         return $navItemBase . ' ' . (request()->routeIs($routePattern) ? $navItemActive : $navItemInactive);
@@ -162,7 +162,7 @@
                         class="{{ $navItemBase }} {{ request()->routeIs('profile.*') ? $navItemActive : $navItemInactive }}"
                         @if (request()->routeIs('profile.*')) aria-current="page" @endif
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 12a4 4 0 100-8 4 4 0 000 8z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 20a8 8 0 0116 0" />
                         </svg>
@@ -175,7 +175,7 @@
                         class="{{ $itemClass('admin.users.*') }}"
                         {!! $getAttrs() !!}
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                         <span>{{ __('Kullanıcılar') }}</span>
@@ -187,7 +187,7 @@
                         class="{{ $itemClass('admin.company-profiles.*') }}"
                         {!! $getAttrs() !!}
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6M9 11h6M9 15h6" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 19h18" />
@@ -201,7 +201,7 @@
                         class="{{ $itemClass('admin.bank-accounts.*') }}"
                         {!! $getAttrs() !!}
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 10V6l7-3 7 3v4" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 10v8h14v-8" />
@@ -215,7 +215,7 @@
                         class="{{ $itemClass('admin.currencies.*') }}"
                         {!! $getAttrs() !!}
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h7a3 3 0 010 6H8" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 7h5a3 3 0 010 6H7" />
@@ -229,7 +229,7 @@
                         class="{{ $itemClass('admin.contract-templates.*') }}"
                         {!! $getAttrs() !!}
                     >
-                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <svg class="h-5 w-5 text-slate-400 transition-colors group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 3h7l5 5v10a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4" />

@@ -32,14 +32,14 @@
                         <th class="px-4 py-3 text-left">{{ __('Hesap') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Banka') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Para Birimi') }}</th>
-                        <th class="px-4 py-3 text-right">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-4 py-3 text-right w-28">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($bankAccounts as $bankAccount)
                         <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $bankAccount->name }}</td>
-                            <td class="px-4 py-3 text-sm text-slate-600">
+                            <td class="px-4 py-3 text-sm font-semibold text-slate-900 max-w-0 truncate">{{ $bankAccount->name }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 max-w-0 truncate">
                                 {{ $bankAccount->bank_name }}
                                 @if ($bankAccount->branch_name)
                                     · {{ $bankAccount->branch_name }}
