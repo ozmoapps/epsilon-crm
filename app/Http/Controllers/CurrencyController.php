@@ -40,7 +40,7 @@ class CurrencyController extends Controller
 
         $currency = Currency::create($validated);
 
-        return redirect()->route('currencies.show', $currency)
+        return redirect()->route('admin.currencies.show', $currency)
             ->with('success', 'Para birimi oluşturuldu.');
     }
 
@@ -61,7 +61,7 @@ class CurrencyController extends Controller
 
         $currency->update($validated);
 
-        return redirect()->route('currencies.show', $currency)
+        return redirect()->route('admin.currencies.show', $currency)
             ->with('success', 'Para birimi güncellendi.');
     }
 
@@ -69,7 +69,7 @@ class CurrencyController extends Controller
     {
         $currency->delete();
 
-        return redirect()->route('currencies.index')
+        return redirect()->route('admin.currencies.index')
             ->with('success', 'Para birimi silindi.');
     }
 

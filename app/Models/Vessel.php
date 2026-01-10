@@ -10,6 +10,7 @@ class Vessel extends Model
     use HasFactory;
 
     protected $fillable = [
+        'created_by',
         'customer_id',
         'name',
         'type',
@@ -24,6 +25,11 @@ class Vessel extends Model
         'passenger_capacity',
         'notes',
     ];
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function customer()
     {

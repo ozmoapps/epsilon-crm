@@ -24,6 +24,7 @@ class VesselController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Vessel::class);
         $customers = Customer::orderBy('name')->get();
 
         return view('vessels.create', [
@@ -34,8 +35,10 @@ class VesselController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Vessel::class);
         $validated = $request->validate($this->rules(), $this->messages());
 
+        $validated['created_by'] = $request->user()->id;
         Vessel::create($validated);
 
         return redirect()->route('vessels.index')
@@ -44,6 +47,7 @@ class VesselController extends Controller
 
     public function show(Vessel $vessel)
     {
+        $this->authorize('view', $vessel);
         $vessel->load('customer');
 
         return view('vessels.show', compact('vessel'));
@@ -51,6 +55,7 @@ class VesselController extends Controller
 
     public function edit(Vessel $vessel)
     {
+        $this->authorize('update', $vessel);
         $customers = Customer::orderBy('name')->get();
 
         return view('vessels.edit', compact('vessel', 'customers'));
@@ -58,6 +63,7 @@ class VesselController extends Controller
 
     public function update(Request $request, Vessel $vessel)
     {
+        $this->authorize('update', $vessel);
         $validated = $request->validate($this->rules(), $this->messages());
 
         $vessel->update($validated);
@@ -68,6 +74,7 @@ class VesselController extends Controller
 
     public function destroy(Vessel $vessel)
     {
+        $this->authorize('delete', $vessel);
         $vessel->delete();
 
         return redirect()->route('vessels.index')

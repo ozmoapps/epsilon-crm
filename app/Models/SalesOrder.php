@@ -182,10 +182,7 @@ class SalesOrder extends Model
 
     public function isLocked(): bool
     {
-        if ($this->status === 'contracted') {
-            return true;
-        }
-
+        // Kilit yalnızca gerçekten bağlı sözleşme varsa aktif olmalı.
         if ($this->relationLoaded('contract')) {
             return $this->contract !== null;
         }
@@ -197,34 +194,23 @@ class SalesOrder extends Model
     {
         $this->loadMissing('items');
 
-        $subtotal = 0;
-        $discountTotal = 0;
-        $vatTotal = 0;
-        $grandTotal = 0;
-
-        $this->items
-            ->where('is_optional', false)
-            ->each(function (SalesOrderItem $item) use (&$subtotal, &$discountTotal, &$vatTotal, &$grandTotal) {
-                $qty = (float) $item->qty;
-                $unitPrice = (float) $item->unit_price;
-                $lineBase = $qty * $unitPrice;
-                $lineDiscount = (float) ($item->discount_amount ?? 0);
-                $lineNet = max($lineBase - $lineDiscount, 0);
-                $vatRate = $item->vat_rate !== null ? (float) $item->vat_rate : null;
-                $lineVat = $vatRate !== null ? $lineNet * ($vatRate / 100) : 0;
-                $lineTotal = $lineNet + $lineVat;
-
-                $subtotal += $lineBase;
-                $discountTotal += $lineDiscount;
-                $vatTotal += $lineVat;
-                $grandTotal += $lineTotal;
-            });
+        $calculator = new \App\Services\TotalsCalculator();
+        $totals = $calculator->calculate($this->items);
 
         $this->forceFill([
-            'subtotal' => $subtotal,
-            'discount_total' => $discountTotal,
-            'vat_total' => $vatTotal,
-            'grand_total' => $grandTotal,
+            'subtotal' => $totals['subtotal'],
+            'discount_total' => $totals['discount_total'],
+            'vat_total' => $totals['vat_total'],
+            'grand_total' => $totals['grand_total'],
         ])->save();
+    }
+    public function followUps()
+    {
+        return $this->morphMany(\App\Models\FollowUp::class, 'subject')->latest('next_at');
+    }
+
+    public function openFollowUps()
+    {
+        return $this->followUps()->whereNull('completed_at')->orderBy('next_at');
     }
 }

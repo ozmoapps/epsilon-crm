@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Para Birimleri') }}" subtitle="{{ __('Kullanılan para birimlerini yönetin.') }}">
             <x-slot name="actions">
-                <x-ui.button href="{{ route('currencies.create') }}" size="sm">
+                <x-ui.button href="{{ route('admin.currencies.create') }}" size="sm">
                     {{ __('Yeni Para Birimi') }}
                 </x-ui.button>
             </x-slot>
@@ -12,14 +12,14 @@
     <div class="space-y-6">
         <x-ui.card>
             <x-slot name="header">{{ __('Filtreler') }}</x-slot>
-            <form method="GET" action="{{ route('currencies.index') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <form method="GET" action="{{ route('admin.currencies.index') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
                 <div class="flex-1">
                     <x-input-label for="search" :value="__('İsimle arayın')" />
                     <x-input id="search" name="search" type="text" class="mt-1" placeholder="{{ __('İsme göre ara') }}" :value="$search" />
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <x-ui.button type="submit" size="sm">{{ __('Ara') }}</x-ui.button>
-                    <x-ui.button href="{{ route('currencies.index') }}" variant="secondary" size="sm">{{ __('Temizle') }}</x-ui.button>
+                    <x-ui.button href="{{ route('admin.currencies.index') }}" variant="secondary" size="sm">{{ __('Temizle') }}</x-ui.button>
                 </div>
             </form>
         </x-ui.card>
@@ -55,15 +55,15 @@
                                         </button>
                                     </x-slot>
                                     <x-slot name="content">
-                                        <a href="{{ route('currencies.show', $currency) }}" class="{{ $actionItemClass }}">
+                                        <a href="{{ route('admin.currencies.show', $currency) }}" class="{{ $actionItemClass }}">
                                             <x-icon.info class="h-4 w-4 text-sky-600" />
                                             {{ __('Görüntüle') }}
                                         </a>
-                                        <a href="{{ route('currencies.edit', $currency) }}" class="{{ $actionItemClass }}">
+                                        <a href="{{ route('admin.currencies.edit', $currency) }}" class="{{ $actionItemClass }}">
                                             <x-icon.pencil class="h-4 w-4 text-indigo-600" />
                                             {{ __('Düzenle') }}
                                         </a>
-                                        <form id="currency-delete-{{ $currency->id }}" method="POST" action="{{ route('currencies.destroy', $currency) }}" class="hidden">
+                                        <form id="currency-delete-{{ $currency->id }}" method="POST" action="{{ route('admin.currencies.destroy', $currency) }}" class="hidden">
                                             @csrf
                                             @method('DELETE')
                                         </form>

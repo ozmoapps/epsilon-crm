@@ -8,6 +8,11 @@ use App\Models\ActivityLog;
 use App\Models\Quote;
 use App\Models\SalesOrder;
 use App\Models\WorkOrder;
+use App\Models\CompanyProfile;
+use App\Models\BankAccount;
+use App\Models\Currency;
+use App\Models\ContractTemplate;
+use App\Models\FollowUp;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -47,6 +52,11 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        $recentQuotes = Quote::with(['customer', 'vessel'])
+            ->latest()
+            ->limit(6)
+            ->get();
+
         $recentContracts = Contract::latest()
             ->limit(6)
             ->get();
@@ -56,7 +66,49 @@ class DashboardController extends Controller
             ->limit(20)
             ->get();
 
+        // System Setup Checks
+        $hasCompanyProfile = CompanyProfile::query()->exists();
+        $bankAccountsCount = BankAccount::query()->count();
+        $activeCurrenciesCount = Currency::query()->where('is_active', true)->count();
+        $hasDefaultContractTemplate = ContractTemplate::query()->where('is_active', true)->where('is_default', true)->exists();
+
+        $upcomingFollowUps = FollowUp::query()
+            ->open()
+            ->has('subject')
+            ->with(['subject', 'creator'])
+            ->orderBy('next_at')
+            ->limit(12)
+            ->get();
+
+        $staleSentQuotes = Quote::query()
+            ->where('status', 'sent')
+            ->whereNotNull('issued_at')
+            ->where('issued_at', '<=', now()->subDays(3))
+            ->latest('issued_at')
+            ->limit(8)
+            ->get();
+
+        $staleSentContracts = Contract::query()
+            ->where('status', 'sent')
+            ->whereNotNull('issued_at')
+            ->where('issued_at', '<=', now()->subDays(3))
+            ->latest('issued_at')
+            ->limit(8)
+            ->get();
+
+        $upcomingPlannedWorkOrders = WorkOrder::query()
+            ->where('status', 'planned')
+            ->whereNotNull('planned_start_at')
+            ->whereBetween('planned_start_at', [now(), now()->addDays(7)])
+            ->orderBy('planned_start_at')
+            ->limit(8)
+            ->get();
+
         return view('dashboard', [
+            'upcomingFollowUps' => $upcomingFollowUps,
+            'staleSentQuotes' => $staleSentQuotes,
+            'staleSentContracts' => $staleSentContracts,
+            'upcomingPlannedWorkOrders' => $upcomingPlannedWorkOrders,
             'customersCount' => $customersCount,
             'quotesCount' => $quotesCount,
             'salesOrdersCount' => $salesOrdersCount,
@@ -66,12 +118,17 @@ class DashboardController extends Controller
             'salesOrdersRecentCount' => $salesOrdersRecentCount,
             'contractsRecentCount' => $contractsRecentCount,
             'recentSalesOrders' => $recentSalesOrders,
+            'recentQuotes' => $recentQuotes,
             'recentContracts' => $recentContracts,
             'quoteStatusCounts' => $quoteStatusCounts,
             'salesOrderStatusCounts' => $salesOrderStatusCounts,
             'contractStatusCounts' => $contractStatusCounts,
             'workOrderStatusCounts' => $workOrderStatusCounts,
             'recentActivity' => $recentActivity,
+            'hasCompanyProfile' => $hasCompanyProfile,
+            'bankAccountsCount' => $bankAccountsCount,
+            'activeCurrenciesCount' => $activeCurrenciesCount,
+            'hasDefaultContractTemplate' => $hasDefaultContractTemplate,
         ]);
     }
 }

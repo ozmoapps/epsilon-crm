@@ -22,6 +22,7 @@ class CustomerController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Customer::class);
         return view('customers.create', [
             'customer' => new Customer(),
         ]);
@@ -29,8 +30,10 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Customer::class);
         $validated = $request->validate($this->rules(), $this->messages());
 
+        $validated['created_by'] = $request->user()->id;
         Customer::create($validated);
 
         return redirect()->route('customers.index')
@@ -39,6 +42,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
+        $this->authorize('view', $customer);
         $customer->load(['vessels', 'workOrders.vessel']);
 
         return view('customers.show', compact('customer'));
@@ -46,11 +50,13 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        $this->authorize('update', $customer);
         return view('customers.edit', compact('customer'));
     }
 
     public function update(Request $request, Customer $customer)
     {
+        $this->authorize('update', $customer);
         $validated = $request->validate($this->rules(), $this->messages());
 
         $customer->update($validated);
@@ -61,6 +67,7 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        $this->authorize('delete', $customer);
         $customer->delete();
 
         return redirect()->route('customers.index')

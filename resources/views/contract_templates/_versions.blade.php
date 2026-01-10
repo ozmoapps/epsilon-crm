@@ -24,14 +24,14 @@
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <x-button
-                                href="{{ route('contract-templates.show', ['contract_template' => $template, 'version' => $version->id]) }}"
+                                href="{{ route('admin.contract-templates.show', ['contract_template' => $template, 'version' => $version->id]) }}"
                                 variant="secondary"
                                 size="xs"
                             >
                                 {{ __('Önizleme') }}
                             </x-button>
                             @if ($template->current_version_id !== $version->id)
-                                <form method="POST" action="{{ route('contract-templates.versions.restore', [$template, $version]) }}">
+                                <form method="POST" action="{{ route('admin.contract-templates.versions.restore', [$template, $version]) }}">
                                     @csrf
                                     <x-button type="submit" variant="danger" size="xs" onclick="return confirm('Bu sürüm geri yüklensin mi?')">
                                         {{ __('Geri Yükle') }}

@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('quotes', function (Blueprint $table) {
-            $table->date('issued_at')->default(new Expression('CURRENT_DATE'))->after('status');
+            $table->date('issued_at')->nullable()->after('status');
             $table->string('contact_name')->nullable()->after('issued_at');
             $table->string('contact_phone')->nullable()->after('contact_name');
             $table->string('location')->nullable()->after('contact_phone');

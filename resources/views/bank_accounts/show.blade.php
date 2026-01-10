@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-page-header title="{{ $bankAccount->name }}" subtitle="{{ __('Banka hesabı detayları.') }}">
             <x-slot name="actions">
-                <x-ui.button href="{{ route('bank-accounts.edit', $bankAccount) }}" size="sm">
+                <x-ui.button href="{{ route('admin.bank-accounts.edit', $bankAccount) }}" size="sm">
                     {{ __('Düzenle') }}
                 </x-ui.button>
             </x-slot>
@@ -39,8 +39,8 @@
         <x-ui.card>
             <x-slot name="header">{{ __('İşlemler') }}</x-slot>
             <div class="flex flex-wrap gap-3">
-                <x-ui.button href="{{ route('bank-accounts.edit', $bankAccount) }}">{{ __('Düzenle') }}</x-ui.button>
-                <form id="bank-account-delete" method="POST" action="{{ route('bank-accounts.destroy', $bankAccount) }}">
+                <x-ui.button href="{{ route('admin.bank-accounts.edit', $bankAccount) }}">{{ __('Düzenle') }}</x-ui.button>
+                <form id="bank-account-delete" method="POST" action="{{ route('admin.bank-accounts.destroy', $bankAccount) }}">
                     @csrf
                     @method('DELETE')
                 </form>

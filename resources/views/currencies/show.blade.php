@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-page-header title="{{ $currency->name }}" subtitle="{{ __('Para birimi detayları.') }}">
             <x-slot name="actions">
-                <x-ui.button href="{{ route('currencies.edit', $currency) }}" size="sm">
+                <x-ui.button href="{{ route('admin.currencies.edit', $currency) }}" size="sm">
                     {{ __('Düzenle') }}
                 </x-ui.button>
             </x-slot>
@@ -35,8 +35,8 @@
         <x-ui.card>
             <x-slot name="header">{{ __('İşlemler') }}</x-slot>
             <div class="flex flex-wrap gap-3">
-                <x-ui.button href="{{ route('currencies.edit', $currency) }}">{{ __('Düzenle') }}</x-ui.button>
-                <form id="currency-delete" method="POST" action="{{ route('currencies.destroy', $currency) }}">
+                <x-ui.button href="{{ route('admin.currencies.edit', $currency) }}">{{ __('Düzenle') }}</x-ui.button>
+                <form id="currency-delete" method="POST" action="{{ route('admin.currencies.destroy', $currency) }}">
                     @csrf
                     @method('DELETE')
                 </form>

@@ -412,11 +412,31 @@
                 this.items.splice(index, 1);
             },
             parseNumber(value) {
-                if (value === null || value === undefined) {
+                if (value === null || value === undefined || value === '') {
                     return 0;
                 }
-                const normalized = String(value).replace(/\s/g, '').replace(',', '.');
-                const parsed = Number.parseFloat(normalized);
+                let str = String(value);
+                const hasDot = str.indexOf('.') !== -1;
+                const hasComma = str.indexOf(',') !== -1;
+
+                if (hasDot && hasComma) {
+                    const lastDot = str.lastIndexOf('.');
+                    const lastComma = str.lastIndexOf(',');
+                    if (lastComma > lastDot) {
+                        // TR: 1.250,50 -> remove dots, comma to dot
+                        str = str.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        // EN: 1,250.50 -> remove commas
+                        str = str.replace(/,/g, '');
+                    }
+                } else if (hasComma) {
+                    // Only comma: 1250,50 -> comma to dot
+                    str = str.replace(/\./g, '').replace(',', '.');
+                } else if (hasDot) {
+                    // Only dot: 1250.50 -> keep as is (standard js float)
+                }
+
+                const parsed = Number.parseFloat(str);
                 return Number.isNaN(parsed) ? 0 : parsed;
             },
             get currencySymbol() {

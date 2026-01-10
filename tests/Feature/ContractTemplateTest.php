@@ -17,27 +17,27 @@ class ContractTemplateTest extends TestCase
 
     public function test_guest_cannot_access_template_management(): void
     {
-        $this->get(route('contract-templates.index'))
+        $this->get(route('admin.contract-templates.index'))
             ->assertRedirect(route('login'));
 
-        $this->get(route('contract-templates.create'))
+        $this->get(route('admin.contract-templates.create'))
             ->assertRedirect(route('login'));
     }
 
     public function test_authenticated_user_can_view_template_index(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $this->actingAs($user)
-            ->get(route('contract-templates.index'))
+            ->get(route('admin.contract-templates.index'))
             ->assertOk();
     }
 
     public function test_authorized_user_can_create_template(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
-        $response = $this->actingAs($user)->post(route('contract-templates.store'), [
+        $response = $this->actingAs($user)->post(route('admin.contract-templates.store'), [
             'name' => 'Test Şablon',
             'locale' => 'tr',
             'format' => 'html',
@@ -62,7 +62,7 @@ class ContractTemplateTest extends TestCase
 
     public function test_only_one_default_per_locale_is_kept(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $first = ContractTemplate::factory()->create([
             'name' => 'Şablon A',
@@ -76,7 +76,7 @@ class ContractTemplateTest extends TestCase
             'is_default' => false,
         ]);
 
-        $this->actingAs($user)->post(route('contract-templates.make_default', $second))
+        $this->actingAs($user)->post(route('admin.contract-templates.make_default', $second))
             ->assertRedirect();
 
         $this->assertDatabaseHas('contract_templates', [
@@ -132,7 +132,7 @@ class ContractTemplateTest extends TestCase
 
     public function test_sent_contract_keeps_snapshot_when_template_changes(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
         $contract = $this->createContract(['created_by' => $user->id]);
 
         $template = ContractTemplate::factory()->create([
@@ -149,7 +149,8 @@ class ContractTemplateTest extends TestCase
         $this->assertStringContainsString('İlk Sürüm', $contract->rendered_body);
         $originalVersionId = $contract->contract_template_version_id;
 
-        $this->actingAs($user)->put(route('contract-templates.update', $template), [
+
+        $this->actingAs($user)->put(route('admin.contract-templates.update', $template), [
             'name' => $template->name,
             'locale' => $template->locale,
             'format' => $template->format,
@@ -182,7 +183,7 @@ class ContractTemplateTest extends TestCase
 
     public function test_template_update_creates_new_version_and_bumps_current(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
         $template = ContractTemplate::factory()->create([
             'content' => '<p>İlk içerik</p>',
             'format' => 'html',
@@ -190,7 +191,7 @@ class ContractTemplateTest extends TestCase
 
         $currentVersionId = $template->current_version_id;
 
-        $this->actingAs($user)->put(route('contract-templates.update', $template), [
+        $this->actingAs($user)->put(route('admin.contract-templates.update', $template), [
             'name' => $template->name,
             'locale' => $template->locale,
             'format' => 'html',
@@ -212,7 +213,7 @@ class ContractTemplateTest extends TestCase
 
     public function test_restore_creates_new_version_from_selected(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
         $template = ContractTemplate::factory()->create([
             'content' => '<p>İlk içerik</p>',
             'format' => 'html',
@@ -221,7 +222,7 @@ class ContractTemplateTest extends TestCase
         $template->createVersion('<p>İkinci içerik</p>', 'html', $user->id, 'Yeni sürüm');
         $versionToRestore = $template->versions()->orderBy('version')->first();
 
-        $this->actingAs($user)->post(route('contract-templates.versions.restore', [$template, $versionToRestore]))
+        $this->actingAs($user)->post(route('admin.contract-templates.versions.restore', [$template, $versionToRestore]))
             ->assertRedirect();
 
         $template->refresh();

@@ -40,7 +40,7 @@
     <x-ui.button type="submit">
         {{ $isEdit ? __('Kaydet') : __('Oluştur') }}
     </x-ui.button>
-    <x-ui.button variant="secondary" href="{{ route('company-profiles.index') }}">
+    <x-ui.button variant="secondary" href="{{ route('admin.company-profiles.index') }}">
         {{ __('Vazgeç') }}
     </x-ui.button>
 </div>

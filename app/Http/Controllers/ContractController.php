@@ -6,6 +6,9 @@ use App\Models\Contract;
 use App\Models\ContractTemplate;
 use App\Models\ContractTemplateVersion;
 use App\Models\SalesOrder;
+use App\Models\Quote;
+use App\Models\WorkOrder;
+use App\Models\ActivityLog;
 use App\Services\ActivityLogger;
 use App\Services\ContractTemplateRenderer;
 use Illuminate\Support\Facades\DB;
@@ -18,12 +21,13 @@ class ContractController extends Controller
     {
         $search = $request->input('search');
         $status = $request->input('status');
-        $customer = $request->input('customer');
+        $customerId = $request->input('customer_id');
+        $vesselId = $request->input('vessel_id');
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
 
         $contracts = Contract::query()
-            ->with(['salesOrder.customer'])
+            ->with(['salesOrder.customer', 'salesOrder.vessel'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -31,8 +35,17 @@ class ContractController extends Controller
                         ->orWhere('customer_name', 'like', "%{$search}%");
                 });
             })
-            ->when($customer, fn ($query) => $query->where('customer_name', 'like', "%{$customer}%"))
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($customerId, function ($q) use ($customerId) {
+                $q->whereHas('salesOrder', function ($sub) use ($customerId) {
+                    $sub->where('customer_id', $customerId);
+                });
+            })
+            ->when($vesselId, function ($q) use ($vesselId) {
+                $q->whereHas('salesOrder', function ($sub) use ($vesselId) {
+                    $sub->where('vessel_id', $vesselId);
+                });
+            })
             ->when($dateFrom, fn ($query) => $query->whereDate('issued_at', '>=', $dateFrom))
             ->when($dateTo, fn ($query) => $query->whereDate('issued_at', '<=', $dateTo))
             ->orderByDesc('id')
@@ -40,15 +53,15 @@ class ContractController extends Controller
             ->withQueryString();
 
         $statuses = Contract::statusOptions();
+        $customers = \App\Models\Customer::orderBy('name')->get(['id', 'name']);
+        $vessels = \App\Models\Vessel::with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']);
+
+        $savedViews = \App\Models\SavedView::allow('contracts')->visibleTo($request->user())->get();
 
         return view('contracts.index', compact(
-            'contracts',
-            'search',
-            'status',
-            'customer',
-            'dateFrom',
-            'dateTo',
-            'statuses'
+            'contracts', 'search', 'status', 'statuses', 
+            'customers', 'vessels', 'savedViews',
+            'customerId', 'vesselId', 'dateFrom', 'dateTo'
         ));
     }
 
@@ -115,17 +128,44 @@ class ContractController extends Controller
 
     public function show(Contract $contract)
     {
+        $this->authorize('view', $contract);
+
         $contract->load([
             'salesOrder.customer',
             'salesOrder.items',
+            'salesOrder.workOrder',
+            'salesOrder.quote',
             'creator',
             'rootContract',
             'attachments' => fn ($query) => $query->latest(),
             'attachments.uploader',
             'deliveries' => fn ($query) => $query->latest(),
             'deliveries.creator',
-            'activityLogs.actor',
+            'openFollowUps.creator',
         ]);
+        
+        $salesOrder = $contract->salesOrder;
+        $quote = $salesOrder?->quote;
+        $workOrder = $salesOrder?->workOrder;
+
+        $subjects = [[Contract::class, $contract->id]];
+        if ($salesOrder) $subjects[] = [SalesOrder::class, $salesOrder->id];
+        if ($quote) $subjects[] = [Quote::class, $quote->id];
+        if ($workOrder) $subjects[] = [WorkOrder::class, $workOrder->id];
+
+        $timeline = ActivityLog::query()
+            ->with(['actor', 'subject'])
+            ->where(function ($q) use ($subjects) {
+                foreach ($subjects as [$type, $id]) {
+                    $q->orWhere(function ($sub) use ($type, $id) {
+                        $sub->where('subject_type', $type)->where('subject_id', $id);
+                    });
+                }
+            })
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
         $rootId = $contract->root_contract_id ?? $contract->id;
         $revisions = Contract::query()
             ->where('id', $rootId)
@@ -133,11 +173,13 @@ class ContractController extends Controller
             ->orderByDesc('revision_no')
             ->get();
 
-        return view('contracts.show', compact('contract', 'revisions'));
+        return view('contracts.show', compact('contract', 'revisions', 'salesOrder', 'quote', 'workOrder', 'timeline'));
     }
 
     public function edit(Contract $contract)
     {
+        $this->authorize('update', $contract);
+
         if (! $contract->isEditable()) {
             return redirect()->route('contracts.show', $contract)
                 ->with('warning', 'Sadece taslak sözleşmeler düzenlenebilir.');
@@ -155,6 +197,8 @@ class ContractController extends Controller
 
     public function update(Request $request, Contract $contract)
     {
+        $this->authorize('update', $contract);
+
         if (! $contract->isEditable()) {
             return redirect()->route('contracts.show', $contract)
                 ->with('warning', 'Sadece taslak sözleşmeler düzenlenebilir.');
@@ -177,6 +221,8 @@ class ContractController extends Controller
 
     public function destroy(Contract $contract)
     {
+        $this->authorize('update', $contract);
+
         if ($contract->isLocked()) {
             app(ActivityLogger::class)->log($contract, 'delete_blocked', [
                 'reason' => 'locked',
@@ -185,7 +231,37 @@ class ContractController extends Controller
                 ->with('error', 'İmzalı sözleşmeler silinemez.');
         }
 
-        $contract->delete();
+        $salesOrder = $contract->salesOrder()->first();
+
+        DB::transaction(function () use ($contract, $salesOrder) {
+            $contract->delete();
+
+            if ($salesOrder && $salesOrder->status === 'contracted' && ! $salesOrder->contract()->exists()) {
+                $logs = ActivityLog::query()
+                    ->where('subject_type', $salesOrder->getMorphClass())
+                    ->where('subject_id', $salesOrder->getKey())
+                    ->where('action', 'status_changed')
+                    ->orderByDesc('created_at')
+                    ->limit(10)
+                    ->get();
+
+                $lastContracted = $logs->first(fn ($l) => data_get($l->meta, 'to') === 'contracted');
+                $restore = data_get($lastContracted?->meta, 'from') ?: 'confirmed';
+
+                $salesOrder->forceFill(['status' => $restore])->save();
+
+                app(ActivityLogger::class)->log($salesOrder, 'contract_deleted', [
+                    'contract_id' => $contract->id,
+                    'contract_no' => $contract->contract_no,
+                    'restored_status' => $restore,
+                ]);
+            }
+        });
+
+        if ($salesOrder) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('success', 'Sözleşme silindi. Sipariş durumu geri alındı.');
+        }
 
         return redirect()->route('contracts.index')
             ->with('success', 'Sözleşme silindi.');
@@ -193,6 +269,8 @@ class ContractController extends Controller
 
     public function markSent(Contract $contract)
     {
+        $this->authorize('update', $contract);
+
         if (! $contract->rendered_body) {
             $this->applyTemplate($contract, true);
         } elseif (! $contract->rendered_at) {
@@ -204,11 +282,15 @@ class ContractController extends Controller
 
     public function markSigned(Contract $contract)
     {
+        $this->authorize('update', $contract);
+
         return $this->transitionStatus($contract, 'sent', 'signed', now(), 'Sözleşme imzalandı olarak işaretlendi.');
     }
 
     public function cancel(Contract $contract)
     {
+        $this->authorize('update', $contract);
+
         if ($contract->status === 'cancelled') {
             return back()->with('warning', 'Sözleşme zaten iptal edildi.');
         }
@@ -222,6 +304,8 @@ class ContractController extends Controller
 
     public function pdf(Contract $contract)
     {
+        $this->authorize('view', $contract);
+
         $contract->load(['salesOrder.customer', 'salesOrder.items']);
 
         if (! $contract->rendered_body) {
@@ -235,8 +319,28 @@ class ContractController extends Controller
             ->header('Content-Type', 'application/pdf');
     }
 
+    public function printView(Contract $contract)
+    {
+        $this->authorize('view', $contract);
+
+        $contract->load(['salesOrder.customer', 'salesOrder.vessel', 'salesOrder.items']);
+
+        if (! $contract->rendered_body) {
+            $this->applyTemplate($contract, true);
+        } elseif (! $contract->rendered_at) {
+            $contract->update(['rendered_at' => now()]);
+        }
+
+        $companyProfile = \App\Models\CompanyProfile::current();
+        $bankAccounts = \App\Models\BankAccount::query()->with('currency')->orderBy('bank_name')->get();
+
+        return view('contracts.print', compact('contract', 'companyProfile', 'bankAccounts'));
+    }
+
     public function revise(Request $request, Contract $contract)
     {
+        $this->authorize('update', $contract);
+
         if (! $contract->canCreateRevision()) {
             return back()->with('warning', 'Bu sözleşme için revizyon oluşturulamaz.');
         }

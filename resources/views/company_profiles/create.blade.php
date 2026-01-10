@@ -4,7 +4,7 @@
     </x-slot>
 
     <x-ui.card>
-        <form method="POST" action="{{ route('company-profiles.store') }}">
+        <form method="POST" action="{{ route('admin.company-profiles.store') }}">
             @csrf
             @include('company_profiles._form', ['companyProfile' => $companyProfile])
         </form>

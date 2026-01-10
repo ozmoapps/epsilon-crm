@@ -18,6 +18,7 @@ class WorkOrder extends Model
     ];
 
     protected $fillable = [
+        'created_by',
         'customer_id',
         'vessel_id',
         'title',
@@ -26,6 +27,11 @@ class WorkOrder extends Model
         'planned_start_at',
         'planned_end_at',
     ];
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     protected $casts = [
         'planned_start_at' => 'date',
@@ -50,5 +56,19 @@ class WorkOrder extends Model
     public function vessel()
     {
         return $this->belongsTo(Vessel::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->morphMany(ActivityLog::class, 'subject')->latest();
+    }
+    public function followUps()
+    {
+        return $this->morphMany(\App\Models\FollowUp::class, 'subject')->latest('next_at');
+    }
+
+    public function openFollowUps()
+    {
+        return $this->followUps()->whereNull('completed_at')->orderBy('next_at');
     }
 }

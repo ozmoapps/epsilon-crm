@@ -4,7 +4,7 @@
     </x-slot>
 
     <x-ui.card>
-        <form method="POST" action="{{ route('bank-accounts.update', $bankAccount) }}">
+        <form method="POST" action="{{ route('admin.bank-accounts.update', $bankAccount) }}">
             @csrf
             @method('PUT')
             @include('bank_accounts._form', ['bankAccount' => $bankAccount, 'currencies' => $currencies])
