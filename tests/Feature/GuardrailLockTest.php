@@ -181,7 +181,7 @@ class GuardrailLockTest extends TestCase
             'work_order_id' => $quote->work_order_id,
             'title' => $quote->title,
             'status' => $quote->status,
-            'currency' => $quote->currency,
+            'currency_id' => $quote->currency_id,
             'validity_days' => $quote->validity_days,
             'estimated_duration_days' => $quote->estimated_duration_days,
             'payment_terms' => $quote->payment_terms,

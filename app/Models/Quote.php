@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use App\Services\ActivityLogger;
 
@@ -17,6 +18,7 @@ class Quote extends Model
         'work_order_id',
         'title',
         'status',
+        'currency_id',
         'currency',
         'validity_days',
         'estimated_duration_days',
@@ -50,6 +52,16 @@ class Quote extends Model
     protected static function booted(): void
     {
         static::creating(function (Quote $quote) {
+            if (! $quote->currency_id) {
+                $quote->currency_id = self::resolveDefaultCurrencyId();
+            }
+
+            if (! $quote->currency && $quote->currency_id) {
+                $quote->currency = Currency::query()
+                    ->whereKey($quote->currency_id)
+                    ->value('code') ?? $quote->currency;
+            }
+
             if ($quote->quote_no) {
                 return;
             }
@@ -76,6 +88,22 @@ class Quote extends Model
         });
     }
 
+    public static function resolveDefaultCurrencyId(): ?int
+    {
+        $query = Currency::query()->where('is_active', true);
+        $defaultCode = config('company.default_code');
+
+        if ($defaultCode) {
+            $defaultId = (clone $query)->where('code', $defaultCode)->value('id');
+
+            if ($defaultId) {
+                return $defaultId;
+            }
+        }
+
+        return $query->orderBy('id')->value('id');
+    }
+
     public static function statusOptions(): array
     {
         return config('quotes.statuses', []);
@@ -91,6 +119,11 @@ class Quote extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function currencyRelation(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class, 'currency_id');
     }
 
     public function vessel()

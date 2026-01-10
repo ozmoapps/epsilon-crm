@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'default_code' => 'EUR',
     'name' => 'Epsilon CRM',
     'address' => 'Adres bilgisi',
     'phone' => '+90 000 000 00 00',
