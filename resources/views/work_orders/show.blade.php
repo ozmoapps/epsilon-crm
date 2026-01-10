@@ -92,28 +92,26 @@
         @endslot
 
         @slot('right')
-            <div class="space-y-6">
-                @include('partials.document-hub', [
-                    'context' => 'work_order',
-                    'quote' => $quote ?? null,
-                    'salesOrder' => $salesOrder ?? null,
-                    'contract' => $contract ?? null,
-                    'workOrder' => $workOrder,
-                    'timeline' => $timeline,
-                    'showTimeline' => false,
-                ])
+            @include('partials.document-hub', [
+                'context' => 'work_order',
+                'quote' => $quote ?? null,
+                'salesOrder' => $salesOrder ?? null,
+                'contract' => $contract ?? null,
+                'workOrder' => $workOrder,
+                'timeline' => $timeline,
+                'showTimeline' => false,
+            ])
 
-                <x-partials.follow-up-card :context="$workOrder" />
+            <x-partials.follow-up-card :context="$workOrder" />
 
-                <x-card class="overflow-hidden border border-slate-200 rounded-2xl shadow-sm !p-0 bg-white">
-                    <div class="px-5 py-4 border-b border-slate-100 bg-white">
-                        <h3 class="font-semibold text-slate-900">{{ __('Aktivite') }}</h3>
-                    </div>
-                    <div class="p-5">
-                        <x-activity-timeline :logs="$timeline" :show-subject="true" />
-                    </div>
-                </x-card>
-            </div>
+            <x-card class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm !p-0">
+                <div class="border-b border-slate-100 bg-white px-4 py-3">
+                    <h3 class="font-semibold text-slate-900">{{ __('Aktivite') }}</h3>
+                </div>
+                <div class="bg-slate-50/40 p-4">
+                    <x-activity-timeline :logs="$timeline" :show-subject="true" />
+                </div>
+            </x-card>
         @endslot
     @endcomponent
 </x-app-layout>
