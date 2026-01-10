@@ -6,6 +6,9 @@ use App\Http\Controllers\ContractAttachmentController;
 use App\Http\Controllers\ContractDeliveryController;
 use App\Http\Controllers\ContractTemplateController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\QuoteItemController;
@@ -30,6 +33,9 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('customers', CustomerController::class);
     Route::resource('vessels', VesselController::class);
+    Route::resource('company-profiles', CompanyProfileController::class);
+    Route::resource('bank-accounts', BankAccountController::class);
+    Route::resource('currencies', CurrencyController::class);
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
     Route::resource('contracts', ContractController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);

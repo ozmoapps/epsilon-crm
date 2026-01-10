@@ -99,7 +99,7 @@ class ContractTemplateSeeder extends Seeder
 </div>
 
 <div class="footer">
-    <p>Bu belge elektronik olarak oluşturulmuştur.</p>
+    <p>{{company.footer_text}}</p>
 </div>
 HTML;
 
@@ -190,7 +190,7 @@ HTML;
 </div>
 
 <div class="footer">
-    <p>This document is generated electronically.</p>
+    <p>{{company.footer_text}}</p>
 </div>
 HTML;
 
