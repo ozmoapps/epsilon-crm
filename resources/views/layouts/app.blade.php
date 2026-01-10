@@ -20,22 +20,24 @@
         </style>
     </head>
     <body class="bg-slate-50 font-sans antialiased text-slate-900">
-        <div class="min-h-screen">
+        <div x-data="{ sidebarOpen: false }" class="min-h-screen" @keydown.escape.window="sidebarOpen = false">
             @include('layouts.navigation')
 
-            <main class="py-6 sm:py-8">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    @isset($header)
-                        <div class="pb-6">
-                            {{ $header }}
-                        </div>
-                    @endisset
+            <div class="lg:pl-72">
+                <main class="py-6 sm:py-8">
+                    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        @isset($header)
+                            <div class="pb-6">
+                                {{ $header }}
+                            </div>
+                        @endisset
 
-                    <x-ui.flash class="mb-6" />
+                        <x-ui.flash class="mb-6" />
 
-                    {{ $slot }}
-                </div>
-            </main>
+                        {{ $slot }}
+                    </div>
+                </main>
+            </div>
         </div>
     </body>
 </html>

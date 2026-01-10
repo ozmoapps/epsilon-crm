@@ -198,7 +198,7 @@
             <x-slot name="header">
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <span>{{ __('Kalemler') }}</span>
-                    <span class="text-xs font-normal text-gray-500">{{ __('Kalemleri satır satır yönetin.') }}</span>
+                    <span class="text-xs font-normal text-slate-500">{{ __('Kalemleri satır satır yönetin.') }}</span>
                 </div>
             </x-slot>
 
@@ -218,7 +218,7 @@
                     @forelse ($itemsBySection as $section => $items)
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-xs font-semibold tracking-wide text-gray-500">{{ $section }}</h4>
+                                <h4 class="text-xs font-semibold tracking-wide text-slate-500">{{ $section }}</h4>
                             </div>
                             <div class="space-y-3">
                                 @foreach ($items as $item)
@@ -233,7 +233,7 @@
                                         $lineTotal = $lineNet + $lineVat;
                                         $showErrors = old('form_context') === 'item-' . $item->id;
                                     @endphp
-                                    <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                                         <form method="POST" action="{{ route('sales-orders.items.update', [$salesOrder, $item]) }}" class="space-y-4 lg:grid lg:grid-cols-12 lg:items-start lg:gap-4 lg:space-y-0" x-data="{ dirty: false }" @input="dirty = true" @change="dirty = true">
                                             @csrf
                                             @method('PUT')
@@ -245,7 +245,7 @@
                                                         <x-badge variant="warning">{{ __('Opsiyon') }}</x-badge>
                                                     @endif
                                                 </div>
-                                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Hizmet/Ürün') }}</label>
+                                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Hizmet/Ürün') }}</label>
                                                 <x-select name="item_type" class="mt-1">
                                                     @foreach ($itemTypes as $value => $label)
                                                         <option value="{{ $value }}" @selected(old('item_type', $item->item_type) === $value)>
@@ -253,7 +253,7 @@
                                                         </option>
                                                     @endforeach
                                                 </x-select>
-                                                <p class="text-sm text-gray-600">
+                                                <p class="text-sm text-slate-600">
                                                     {{ \Illuminate\Support\Str::limit(old('description', $item->description), 120) ?: __('Detay eklenmedi.') }}
                                                 </p>
                                                 <details class="group" @if ($showErrors) open @endif>
@@ -265,8 +265,8 @@
                                                     </summary>
                                                     <x-textarea name="description" rows="3" class="mt-2" required>{{ old('description', $item->description) }}</x-textarea>
                                                 </details>
-                                                <div class="mt-2 flex items-center gap-2 text-xs text-gray-600">
-                                                    <input id="is_optional_{{ $item->id }}" name="is_optional" type="checkbox" value="1" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked(old('is_optional', $item->is_optional))>
+                                                <div class="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                                                    <input id="is_optional_{{ $item->id }}" name="is_optional" type="checkbox" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" @checked(old('is_optional', $item->is_optional))>
                                                     <label for="is_optional_{{ $item->id }}">{{ __('Opsiyon') }}</label>
                                                 </div>
                                                 @if ($showErrors)
@@ -276,7 +276,7 @@
                                             </div>
 
                                             <div class="space-y-2 lg:col-span-1">
-                                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Miktar') }}</label>
+                                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Miktar') }}</label>
                                                 <x-input name="qty" type="text" inputmode="decimal" class="mt-1 w-full text-right tabular-nums" :value="old('qty', $item->qty)" required />
                                                 @if ($showErrors)
                                                     <x-input-error :messages="$errors->get('qty')" class="mt-2" />
@@ -284,7 +284,7 @@
                                             </div>
 
                                             <div class="space-y-2 lg:col-span-1">
-                                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Birim') }}</label>
+                                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Birim') }}</label>
                                                 <x-select name="unit" class="mt-1">
                                                     <option value="">{{ __('Seçiniz') }}</option>
                                                     @foreach ($unitOptions as $unitOption)
@@ -299,10 +299,10 @@
                                             </div>
 
                                             <div class="space-y-2 lg:col-span-2">
-                                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Br. Fiyat') }}</label>
+                                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Br. Fiyat') }}</label>
                                                 <div class="relative">
                                                     <x-input name="unit_price" type="text" inputmode="decimal" class="mt-1 w-full pr-9 text-right tabular-nums" :value="old('unit_price', $item->unit_price)" required />
-                                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-gray-400">
+                                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-400">
                                                         {{ $currencySymbol }}
                                                     </span>
                                                 </div>
@@ -312,10 +312,10 @@
                                             </div>
 
                                             <div class="space-y-2 lg:col-span-1">
-                                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('İndirim') }}</label>
+                                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('İndirim') }}</label>
                                                 <div class="relative">
                                                     <x-input name="discount_amount" type="text" inputmode="decimal" class="mt-1 w-full pr-9 text-right tabular-nums" :value="old('discount_amount', $item->discount_amount)" />
-                                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-gray-400">
+                                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-400">
                                                         {{ $currencySymbol }}
                                                     </span>
                                                 </div>
@@ -325,7 +325,7 @@
                                             </div>
 
                                             <div class="space-y-2 lg:col-span-1">
-                                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('KDV') }}</label>
+                                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('KDV') }}</label>
                                                 <x-select name="vat_rate" class="mt-1">
                                                     <option value="">{{ __('KDV Yok') }}</option>
                                                     @foreach ($vatOptions as $vatOption)
@@ -339,8 +339,8 @@
                                                 @endif
                                             </div>
 
-                                            <div class="space-y-1 text-sm font-semibold text-gray-900 lg:col-span-1 lg:text-right">
-                                                <span class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Toplam') }}</span>
+                                            <div class="space-y-1 text-sm font-semibold text-slate-900 lg:col-span-1 lg:text-right">
+                                                <span class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Toplam') }}</span>
                                                 <div>{{ $currencySymbol }} {{ $formatMoney($lineTotal) }}</div>
                                             </div>
 
@@ -349,7 +349,7 @@
                                                     {{ __('Kaydet') }}
                                                 </x-button>
                                                 <x-ui.tooltip text="{{ __('Satır ekle') }}">
-                                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-gray-300 hover:text-gray-900" onclick="const form = document.getElementById('new-item-form'); if (form) { form.open = true; } const field = document.getElementById('new-item-description'); if (field) { field.focus(); field.scrollIntoView({ behavior: 'smooth', block: 'center' }); }" aria-label="{{ __('Satır ekle') }}">
+                                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:text-slate-900" onclick="const form = document.getElementById('new-item-form'); if (form) { form.open = true; } const field = document.getElementById('new-item-description'); if (field) { field.focus(); field.scrollIntoView({ behavior: 'smooth', block: 'center' }); }" aria-label="{{ __('Satır ekle') }}">
                                                         <x-icon.plus class="h-4 w-4" />
                                                     </button>
                                                 </x-ui.tooltip>
@@ -382,7 +382,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500">
+                        <div class="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
                             {{ __('Henüz kalem eklenmedi.') }}
                         </div>
                     @endforelse
@@ -391,8 +391,8 @@
                 @php
                     $showNewErrors = old('form_context') === 'new-item';
                 @endphp
-                <details id="new-item-form" class="rounded-xl border border-gray-100 bg-gray-50/60 p-4" @if ($showNewErrors) open @endif>
-                    <summary class="cursor-pointer text-sm font-semibold text-gray-800">
+                <details id="new-item-form" class="rounded-xl border border-slate-100 bg-slate-50/60 p-4" @if ($showNewErrors) open @endif>
+                    <summary class="cursor-pointer text-sm font-semibold text-slate-800">
                         {{ __('+ Yeni Satır Ekle') }}
                     </summary>
                     <div class="mt-4">
@@ -401,7 +401,7 @@
                             <input type="hidden" name="form_context" value="new-item">
 
                             <div class="space-y-2 lg:col-span-4">
-                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Hizmet/Ürün') }}</label>
+                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Hizmet/Ürün') }}</label>
                                 <x-select name="item_type" class="mt-1">
                                     @foreach ($itemTypes as $value => $label)
                                         <option value="{{ $value }}" @selected(old('item_type') === $value)>
@@ -409,7 +409,7 @@
                                         </option>
                                     @endforeach
                                 </x-select>
-                                <p class="text-sm text-gray-600">{{ old('description') ? \Illuminate\Support\Str::limit(old('description'), 120) : __('Detay eklenmedi.') }}</p>
+                                <p class="text-sm text-slate-600">{{ old('description') ? \Illuminate\Support\Str::limit(old('description'), 120) : __('Detay eklenmedi.') }}</p>
                                 <details class="group" @if ($showNewErrors) open @endif>
                                     <summary class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 transition hover:text-indigo-500">
                                         <span>{{ __('Detay') }}</span>
@@ -419,8 +419,8 @@
                                     </summary>
                                     <x-textarea id="new-item-description" name="description" rows="3" class="mt-2" required>{{ old('description') }}</x-textarea>
                                 </details>
-                                <div class="mt-2 flex items-center gap-2 text-xs text-gray-600">
-                                    <input id="is_optional_new" name="is_optional" type="checkbox" value="1" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked(old('is_optional'))>
+                                <div class="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                                    <input id="is_optional_new" name="is_optional" type="checkbox" value="1" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" @checked(old('is_optional'))>
                                     <label for="is_optional_new">{{ __('Opsiyon') }}</label>
                                 </div>
                                 @if ($showNewErrors)
@@ -430,7 +430,7 @@
                             </div>
 
                             <div class="space-y-2 lg:col-span-1">
-                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Miktar') }}</label>
+                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Miktar') }}</label>
                                 <x-input name="qty" type="text" inputmode="decimal" class="mt-1 w-full text-right tabular-nums" :value="old('qty', 1)" required />
                                 @if ($showNewErrors)
                                     <x-input-error :messages="$errors->get('qty')" class="mt-2" />
@@ -438,7 +438,7 @@
                             </div>
 
                             <div class="space-y-2 lg:col-span-1">
-                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Birim') }}</label>
+                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Birim') }}</label>
                                 <x-select name="unit" class="mt-1">
                                     <option value="">{{ __('Seçiniz') }}</option>
                                     @foreach ($unitOptions as $unitOption)
@@ -453,10 +453,10 @@
                             </div>
 
                             <div class="space-y-2 lg:col-span-2">
-                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Br. Fiyat') }}</label>
+                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Br. Fiyat') }}</label>
                                 <div class="relative">
                                     <x-input name="unit_price" type="text" inputmode="decimal" class="mt-1 w-full pr-9 text-right tabular-nums" :value="old('unit_price', 0)" required />
-                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-gray-400">
+                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-400">
                                         {{ $currencySymbol }}
                                     </span>
                                 </div>
@@ -466,10 +466,10 @@
                             </div>
 
                             <div class="space-y-2 lg:col-span-1">
-                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('İndirim') }}</label>
+                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('İndirim') }}</label>
                                 <div class="relative">
                                     <x-input name="discount_amount" type="text" inputmode="decimal" class="mt-1 w-full pr-9 text-right tabular-nums" :value="old('discount_amount', 0)" />
-                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-gray-400">
+                                    <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-400">
                                         {{ $currencySymbol }}
                                     </span>
                                 </div>
@@ -479,7 +479,7 @@
                             </div>
 
                             <div class="space-y-2 lg:col-span-1">
-                                <label class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('KDV') }}</label>
+                                <label class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('KDV') }}</label>
                                 <x-select name="vat_rate" class="mt-1">
                                     <option value="">{{ __('KDV Yok') }}</option>
                                     @foreach ($vatOptions as $vatOption)
@@ -493,8 +493,8 @@
                                 @endif
                             </div>
 
-                            <div class="space-y-1 text-sm font-semibold text-gray-900 lg:col-span-1 lg:text-right">
-                                <span class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Toplam') }}</span>
+                            <div class="space-y-1 text-sm font-semibold text-slate-900 lg:col-span-1 lg:text-right">
+                                <span class="text-xs font-semibold text-slate-500 lg:sr-only">{{ __('Toplam') }}</span>
                                 <div>{{ $currencySymbol }} --</div>
                             </div>
 
@@ -519,7 +519,7 @@
             </div>
 
             <div class="grid gap-4 md:grid-cols-12 md:items-start">
-                <div class="space-y-2 text-xs text-gray-500 md:col-span-8">
+                <div class="space-y-2 text-xs text-slate-500 md:col-span-8">
                     <p>
                         {{ __('Ara Toplam - İndirim + KDV') }}: {{ $currencySymbol }} {{ $formatMoney($computedGrandTotal) }}
                     </p>
@@ -527,9 +527,9 @@
                 </div>
 
                 <div class="md:col-span-4 md:justify-self-end">
-                    <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-                        <h4 class="text-sm font-semibold text-gray-800">{{ __('Toplamlar') }}</h4>
-                        <dl class="mt-3 space-y-2 text-sm text-gray-700">
+                    <div class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+                        <h4 class="text-sm font-semibold text-slate-800">{{ __('Toplamlar') }}</h4>
+                        <dl class="mt-3 space-y-2 text-sm text-slate-700">
                             <div class="flex items-center justify-between">
                                 <dt>{{ __('Ara Toplam (KDV hariç)') }}</dt>
                                 <dd class="font-semibold">{{ $currencySymbol }} {{ $formatMoney($salesOrder->subtotal) }}</dd>
@@ -542,9 +542,9 @@
                                 <dt>{{ __('Toplam KDV') }}</dt>
                                 <dd class="font-semibold">{{ $currencySymbol }} {{ $formatMoney($salesOrder->vat_total) }}</dd>
                             </div>
-                            <div class="flex items-center justify-between border-t border-gray-200 pt-2 text-base">
+                            <div class="flex items-center justify-between border-t border-slate-200 pt-2 text-base">
                                 <dt>{{ __('Genel Toplam') }}</dt>
-                                <dd class="font-semibold text-gray-900">{{ $currencySymbol }} {{ $formatMoney($salesOrder->grand_total) }}</dd>
+                                <dd class="font-semibold text-slate-900">{{ $currencySymbol }} {{ $formatMoney($salesOrder->grand_total) }}</dd>
                             </div>
                         </dl>
                     </div>

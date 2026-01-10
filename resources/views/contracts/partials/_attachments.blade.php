@@ -1,8 +1,8 @@
 <x-card x-show="tab === 'attachments' || isDesktop" x-cloak>
     <x-slot name="header">
         <div>
-            <p class="text-base font-semibold text-gray-900">{{ __('Ek Dosyalar') }}</p>
-            <p class="text-sm text-gray-500">{{ __('Dosyaları ekleyin ve paylaşım paketinde yönetin.') }}</p>
+            <p class="text-base font-semibold text-slate-900">{{ __('Ek Dosyalar') }}</p>
+            <p class="text-sm text-slate-500">{{ __('Dosyaları ekleyin ve paylaşım paketinde yönetin.') }}</p>
         </div>
     </x-slot>
     <div class="space-y-6">
@@ -33,7 +33,7 @@
                 <div>
                     <x-input-label for="attachment_file" :value="__('Dosya')" />
                     <x-input id="attachment_file" name="file" type="file" class="mt-1" />
-                    <p class="mt-1 text-xs text-gray-500">
+                    <p class="mt-1 text-xs text-slate-500">
                         {{ __('İzinli türler:') }} {{ implode(', ', $allowedAttachmentMimes) }} · {{ __('Maksimum:') }} {{ $formatBytes($maxAttachmentSizeKb * 1024) }}
                     </p>
                     <x-input-error :messages="$errors->get('file')" class="mt-2" />
@@ -49,13 +49,13 @@
 
         <div class="space-y-3 text-sm">
             @forelse ($contract->attachments as $attachment)
-                <div class="flex flex-col gap-3 rounded-lg border border-gray-100 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-3 rounded-lg border border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="space-y-1">
                         <div class="flex flex-wrap items-center gap-2">
-                            <p class="font-semibold text-gray-900">{{ $attachment->title }}</p>
+                            <p class="font-semibold text-slate-900">{{ $attachment->title }}</p>
                             <x-ui.badge variant="neutral">{{ $attachmentTypeLabels[$attachment->type] ?? $attachment->type }}</x-ui.badge>
                         </div>
-                        <p class="text-xs text-gray-500">
+                        <p class="text-xs text-slate-500">
                             {{ $formatBytes($attachment->size) }} · {{ $attachment->created_at?->format('d.m.Y H:i') }}
                             @if ($attachment->uploader)
                                 · {{ $attachment->uploader->name }}
@@ -82,9 +82,9 @@
                     </div>
                 </div>
             @empty
-                <div class="rounded-lg border border-dashed border-gray-200 p-6 text-center">
-                    <p class="text-sm font-medium text-gray-700">{{ __('Henüz ek dosya yok') }}</p>
-                    <p class="mt-1 text-xs text-gray-500">{{ __('İlk dosyayı yükleyerek paylaşım paketini zenginleştirin.') }}</p>
+                <div class="rounded-lg border border-dashed border-slate-200 p-6 text-center">
+                    <p class="text-sm font-medium text-slate-700">{{ __('Henüz ek dosya yok') }}</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ __('İlk dosyayı yükleyerek paylaşım paketini zenginleştirin.') }}</p>
                 </div>
             @endforelse
         </div>
