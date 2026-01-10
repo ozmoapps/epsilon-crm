@@ -79,15 +79,15 @@
                     </h2>
                 </header>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto sm:overflow-visible">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İsim</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-posta</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kayıt Tarihi</th>
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">İsim</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">E-posta</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Rol</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">Kayıt Tarihi</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 tracking-wider">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">

@@ -14,23 +14,23 @@
             <x-slot name="header">{{ __('Hesap Bilgileri') }}</x-slot>
             <dl class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Hesap Adı') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Hesap Adı') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $bankAccount->name }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Banka') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Banka') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $bankAccount->bank_name }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Şube') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Şube') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $bankAccount->branch_name ?: __('Bilgi yok') }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Para Birimi') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Para Birimi') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $bankAccount->currency?->code ?: __('Tanımsız') }}</dd>
                 </div>
                 <div class="sm:col-span-2">
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('IBAN') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('IBAN') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $bankAccount->iban }}</dd>
                 </div>
             </dl>

@@ -55,7 +55,7 @@
 
     @if ($previewHtml)
         <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700">{{ __('Önizleme') }}</h3>
+            <h3 class="text-sm font-semibold tracking-wide text-gray-700">{{ __('Önizleme') }}</h3>
             <div class="mt-4 prose max-w-none">
                 {!! $previewHtml !!}
             </div>

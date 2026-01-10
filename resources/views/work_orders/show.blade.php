@@ -50,7 +50,7 @@
                 </div>
                 <dl class="grid gap-6 text-sm sm:grid-cols-2">
                     <div>
-                        <dt class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Müşteri') }}</dt>
+                        <dt class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Müşteri') }}</dt>
                         <dd class="mt-1 font-medium text-slate-900 border-b border-slate-100 pb-1">
                             @if ($workOrder->customer)
                                 <a href="{{ route('admin.company-profiles.show', $workOrder->customer_id) }}" class="text-brand-600 hover:text-brand-700 hover:underline decoration-brand-600/50 underline-offset-4 transition-all">
@@ -62,7 +62,7 @@
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Tekne') }}</dt>
+                        <dt class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Tekne') }}</dt>
                         <dd class="mt-1 font-medium text-slate-900 border-b border-slate-100 pb-1">
                             @if ($workOrder->vessel)
                                 <a href="{{ route('vessels.show', $workOrder->vessel) }}" class="text-brand-600 hover:text-brand-700 hover:underline decoration-brand-600/50 underline-offset-4 transition-all">
@@ -74,15 +74,15 @@
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Planlanan Başlangıç') }}</dt>
+                        <dt class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Planlanan Başlangıç') }}</dt>
                         <dd class="mt-1 font-medium text-slate-900">{{ $workOrder->planned_start_at ? $workOrder->planned_start_at->format('d.m.Y') : '—' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Planlanan Bitiş') }}</dt>
+                        <dt class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Planlanan Bitiş') }}</dt>
                         <dd class="mt-1 font-medium text-slate-900">{{ $workOrder->planned_end_at ? $workOrder->planned_end_at->format('d.m.Y') : '—' }}</dd>
                     </div>
                     <div class="sm:col-span-2">
-                        <dt class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Açıklama') }}</dt>
+                        <dt class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Açıklama') }}</dt>
                         <dd class="mt-1 font-medium text-slate-900 bg-slate-50 rounded-lg p-3 text-sm leading-relaxed border border-slate-200">
                             {{ $workOrder->description ?: '—' }}
                         </dd>

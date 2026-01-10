@@ -26,12 +26,8 @@
 
         <x-ui.card>
             <x-slot name="header">{{ __('Liste') }}</x-slot>
-            @php
-                $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
-                $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
-            @endphp
             <x-ui.table>
-                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3 text-left">{{ __('Para Birimi') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Kod') }}</th>
@@ -48,42 +44,16 @@
                                 {{ $currency->is_active ? __('Aktif') : __('Pasif') }}
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <x-ui.dropdown align="right" width="w-44">
-                                    <x-slot name="trigger">
-                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 ui-focus" aria-label="{{ __('İşlemler') }}">
-                                            <x-icon.dots class="h-4 w-4" />
-                                        </button>
-                                    </x-slot>
-                                    <x-slot name="content">
-                                        <a href="{{ route('admin.currencies.show', $currency) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.info class="h-4 w-4 text-sky-600" />
-                                            {{ __('Görüntüle') }}
-                                        </a>
-                                        <a href="{{ route('admin.currencies.edit', $currency) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
-                                            {{ __('Düzenle') }}
-                                        </a>
-                                        <form id="currency-delete-{{ $currency->id }}" method="POST" action="{{ route('admin.currencies.destroy', $currency) }}" class="hidden">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                        <x-ui.confirm
-                                            title="{{ __('Silme işlemini onayla') }}"
-                                            message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
-                                            confirm-text="{{ __('Evet, sil') }}"
-                                            cancel-text="{{ __('Vazgeç') }}"
-                                            variant="danger"
-                                            form-id="currency-delete-{{ $currency->id }}"
-                                        >
-                                            <x-slot name="trigger">
-                                                <button type="button" class="{{ $actionDangerClass }}">
-                                                    <x-icon.trash class="h-4 w-4" />
-                                                    {{ __('Sil') }}
-                                                </button>
-                                            </x-slot>
-                                        </x-ui.confirm>
-                                    </x-slot>
-                                </x-ui.dropdown>
+                                <form id="currency-delete-{{ $currency->id }}" method="POST" action="{{ route('admin.currencies.destroy', $currency) }}" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                <x-ui.row-actions
+                                    show="{{ route('admin.currencies.show', $currency) }}"
+                                    edit="{{ route('admin.currencies.edit', $currency) }}"
+                                    delete="{{ route('admin.currencies.destroy', $currency) }}"
+                                    delete-form-id="currency-delete-{{ $currency->id }}"
+                                />
                             </td>
                         </tr>
                     @empty

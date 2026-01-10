@@ -91,7 +91,7 @@
                     <x-ui.card class="relative overflow-hidden border border-white/10 {{ $card['accent'] }}">
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/70">{{ $card['title'] }}</p>
+                                <p class="text-xs font-semibold tracking-[0.3em] text-white/70">{{ $card['title'] }}</p>
                                 <p class="mt-3 text-3xl font-semibold text-white">{{ number_format($card['total']) }}</p>
                                 <div class="mt-4 flex flex-wrap gap-2">
                                     @foreach ($card['statuses'] as $status)
@@ -158,7 +158,7 @@
                         @endphp
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm text-slate-700">
-                                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
                                     <tr>
                                         <th scope="col" class="px-4 py-3 text-left">{{ __('Sipariş') }}</th>
                                         <th scope="col" class="px-4 py-3 text-left">{{ __('Müşteri') }}</th>
@@ -230,7 +230,7 @@
                         @endphp
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm text-slate-700">
-                                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
                                     <tr>
                                         <th scope="col" class="px-4 py-3 text-left">{{ __('Teklif No') }}</th>
                                         <th scope="col" class="px-4 py-3 text-left">{{ __('Müşteri') }}</th>
@@ -303,7 +303,7 @@
                         @endphp
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm text-slate-700">
-                                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
                                     <tr>
                                         <th scope="col" class="px-4 py-3 text-left">{{ __('Sözleşme') }}</th>
                                         <th scope="col" class="px-4 py-3 text-left">{{ __('Müşteri') }}</th>
@@ -410,7 +410,7 @@
                         <div class="space-y-4">
                             @if($staleSentQuotes->isNotEmpty())
                                 <div>
-                                    <h4 class="mb-2 text-xs font-semibold uppercase text-slate-500">{{ __('Yanıt Bekleyen Teklifler') }}</h4>
+                                    <h4 class="mb-2 text-xs font-semibold text-slate-500">{{ __('Yanıt Bekleyen Teklifler') }}</h4>
                                     <ul class="space-y-2">
                                         @foreach($staleSentQuotes as $quote)
                                             <li class="flex items-center justify-between text-sm">
@@ -431,7 +431,7 @@
                     
                             @if($staleSentContracts->isNotEmpty())
                                  <div class="border-t border-slate-100 pt-2">
-                                    <h4 class="mb-2 mt-2 text-xs font-semibold uppercase text-slate-500">{{ __('İmza Bekleyen Sözleşmeler') }}</h4>
+                                    <h4 class="mb-2 mt-2 text-xs font-semibold text-slate-500">{{ __('İmza Bekleyen Sözleşmeler') }}</h4>
                                     <ul class="space-y-2">
                                         @foreach($staleSentContracts as $contract)
                                             <li class="flex items-center justify-between text-sm">
@@ -452,7 +452,7 @@
                     
                             @if($upcomingPlannedWorkOrders->isNotEmpty())
                                  <div class="border-t border-slate-100 pt-2">
-                                    <h4 class="mb-2 mt-2 text-xs font-semibold uppercase text-slate-500">{{ __('Yaklaşan İş Emirleri') }}</h4>
+                                    <h4 class="mb-2 mt-2 text-xs font-semibold text-slate-500">{{ __('Yaklaşan İş Emirleri') }}</h4>
                                     <ul class="space-y-2">
                                         @foreach($upcomingPlannedWorkOrders as $wo)
                                             <li class="flex items-center justify-between text-sm">

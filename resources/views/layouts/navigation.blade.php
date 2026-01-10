@@ -39,7 +39,7 @@
 
         <div class="flex-1 space-y-8 overflow-y-auto px-4 pb-8">
             <div>
-                <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Operasyonlar') }}</p>
+                <p class="px-3 text-xs font-semibold tracking-[0.2em] text-slate-500">{{ __('Operasyonlar') }}</p>
                 <div class="mt-3 space-y-1">
                     <a
                         href="{{ route('dashboard') }}"
@@ -102,7 +102,7 @@
             </div>
 
             <div>
-                <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Ana Veriler') }}</p>
+                <p class="px-3 text-xs font-semibold tracking-[0.2em] text-slate-500">{{ __('Ana Veriler') }}</p>
                 <div class="mt-3 space-y-1">
                     <a
                         href="{{ route('customers.index') }}"
@@ -133,7 +133,7 @@
             </div>
 
             <div>
-                <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Ayarlar') }}</p>
+                <p class="px-3 text-xs font-semibold tracking-[0.2em] text-slate-500">{{ __('Ayarlar') }}</p>
                 @php
                     $isAdmin = auth()->user()->is_admin;
                     $lockedClass = 'opacity-50 cursor-not-allowed';

@@ -16,7 +16,7 @@
         .section { margin-bottom: 16px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
-        th { background: #f3f4f6; font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase; }
+        th { background: #f3f4f6; font-size: 11px; letter-spacing: 0.03em; }
         .text-right { text-align: right; }
         .section-row { background: #f9fafb; font-weight: 600; }
         .total-row td { font-weight: bold; background: #f3f4f6; }

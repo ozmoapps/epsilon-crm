@@ -23,7 +23,7 @@
                         </button>
                     </x-slot>
                     <x-slot name="content">
-                        <div class="px-4 py-2 text-xs text-gray-400 uppercase font-bold text-center">
+                        <div class="px-4 py-2 text-xs text-gray-400 font-bold text-center">
                             {{ __('Kayıtlı Görünümler') }}
                         </div>
                         @forelse($savedViews as $view)
@@ -179,19 +179,17 @@
                     'contracted' => 'success',
                     'cancelled' => 'cancelled',
                 ];
-                $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
-                $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
             @endphp
             <x-ui.table class="ui-table-sticky">
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Sipariş No') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Başlık') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Tekne') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Durum') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Genel Toplam') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Sipariş No') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Başlık') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Tekne') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Durum') }}</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Genel Toplam') }}</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 bg-white">
@@ -218,70 +216,20 @@
                                 {{ \App\Support\MoneyMath::formatTR($salesOrder->grand_total) }} {{ $salesOrder->currency }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <x-ui.dropdown align="right" width="w-44">
-                                    <x-slot name="trigger">
-                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 transition hover:border-gray-300 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" aria-label="{{ __('İşlemler') }}">
-                                            <x-icon.dots class="h-4 w-4" />
-                                        </button>
-                                    </x-slot>
-                                    <x-slot name="content">
-                                        <a href="{{ route('sales-orders.show', $salesOrder) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.info class="h-4 w-4 text-indigo-500" />
-                                            {{ __('Görüntüle') }}
-                                        </a>
-                                        @if ($isLocked)
-                                            <button
-                                                type="button"
-                                                class="{{ $actionItemClass }} cursor-not-allowed opacity-60"
-                                                aria-disabled="true"
-                                                title="{{ __('Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.') }}"
-                                                @click.prevent
-                                            >
-                                                <x-icon.pencil class="h-4 w-4 text-indigo-500" />
-                                                {{ __('Düzenle') }}
-                                                <x-ui.badge variant="neutral" class="ml-auto text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
-                                            </button>
-                                        @else
-                                            <a href="{{ route('sales-orders.edit', $salesOrder) }}" class="{{ $actionItemClass }}">
-                                                <x-icon.pencil class="h-4 w-4 text-indigo-500" />
-                                                {{ __('Düzenle') }}
-                                            </a>
-                                        @endif
-                                        @if ($isLocked)
-                                            <button
-                                                type="button"
-                                                class="{{ $actionDangerClass }} cursor-not-allowed opacity-60"
-                                                aria-disabled="true"
-                                                title="{{ __('Bu siparişin bağlı sözleşmesi olduğu için silinemez.') }}"
-                                                @click.prevent
-                                            >
-                                                <x-icon.trash class="h-4 w-4" />
-                                                {{ __('Sil') }}
-                                                <x-ui.badge variant="neutral" class="ml-auto text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
-                                            </button>
-                                        @else
-                                            <form id="sales-order-delete-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}" class="hidden">
-                                                @csrf
-                                                @method('DELETE')
-                                            </form>
-                                            <x-ui.confirm
-                                                title="{{ __('Silme işlemini onayla') }}"
-                                                message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
-                                                confirm-text="{{ __('Evet, sil') }}"
-                                                cancel-text="{{ __('Vazgeç') }}"
-                                                variant="danger"
-                                                form-id="sales-order-delete-{{ $salesOrder->id }}"
-                                            >
-                                                <x-slot name="trigger">
-                                                    <button type="button" class="{{ $actionDangerClass }}">
-                                                        <x-icon.trash class="h-4 w-4" />
-                                                        {{ __('Sil') }}
-                                                    </button>
-                                                </x-slot>
-                                            </x-ui.confirm>
-                                        @endif
-                                    </x-slot>
-                                </x-ui.dropdown>
+                                <form id="sales-order-delete-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                <x-ui.row-actions
+                                    show="{{ route('sales-orders.show', $salesOrder) }}"
+                                    edit="{{ route('sales-orders.edit', $salesOrder) }}"
+                                    delete="{{ route('sales-orders.destroy', $salesOrder) }}"
+                                    delete-form-id="sales-order-delete-{{ $salesOrder->id }}"
+                                    :edit-disabled="$isLocked"
+                                    :delete-disabled="$isLocked"
+                                    edit-disabled-title="{{ __('Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.') }}"
+                                    delete-disabled-title="{{ __('Bu siparişin bağlı sözleşmesi olduğu için silinemez.') }}"
+                                />
                             </td>
                         </tr>
                     @empty

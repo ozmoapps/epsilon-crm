@@ -21,12 +21,8 @@
 
         <x-card>
             <x-slot name="header">{{ __('Liste') }}</x-slot>
-            @php
-                $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
-                $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
-            @endphp
             <x-ui.table>
-                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3 text-left">{{ __('Tekne') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Müşteri') }}</th>
@@ -47,33 +43,16 @@
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $vessel->beam_m ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $vessel->draft_m ?? '—' }}</td>
                             <td class="px-4 py-3 text-right">
-                                <x-ui.dropdown align="right" width="w-44">
-                                    <x-slot name="trigger">
-                                        <x-ui.tooltip text="{{ __('İşlemler') }}">
-                                            <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900" aria-label="{{ __('İşlemler') }}">
-                                                <x-icon.dots class="h-4 w-4" />
-                                            </button>
-                                        </x-ui.tooltip>
-                                    </x-slot>
-                                    <x-slot name="content">
-                                        <a href="{{ route('vessels.show', $vessel) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.info class="h-4 w-4 text-sky-600" />
-                                            {{ __('Görüntüle') }}
-                                        </a>
-                                        <a href="{{ route('vessels.edit', $vessel) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
-                                            {{ __('Düzenle') }}
-                                        </a>
-                                        <form method="POST" action="{{ route('vessels.destroy', $vessel) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="{{ $actionDangerClass }}" onclick="return confirm('Tekne kaydı silinsin mi?')">
-                                                <x-icon.trash class="h-4 w-4" />
-                                                {{ __('Sil') }}
-                                            </button>
-                                        </form>
-                                    </x-slot>
-                                </x-ui.dropdown>
+                                <form id="vessel-delete-{{ $vessel->id }}" method="POST" action="{{ route('vessels.destroy', $vessel) }}" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                <x-ui.row-actions
+                                    show="{{ route('vessels.show', $vessel) }}"
+                                    edit="{{ route('vessels.edit', $vessel) }}"
+                                    delete="{{ route('vessels.destroy', $vessel) }}"
+                                    delete-form-id="vessel-delete-{{ $vessel->id }}"
+                                />
                             </td>
                         </tr>
                     @empty
