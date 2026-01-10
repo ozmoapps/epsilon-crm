@@ -6,7 +6,7 @@
                     $canConfirm = $salesOrder->status === 'draft';
                     $canStart = $salesOrder->status === 'confirmed';
                     $canComplete = $salesOrder->status === 'in_progress';
-                    $canCancel = ! in_array($salesOrder->status, ['completed', 'canceled'], true);
+                    $canCancel = ! in_array($salesOrder->status, ['completed', 'cancelled', 'contracted'], true);
                     $hasContract = (bool) $salesOrder->contract;
                     $isLocked = $salesOrder->isLocked();
                     $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
@@ -175,7 +175,8 @@
                         'confirmed' => 'confirmed',
                         'in_progress' => 'in_progress',
                         'completed' => 'completed',
-                        'canceled' => 'canceled',
+                        'contracted' => 'success',
+                        'cancelled' => 'cancelled',
                     ];
                 @endphp
                 <div>
@@ -616,5 +617,7 @@
                 </div>
             </div>
         </x-card>
+
+        <x-activity-timeline :logs="$salesOrder->activityLogs" />
     </div>
 </x-app-layout>

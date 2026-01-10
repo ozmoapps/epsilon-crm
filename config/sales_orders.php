@@ -8,7 +8,8 @@ return [
         'confirmed' => 'Onaylı',
         'in_progress' => 'Devam Ediyor',
         'completed' => 'Tamamlandı',
-        'canceled' => 'İptal',
+        'contracted' => 'Sözleşmeye Dönüştü',
+        'cancelled' => 'İptal',
     ],
     'item_types' => [
         'labor' => 'İşçilik',

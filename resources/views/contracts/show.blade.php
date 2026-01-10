@@ -6,6 +6,7 @@
                     $canSend = $contract->status === 'draft';
                     $canSign = $contract->status === 'sent';
                     $canCancel = $contract->status !== 'cancelled';
+                    $isLocked = $contract->isLocked();
                 @endphp
 
                 <x-button href="{{ route('contracts.pdf', $contract) }}" variant="secondary" size="sm">
@@ -59,24 +60,41 @@
                     </form>
                 @endif
 
-                <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}" class="hidden">
-                    @csrf
-                    @method('DELETE')
-                </form>
-                <x-ui.confirm
-                    title="{{ __('Silme işlemini onayla') }}"
-                    message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
-                    confirm-text="{{ __('Evet, sil') }}"
-                    cancel-text="{{ __('Vazgeç') }}"
-                    variant="danger"
-                    form-id="contract-delete-{{ $contract->id }}"
-                >
-                    <x-slot name="trigger">
-                        <x-button type="button" variant="danger" size="sm">
+                @if ($isLocked)
+                    <div class="flex flex-col items-start gap-1">
+                        <x-button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            class="cursor-not-allowed opacity-60"
+                            aria-disabled="true"
+                            title="{{ __('İmzalı sözleşmeler silinemez.') }}"
+                            @click.prevent
+                        >
                             {{ __('Sil') }}
                         </x-button>
-                    </x-slot>
-                </x-ui.confirm>
+                        <x-ui.badge variant="neutral" class="text-[10px]">{{ __('Kilitli') }}</x-ui.badge>
+                    </div>
+                @else
+                    <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}" class="hidden">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    <x-ui.confirm
+                        title="{{ __('Silme işlemini onayla') }}"
+                        message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
+                        confirm-text="{{ __('Evet, sil') }}"
+                        cancel-text="{{ __('Vazgeç') }}"
+                        variant="danger"
+                        form-id="contract-delete-{{ $contract->id }}"
+                    >
+                        <x-slot name="trigger">
+                            <x-button type="button" variant="danger" size="sm">
+                                {{ __('Sil') }}
+                            </x-button>
+                        </x-slot>
+                    </x-ui.confirm>
+                @endif
 
                 <x-button href="{{ route('contracts.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm sözleşmeler') }}
@@ -88,8 +106,10 @@
     @php
         $statusVariants = [
             'draft' => 'draft',
+            'issued' => 'neutral',
             'sent' => 'sent',
             'signed' => 'signed',
+            'superseded' => 'neutral',
             'cancelled' => 'cancelled',
         ];
         $deliveryStatusVariants = [
@@ -200,5 +220,7 @@
                 @endforelse
             </div>
         </x-card>
+
+        <x-activity-timeline :logs="$contract->activityLogs" />
     </div>
 </x-app-layout>

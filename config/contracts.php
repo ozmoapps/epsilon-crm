@@ -5,8 +5,10 @@ return [
     'padding' => 4,
     'statuses' => [
         'draft' => 'Taslak',
+        'issued' => 'Düzenlendi',
         'sent' => 'Gönderildi',
         'signed' => 'İmzalandı',
+        'superseded' => 'Revize Edildi',
         'cancelled' => 'İptal',
     ],
     'locales' => [

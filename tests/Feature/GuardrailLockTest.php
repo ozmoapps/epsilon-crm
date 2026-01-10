@@ -127,6 +127,52 @@ class GuardrailLockTest extends TestCase
         $this->assertDatabaseMissing('sales_orders', ['id' => $salesOrder->id]);
     }
 
+    public function test_signed_contract_cannot_be_updated_or_deleted(): void
+    {
+        $user = User::factory()->create();
+        $salesOrder = SalesOrder::factory()->create(['created_by' => $user->id]);
+        $salesOrder->load('customer');
+
+        $contract = Contract::create([
+            'sales_order_id' => $salesOrder->id,
+            'status' => 'signed',
+            'issued_at' => now()->toDateString(),
+            'signed_at' => now(),
+            'locale' => 'tr',
+            'currency' => $salesOrder->currency,
+            'customer_name' => $salesOrder->customer?->name ?? 'Müşteri',
+            'customer_company' => null,
+            'customer_tax_no' => null,
+            'customer_address' => $salesOrder->customer?->address,
+            'customer_email' => $salesOrder->customer?->email,
+            'customer_phone' => $salesOrder->customer?->phone,
+            'subtotal' => $salesOrder->subtotal,
+            'tax_total' => $salesOrder->vat_total,
+            'grand_total' => $salesOrder->grand_total,
+            'created_by' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->put(route('contracts.update', $contract), [
+            'issued_at' => now()->toDateString(),
+            'locale' => 'tr',
+            'contract_template_id' => null,
+            'payment_terms' => $contract->payment_terms,
+            'warranty_terms' => $contract->warranty_terms,
+            'scope_text' => $contract->scope_text,
+            'exclusions_text' => $contract->exclusions_text,
+            'delivery_terms' => $contract->delivery_terms,
+        ]);
+
+        $response->assertRedirect(route('contracts.show', $contract));
+        $response->assertSessionHas('warning', 'Sadece taslak sözleşmeler düzenlenebilir.');
+
+        $deleteResponse = $this->actingAs($user)->delete(route('contracts.destroy', $contract));
+
+        $deleteResponse->assertRedirect(route('contracts.show', $contract));
+        $deleteResponse->assertSessionHas('error', 'İmzalı sözleşmeler silinemez.');
+        $this->assertDatabaseHas('contracts', ['id' => $contract->id]);
+    }
+
     private function quotePayload(Quote $quote, array $overrides = []): array
     {
         return array_merge([

@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\SalesOrder;
 use App\Models\Vessel;
 use App\Models\WorkOrder;
+use App\Services\ActivityLogger;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -65,7 +66,7 @@ class SalesOrderController extends Controller
 
     public function show(SalesOrder $salesOrder)
     {
-        $salesOrder->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'quote', 'contract']);
+        $salesOrder->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'quote', 'contract', 'activityLogs.actor']);
 
         return view('sales_orders.show', compact('salesOrder'));
     }
@@ -87,11 +88,13 @@ class SalesOrderController extends Controller
 
     public function cancel(SalesOrder $salesOrder)
     {
-        if (in_array($salesOrder->status, ['completed', 'canceled'], true)) {
+        if (in_array($salesOrder->status, ['completed', 'cancelled', 'contracted'], true)) {
             return back()->with('warning', 'Satış siparişi zaten kapalı.');
         }
 
-        $salesOrder->update(['status' => 'canceled']);
+        if (! $salesOrder->transitionTo('cancelled', ['source' => 'cancel'])) {
+            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
+        }
 
         return back()->with('success', 'Satış siparişi iptal edildi.');
     }
@@ -129,7 +132,20 @@ class SalesOrderController extends Controller
 
         $validated = $request->validate($this->rules(), $this->messages());
 
-        $salesOrder->update($validated);
+        $nextStatus = $validated['status'];
+        $payload = $validated;
+        unset($payload['status']);
+
+        if (! $salesOrder->canTransitionTo($nextStatus)) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Durum geçişine izin verilmiyor.');
+        }
+
+        if ($salesOrder->status !== $nextStatus) {
+            $salesOrder->transitionTo($nextStatus, ['source' => 'update']);
+        }
+
+        $salesOrder->fill($payload)->save();
 
         return redirect()->route('sales-orders.show', $salesOrder)
             ->with('success', 'Satış siparişi güncellendi.');
@@ -138,6 +154,9 @@ class SalesOrderController extends Controller
     public function destroy(SalesOrder $salesOrder)
     {
         if ($salesOrder->isLocked()) {
+            app(ActivityLogger::class)->log($salesOrder, 'delete_blocked', [
+                'reason' => 'locked',
+            ]);
             return redirect()->route('sales-orders.show', $salesOrder)
                 ->with('error', 'Bu siparişin bağlı sözleşmesi olduğu için silinemez.');
         }
@@ -201,7 +220,9 @@ class SalesOrderController extends Controller
             return back()->with('warning', 'Bu işlem için uygun durumda değil.');
         }
 
-        $salesOrder->update(['status' => $to]);
+        if (! $salesOrder->transitionTo($to, ['source' => 'status_action'])) {
+            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
+        }
 
         return back()->with('success', $message);
     }

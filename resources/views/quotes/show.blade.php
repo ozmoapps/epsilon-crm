@@ -508,5 +508,7 @@
                 </div>
             </div>
         </x-card>
+
+        <x-activity-timeline :logs="$quote->activityLogs" />
     </div>
 </x-app-layout>

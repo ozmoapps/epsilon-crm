@@ -7,6 +7,7 @@ use App\Models\Quote;
 use App\Models\SalesOrder;
 use App\Models\Vessel;
 use App\Models\WorkOrder;
+use App\Services\ActivityLogger;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -67,7 +68,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote)
     {
-        $quote->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'salesOrder']);
+        $quote->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'salesOrder', 'activityLogs.actor']);
 
         return view('quotes.show', compact('quote'));
     }
@@ -105,7 +106,20 @@ class QuoteController extends Controller
 
         $validated = $request->validate($this->rules(), $this->messages());
 
-        $quote->update($validated);
+        $nextStatus = $validated['status'];
+        $payload = $validated;
+        unset($payload['status']);
+
+        if (! $quote->canTransitionTo($nextStatus)) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', 'Durum geçişine izin verilmiyor.');
+        }
+
+        if ($quote->status !== $nextStatus) {
+            $quote->transitionTo($nextStatus, ['source' => 'update']);
+        }
+
+        $quote->fill($payload)->save();
 
         return redirect()->route('quotes.show', $quote)
             ->with('success', 'Teklif güncellendi.');
@@ -114,6 +128,9 @@ class QuoteController extends Controller
     public function destroy(Quote $quote)
     {
         if ($quote->isLocked()) {
+            app(ActivityLogger::class)->log($quote, 'delete_blocked', [
+                'reason' => 'locked',
+            ]);
             return redirect()->route('quotes.show', $quote)
                 ->with('error', 'Bu teklifin bağlı siparişi olduğu için silinemez.');
         }
@@ -130,12 +147,12 @@ class QuoteController extends Controller
 
     public function markAsSent(Quote $quote)
     {
-        if ($quote->status !== 'sent') {
-            $quote->forceFill([
-                'status' => 'sent',
-                'sent_at' => now(),
-            ])->save();
+        if (! $quote->transitionTo('sent', ['source' => 'mark_sent'])) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('warning', 'Bu işlem için uygun durumda değil.');
         }
+
+        $quote->forceFill(['sent_at' => now()])->save();
 
         return redirect()->route('quotes.show', $quote)
             ->with('success', 'Teklif gönderildi olarak işaretlendi.');
@@ -143,12 +160,12 @@ class QuoteController extends Controller
 
     public function markAsAccepted(Quote $quote)
     {
-        if ($quote->status !== 'accepted') {
-            $quote->forceFill([
-                'status' => 'accepted',
-                'accepted_at' => now(),
-            ])->save();
+        if (! $quote->transitionTo('accepted', ['source' => 'mark_accepted'])) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('warning', 'Bu işlem için uygun durumda değil.');
         }
+
+        $quote->forceFill(['accepted_at' => now()])->save();
 
         return redirect()->route('quotes.show', $quote)
             ->with('success', 'Teklif onaylandı olarak işaretlendi.');
@@ -208,6 +225,21 @@ class QuoteController extends Controller
             }
 
             $salesOrder->recalculateTotals();
+
+            $quote->transitionTo('converted', [
+                'sales_order_id' => $salesOrder->id,
+                'sales_order_no' => $salesOrder->order_no,
+            ]);
+
+            app(ActivityLogger::class)->log($quote, 'converted_to_sales_order', [
+                'sales_order_id' => $salesOrder->id,
+                'sales_order_no' => $salesOrder->order_no,
+            ]);
+
+            app(ActivityLogger::class)->log($salesOrder, 'created_from_quote', [
+                'quote_id' => $quote->id,
+                'quote_no' => $quote->quote_no,
+            ]);
 
             return $salesOrder;
         });

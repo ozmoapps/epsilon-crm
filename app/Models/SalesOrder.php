@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Services\ActivityLogger;
 
 class SalesOrder extends Model
 {
@@ -129,8 +130,62 @@ class SalesOrder extends Model
         return $this->hasMany(Contract::class)->orderByDesc('revision_no');
     }
 
+    public function activityLogs()
+    {
+        return $this->morphMany(ActivityLog::class, 'subject')->latest();
+    }
+
+    public static function statusTransitions(): array
+    {
+        return [
+            'draft' => ['confirmed', 'cancelled', 'contracted'],
+            'confirmed' => ['in_progress', 'cancelled', 'contracted'],
+            'in_progress' => ['completed', 'cancelled', 'contracted'],
+            'completed' => ['contracted'],
+            'contracted' => [],
+            'cancelled' => [],
+        ];
+    }
+
+    public function canTransitionTo(string $next): bool
+    {
+        if ($next === $this->status) {
+            return true;
+        }
+
+        $transitions = self::statusTransitions();
+
+        return in_array($next, $transitions[$this->status] ?? [], true);
+    }
+
+    public function transitionTo(string $next, array $meta = [], ?int $actorId = null): bool
+    {
+        $from = $this->status;
+
+        if (! $this->canTransitionTo($next)) {
+            return false;
+        }
+
+        if ($from === $next) {
+            return true;
+        }
+
+        $this->forceFill(['status' => $next])->save();
+
+        app(ActivityLogger::class)->log($this, 'status_changed', array_merge($meta, [
+            'from' => $from,
+            'to' => $next,
+        ]), $actorId);
+
+        return true;
+    }
+
     public function isLocked(): bool
     {
+        if ($this->status === 'contracted') {
+            return true;
+        }
+
         if ($this->relationLoaded('contract')) {
             return $this->contract !== null;
         }
