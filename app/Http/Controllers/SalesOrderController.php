@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\SalesOrder;
 use App\Models\Vessel;
 use App\Models\WorkOrder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -97,9 +98,8 @@ class SalesOrderController extends Controller
 
     public function edit(SalesOrder $salesOrder)
     {
-        if ($salesOrder->isLocked()) {
-            return redirect()->route('sales-orders.show', $salesOrder)
-                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
+            return $response;
         }
 
         return view('sales_orders.edit', [
@@ -113,9 +113,8 @@ class SalesOrderController extends Controller
 
     public function update(Request $request, SalesOrder $salesOrder)
     {
-        if ($salesOrder->isLocked()) {
-            return redirect()->route('sales-orders.show', $salesOrder)
-                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
+            return $response;
         }
 
         $validated = $request->validate($this->rules(), $this->messages());
@@ -128,9 +127,8 @@ class SalesOrderController extends Controller
 
     public function destroy(SalesOrder $salesOrder)
     {
-        if ($salesOrder->isLocked()) {
-            return redirect()->route('sales-orders.show', $salesOrder)
-                ->with('error', 'Bu siparişin bağlı sözleşmesi olduğu için silinemez.');
+        if ($response = $this->authorizeSalesOrder('delete', $salesOrder)) {
+            return $response;
         }
 
         $salesOrder->delete();
@@ -191,5 +189,17 @@ class SalesOrderController extends Controller
         $salesOrder->update(['status' => $to]);
 
         return back()->with('success', $message);
+    }
+
+    private function authorizeSalesOrder(string $ability, SalesOrder $salesOrder)
+    {
+        try {
+            $this->authorize($ability, $salesOrder);
+        } catch (AuthorizationException $exception) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', $exception->getMessage() ?: 'Bu işlem için yetkiniz yok.');
+        }
+
+        return null;
     }
 }

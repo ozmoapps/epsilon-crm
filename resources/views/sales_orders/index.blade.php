@@ -139,7 +139,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                             </form>
-                                            <x-ui.confirm-dialog
+                                            <x-ui.confirm
                                                 title="{{ __('Silme işlemini onayla') }}"
                                                 message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
                                                 confirm-text="{{ __('Evet, sil') }}"
@@ -153,7 +153,7 @@
                                                         {{ __('Sil') }}
                                                     </button>
                                                 </x-slot>
-                                            </x-ui.confirm-dialog>
+                                            </x-ui.confirm>
                                         @endif
                                     </x-slot>
                                 </x-ui.dropdown>

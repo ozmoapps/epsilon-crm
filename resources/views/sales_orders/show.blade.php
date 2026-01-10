@@ -19,7 +19,7 @@
                     </x-button>
                 @else
                     <form id="sales-order-contract-create-{{ $salesOrder->id }}" method="GET" action="{{ route('sales-orders.contracts.create', $salesOrder) }}" class="hidden"></form>
-                    <x-ui.confirm-dialog
+                    <x-ui.confirm
                         title="{{ __('Sözleşme oluşturmayı onayla') }}"
                         message="{{ __('Bu siparişten yeni bir sözleşme oluşturulacak. Devam etmek istiyor musunuz?') }}"
                         confirm-text="{{ __('Sözleşme oluştur') }}"
@@ -32,7 +32,7 @@
                                 {{ __('Sözleşme Oluştur') }}
                             </x-button>
                         </x-slot>
-                    </x-ui.confirm-dialog>
+                    </x-ui.confirm>
                 @endif
 
                 <x-ui.dropdown align="right" width="w-60">
@@ -127,7 +127,7 @@
                                 @csrf
                                 @method('DELETE')
                             </form>
-                            <x-ui.confirm-dialog
+                            <x-ui.confirm
                                 title="{{ __('Silme işlemini onayla') }}"
                                 message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
                                 confirm-text="{{ __('Evet, sil') }}"
@@ -141,7 +141,7 @@
                                         {{ __('Sil') }}
                                     </button>
                                 </x-slot>
-                            </x-ui.confirm-dialog>
+                            </x-ui.confirm>
                         @endif
                     </x-slot>
                 </x-ui.dropdown>

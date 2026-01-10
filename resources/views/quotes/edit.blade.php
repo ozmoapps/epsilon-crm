@@ -18,7 +18,7 @@
             @include('quotes._form')
 
             <div class="flex items-center justify-end">
-                <x-ui.confirm-dialog
+                <x-ui.confirm
                     title="{{ __('Değişiklikleri kaydet') }}"
                     message="{{ __('Yaptığınız değişiklikler kaydedilecek. Devam edilsin mi?') }}"
                     confirm-text="{{ __('Kaydet') }}"
@@ -29,7 +29,7 @@
                     <x-slot name="trigger">
                         <x-button type="button">{{ __('Güncelle') }}</x-button>
                     </x-slot>
-                </x-ui.confirm-dialog>
+                </x-ui.confirm>
             </div>
         </form>
     </x-card>

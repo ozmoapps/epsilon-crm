@@ -7,6 +7,7 @@ use App\Models\Quote;
 use App\Models\SalesOrder;
 use App\Models\Vessel;
 use App\Models\WorkOrder;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -73,9 +74,8 @@ class QuoteController extends Controller
 
     public function edit(Quote $quote)
     {
-        if ($quote->isLocked()) {
-            return redirect()->route('quotes.show', $quote)
-                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        if ($response = $this->authorizeQuote('update', $quote)) {
+            return $response;
         }
 
         return view('quotes.edit', [
@@ -89,9 +89,8 @@ class QuoteController extends Controller
 
     public function update(Request $request, Quote $quote)
     {
-        if ($quote->isLocked()) {
-            return redirect()->route('quotes.show', $quote)
-                ->with('error', 'Bu teklif siparişe dönüştürüldüğü için düzenlenemez.');
+        if ($response = $this->authorizeQuote('update', $quote)) {
+            return $response;
         }
 
         $validated = $request->validate($this->rules(), $this->messages());
@@ -104,9 +103,8 @@ class QuoteController extends Controller
 
     public function destroy(Quote $quote)
     {
-        if ($quote->isLocked()) {
-            return redirect()->route('quotes.show', $quote)
-                ->with('error', 'Bu teklifin bağlı siparişi olduğu için silinemez.');
+        if ($response = $this->authorizeQuote('delete', $quote)) {
+            return $response;
         }
 
         $quote->delete();
@@ -243,5 +241,17 @@ class QuoteController extends Controller
             'estimated_duration_days.integer' => 'Tahmini süre sayısal olmalıdır.',
             'estimated_duration_days.min' => 'Tahmini süre negatif olamaz.',
         ];
+    }
+
+    private function authorizeQuote(string $ability, Quote $quote)
+    {
+        try {
+            $this->authorize($ability, $quote);
+        } catch (AuthorizationException $exception) {
+            return redirect()->route('quotes.show', $quote)
+                ->with('error', $exception->getMessage() ?: 'Bu işlem için yetkiniz yok.');
+        }
+
+        return null;
     }
 }

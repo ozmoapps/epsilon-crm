@@ -4,8 +4,12 @@ namespace App\Providers;
 
 use App\Models\ContractTemplate;
 use App\Models\Contract;
+use App\Models\Quote;
+use App\Models\SalesOrder;
 use App\Policies\ContractPolicy;
 use App\Policies\ContractTemplatePolicy;
+use App\Policies\QuotePolicy;
+use App\Policies\SalesOrderPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,5 +30,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(Contract::class, ContractPolicy::class);
         Gate::policy(ContractTemplate::class, ContractTemplatePolicy::class);
+        Gate::policy(Quote::class, QuotePolicy::class);
+        Gate::policy(SalesOrder::class, SalesOrderPolicy::class);
     }
 }

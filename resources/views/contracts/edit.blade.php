@@ -24,7 +24,7 @@
                     <x-button type="submit" name="apply_template" value="1" variant="secondary">
                         {{ __('Şablonu Uygula') }}
                     </x-button>
-                    <x-ui.confirm-dialog
+                    <x-ui.confirm
                         title="{{ __('Değişiklikleri kaydet') }}"
                         message="{{ __('Yaptığınız değişiklikler kaydedilecek. Devam edilsin mi?') }}"
                         confirm-text="{{ __('Kaydet') }}"
@@ -35,7 +35,7 @@
                         <x-slot name="trigger">
                             <x-button type="button">{{ __('Güncelle') }}</x-button>
                         </x-slot>
-                    </x-ui.confirm-dialog>
+                    </x-ui.confirm>
                 </div>
             </form>
         </x-card>
