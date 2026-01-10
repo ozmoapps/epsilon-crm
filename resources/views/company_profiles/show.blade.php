@@ -14,27 +14,27 @@
             <x-slot name="header">{{ __('Genel Bilgiler') }}</x-slot>
             <dl class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Şirket Adı') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Şirket Adı') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $companyProfile->name }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Vergi Numarası') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Vergi Numarası') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $companyProfile->tax_no ?: __('Bilgi yok') }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Telefon') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Telefon') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $companyProfile->phone ?: __('Bilgi yok') }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('E-posta') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('E-posta') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $companyProfile->email ?: __('Bilgi yok') }}</dd>
                 </div>
                 <div class="sm:col-span-2">
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Adres') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Adres') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $companyProfile->address ?: __('Bilgi yok') }}</dd>
                 </div>
                 <div class="sm:col-span-2">
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Dipnot Metni') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Dipnot Metni') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $companyProfile->footer_text ?: __('Bilgi yok') }}</dd>
                 </div>
             </dl>

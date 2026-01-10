@@ -115,37 +115,37 @@
             <x-card class="rounded-2xl border border-slate-200 bg-white shadow-sm !p-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Müşteri') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Müşteri') }}</p>
                         <a href="{{ route('admin.company-profiles.show', $quote->customer_id) }}" class="text-sm font-medium text-slate-900 hover:text-brand-600 hover:underline decoration-brand-600/50 underline-offset-4 transition-all">
                             {{ $quote->customer?->name ?? '-' }}
                         </a>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Tekne') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Tekne') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $quote->vessel?->name ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Teklif Tarihi') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Teklif Tarihi') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $quote->issued_at?->format('d.m.Y') ?? '-' }}</p>
                     </div>
                      <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Geçerlilik') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Geçerlilik') }}</p>
                         <p class="text-sm font-medium text-slate-900">
                             {{ $quote->validity_days !== null ? $quote->validity_days . ' gün' : '-' }}
                         </p>
                     </div>
                      <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('İş Emri') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('İş Emri') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $quote->workOrder?->title ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Tahmini Süre') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Tahmini Süre') }}</p>
                         <p class="text-sm font-medium text-slate-900">
                             {{ $quote->estimated_duration_days !== null ? $quote->estimated_duration_days . ' gün' : '-' }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('İletişim') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('İletişim') }}</p>
                         <div class="space-y-0.5">
                             <p class="text-sm font-medium text-slate-900">{{ $quote->contact_name ?: '-' }}</p>
                             @if ($quote->contact_phone)
@@ -154,11 +154,11 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Lokasyon') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Lokasyon') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $quote->location ?: '-' }}</p>
                     </div>
                     <div class="sm:col-span-2 border-t border-slate-100 pt-4 mt-2">
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Teklif Konusu') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Teklif Konusu') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $quote->title }}</p>
                     </div>
                 </div>
@@ -186,7 +186,7 @@
                         @forelse ($itemsBySection as $section => $items)
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-1">
-                                    <h4 class="text-xs font-bold tracking-wider text-gray-900 uppercase">{{ $section }}</h4>
+                                    <h4 class="text-xs font-bold tracking-wider text-gray-900">{{ $section }}</h4>
                                 </div>
                                 <div class="space-y-3">
                                     @foreach ($items as $item)
@@ -325,7 +325,7 @@
                     {{-- Totals --}}
                     <div class="grid gap-8 md:grid-cols-12 md:items-start mt-8">
                         <div class="rounded-xl bg-blue-50/50 p-4 md:col-span-7 border border-blue-100">
-                            <h5 class="text-xs font-semibold text-blue-900 uppercase tracking-wider mb-2">{{ __('Hesaplama Notları') }}</h5>
+                            <h5 class="text-xs font-semibold text-blue-900 tracking-wider mb-2">{{ __('Hesaplama Notları') }}</h5>
                             <ul class="text-xs text-blue-800 space-y-1 list-disc list-inside">
                                 <li>{{ __('Ara Toplam - İndirim + KDV formülü kullanılır.') }}</li>
                                 <li>{{ __('Opsiyon olarak işaretlenen kalemler toplama dahil edilmez.') }}</li>

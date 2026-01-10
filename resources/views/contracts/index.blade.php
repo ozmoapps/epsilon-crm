@@ -16,7 +16,7 @@
                         </button>
                     </x-slot>
                     <x-slot name="content">
-                        <div class="px-4 py-2 text-xs text-gray-400 uppercase font-bold text-center">
+                        <div class="px-4 py-2 text-xs text-gray-400 font-bold text-center">
                             {{ __('Kayıtlı Görünümler') }}
                         </div>
                         @forelse($savedViews as $view)
@@ -146,19 +146,17 @@
                 'superseded' => 'neutral',
                 'cancelled' => 'cancelled',
             ];
-            $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
-            $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
         @endphp
 
         <x-card class="!p-0 overflow-hidden">
              <x-ui.table>
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Sözleşme No') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Tarih') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Durum') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Sözleşme No') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Tarih') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Durum') }}</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 bg-white">
@@ -173,38 +171,15 @@
                                 </x-ui.badge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <x-ui.dropdown align="right" width="w-44">
-                                    <x-slot name="trigger">
-                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 transition hover:border-gray-300 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" aria-label="{{ __('İşlemler') }}">
-                                            <x-icon.dots class="h-4 w-4" />
-                                        </button>
-                                    </x-slot>
-                                    <x-slot name="content">
-                                        <a href="{{ route('contracts.show', $contract) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.info class="h-4 w-4 text-indigo-500" />
-                                            {{ __('Detay') }}
-                                        </a>
-                                        <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}" class="hidden">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                        <x-ui.confirm
-                                            title="{{ __('Silme işlemini onayla') }}"
-                                            message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
-                                            confirm-text="{{ __('Evet, sil') }}"
-                                            cancel-text="{{ __('Vazgeç') }}"
-                                            variant="danger"
-                                            form-id="contract-delete-{{ $contract->id }}"
-                                        >
-                                            <x-slot name="trigger">
-                                                <button type="button" class="{{ $actionDangerClass }}">
-                                                    <x-icon.trash class="h-4 w-4" />
-                                                    {{ __('Sil') }}
-                                                </button>
-                                            </x-slot>
-                                        </x-ui.confirm>
-                                    </x-slot>
-                                </x-ui.dropdown>
+                                <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                <x-ui.row-actions
+                                    show="{{ route('contracts.show', $contract) }}"
+                                    delete="{{ route('contracts.destroy', $contract) }}"
+                                    delete-form-id="contract-delete-{{ $contract->id }}"
+                                />
                             </td>
                         </tr>
                     @empty

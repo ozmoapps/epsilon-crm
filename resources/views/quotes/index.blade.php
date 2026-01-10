@@ -18,7 +18,7 @@
                         </button>
                     </x-slot>
                     <x-slot name="content">
-                        <div class="px-4 py-2 text-xs text-gray-400 uppercase font-bold text-center">
+                        <div class="px-4 py-2 text-xs text-gray-400 font-bold text-center">
                             {{ __('Kayıtlı Görünümler') }}
                         </div>
                         @forelse($savedViews as $view)
@@ -174,12 +174,12 @@
             <x-ui.table>
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Teklif No') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Başlık') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Tekne') }}</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Durum') }}</th>
-                        <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Teklif No') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Başlık') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Müşteri') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Tekne') }}</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-500">{{ __('Durum') }}</th>
+                        <th class="px-6 py-4 text-right text-xs font-semibold tracking-wider text-gray-500">{{ __('Aksiyonlar') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 bg-white">
@@ -200,46 +200,20 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('quotes.show', $quote) }}" class="p-1 text-gray-400 hover:text-indigo-600 transition-colors" title="{{ __('Görüntüle') }}">
-                                        <x-icon.info class="h-5 w-5" />
-                                    </a>
-                                    
-                                    @if ($isLocked)
-                                        <button type="button" class="p-1 text-gray-300 cursor-not-allowed" title="{{ __('Bu teklif siparişe dönüştürüldüğü için düzenlenemez.') }}">
-                                            <x-icon.pencil class="h-5 w-5" />
-                                        </button>
-                                    @else
-                                        <a href="{{ route('quotes.edit', $quote) }}" class="p-1 text-gray-400 hover:text-indigo-600 transition-colors" title="{{ __('Düzenle') }}">
-                                            <x-icon.pencil class="h-5 w-5" />
-                                        </a>
-                                    @endif
-
-                                    @if ($isLocked)
-                                        <button type="button" class="p-1 text-gray-300 cursor-not-allowed" title="{{ __('Bu teklifin bağlı siparişi olduğu için silinemez.') }}">
-                                            <x-icon.trash class="h-5 w-5" />
-                                        </button>
-                                    @else
-                                        <form id="quote-delete-{{ $quote->id }}" method="POST" action="{{ route('quotes.destroy', $quote) }}" class="hidden">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                        <x-ui.confirm
-                                            title="{{ __('Silme işlemini onayla') }}"
-                                            message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
-                                            confirm-text="{{ __('Evet, sil') }}"
-                                            cancel-text="{{ __('Vazgeç') }}"
-                                            variant="danger"
-                                            form-id="quote-delete-{{ $quote->id }}"
-                                        >
-                                            <x-slot name="trigger">
-                                                <button type="button" class="p-1 text-gray-400 hover:text-rose-600 transition-colors" title="{{ __('Sil') }}">
-                                                    <x-icon.trash class="h-5 w-5" />
-                                                </button>
-                                            </x-slot>
-                                        </x-ui.confirm>
-                                    @endif
-                                </div>
+                                <form id="quote-delete-{{ $quote->id }}" method="POST" action="{{ route('quotes.destroy', $quote) }}" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                <x-ui.row-actions
+                                    show="{{ route('quotes.show', $quote) }}"
+                                    edit="{{ route('quotes.edit', $quote) }}"
+                                    delete="{{ route('quotes.destroy', $quote) }}"
+                                    delete-form-id="quote-delete-{{ $quote->id }}"
+                                    :edit-disabled="$isLocked"
+                                    :delete-disabled="$isLocked"
+                                    edit-disabled-title="{{ __('Bu teklif siparişe dönüştürüldüğü için düzenlenemez.') }}"
+                                    delete-disabled-title="{{ __('Bu teklifin bağlı siparişi olduğu için silinemez.') }}"
+                                />
                             </td>
                         </tr>
                     @empty

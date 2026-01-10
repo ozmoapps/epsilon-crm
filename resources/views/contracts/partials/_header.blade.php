@@ -1,7 +1,7 @@
 <div class="space-y-8">
     {{-- Summary --}}
     <div>
-        <h4 class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-4">{{ __('Özet') }}</h4>
+        <h4 class="text-xs font-bold tracking-wider text-slate-500 mb-4">{{ __('Özet') }}</h4>
         <div class="grid gap-4 text-sm sm:grid-cols-2">
             <div>
                 <p class="text-xs font-medium text-slate-500 mb-1">{{ __('Sözleşme No') }}</p>
@@ -38,7 +38,7 @@
 
     {{-- Parties --}}
     <div class="border-t border-slate-100 pt-8">
-        <h4 class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-4">{{ __('Taraflar') }}</h4>
+        <h4 class="text-xs font-bold tracking-wider text-slate-500 mb-4">{{ __('Taraflar') }}</h4>
         <div class="grid gap-4 text-sm sm:grid-cols-2">
             <div>
                 <p class="text-xs font-medium text-slate-500 mb-1">{{ __('Müşteri Adı') }}</p>
@@ -69,7 +69,7 @@
 
     {{-- Totals --}}
     <div class="border-t border-slate-100 pt-8">
-        <h4 class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-4">{{ __('Toplamlar') }}</h4>
+        <h4 class="text-xs font-bold tracking-wider text-slate-500 mb-4">{{ __('Toplamlar') }}</h4>
         <div class="grid gap-4 text-sm sm:grid-cols-3">
             <div>
                 <p class="text-xs font-medium text-slate-500 mb-1">{{ __('Ara Toplam') }}</p>
@@ -88,7 +88,7 @@
 
     {{-- Conditions --}}
     <div class="border-t border-slate-100 pt-8">
-        <h4 class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-4">{{ __('Koşullar') }}</h4>
+        <h4 class="text-xs font-bold tracking-wider text-slate-500 mb-4">{{ __('Koşullar') }}</h4>
         <div class="grid gap-4 text-sm text-slate-600 md:grid-cols-2">
             <div>
                 <p class="text-xs font-medium text-slate-500 mb-1">{{ __('Ödeme Şartları') }}</p>

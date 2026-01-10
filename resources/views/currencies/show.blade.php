@@ -14,19 +14,19 @@
             <x-slot name="header">{{ __('Para Birimi Bilgileri') }}</x-slot>
             <dl class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Para Birimi') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Para Birimi') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $currency->name }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Kod') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Kod') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $currency->code }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Sembol') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Sembol') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $currency->symbol ?: __('Bilgi yok') }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase text-slate-500">{{ __('Durum') }}</dt>
+                    <dt class="text-xs font-semibold text-slate-500">{{ __('Durum') }}</dt>
                     <dd class="mt-1 text-sm text-slate-700">{{ $currency->is_active ? __('Aktif') : __('Pasif') }}</dd>
                 </div>
             </dl>

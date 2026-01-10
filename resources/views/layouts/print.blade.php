@@ -93,7 +93,7 @@
         }
         .info-block h3 {
             font-size: 11px; 
-            text-transform: uppercase; 
+            text-transform: none; 
             font-weight: bold; 
             border-bottom: 1px solid #f3f4f6; 
             padding-bottom: 4px; 
@@ -111,7 +111,7 @@
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 8px;
-            text-transform: uppercase;
+            text-transform: none;
         }
 
         /* Table Styling */
@@ -129,7 +129,7 @@
             background: #f3f4f6; 
             font-size: 11px; 
             letter-spacing: 0.03em; 
-            text-transform: uppercase; 
+            text-transform: none; 
             font-weight: 600; 
         }
         .doc-table .text-right { text-align: right; }

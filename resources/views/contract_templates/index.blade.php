@@ -23,11 +23,8 @@
 
         <x-card>
             <x-slot name="header">{{ __('Liste') }}</x-slot>
-            @php
-                $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
-            @endphp
             <x-ui.table>
-                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3 text-left">{{ __('Şablon') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Dil') }}</th>
@@ -53,33 +50,30 @@
                             </td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $template->updated_at?->format('d.m.Y H:i') }}</td>
                             <td class="px-4 py-3 text-right">
-                                <x-ui.dropdown align="right" width="w-48">
-                                    <x-slot name="trigger">
-                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900" aria-label="{{ __('İşlemler') }}">
-                                            <x-icon.dots class="h-4 w-4" />
+                                <x-ui.row-actions edit="{{ route('admin.contract-templates.edit', $template) }}">
+                                    <form method="POST" action="{{ route('admin.contract-templates.make_default', $template) }}">
+                                        @csrf
+                                        <button
+                                            type="submit"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-emerald-600 transition hover:bg-emerald-50 hover:text-emerald-700"
+                                            title="{{ __('Varsayılan Yap') }}"
+                                            aria-label="{{ __('Varsayılan Yap') }}"
+                                        >
+                                            <x-icon.check class="h-4 w-4" />
                                         </button>
-                                    </x-slot>
-                                    <x-slot name="content">
-                                        <a href="{{ route('admin.contract-templates.edit', $template) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
-                                            {{ __('Düzenle') }}
-                                        </a>
-                                        <form method="POST" action="{{ route('admin.contract-templates.make_default', $template) }}">
-                                            @csrf
-                                            <button type="submit" class="{{ $actionItemClass }}">
-                                                <x-icon.check class="h-4 w-4 text-emerald-600" />
-                                                {{ __('Varsayılan Yap') }}
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ route('admin.contract-templates.toggle_active', $template) }}">
-                                            @csrf
-                                            <button type="submit" class="{{ $actionItemClass }}">
-                                                <x-icon.x class="h-4 w-4 text-amber-500" />
-                                                {{ $template->is_active ? __('Pasifleştir') : __('Aktifleştir') }}
-                                            </button>
-                                        </form>
-                                    </x-slot>
-                                </x-ui.dropdown>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.contract-templates.toggle_active', $template) }}">
+                                        @csrf
+                                        <button
+                                            type="submit"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-amber-500 transition hover:bg-amber-50 hover:text-amber-600"
+                                            title="{{ $template->is_active ? __('Pasifleştir') : __('Aktifleştir') }}"
+                                            aria-label="{{ $template->is_active ? __('Pasifleştir') : __('Aktifleştir') }}"
+                                        >
+                                            <x-icon.x class="h-4 w-4" />
+                                        </button>
+                                    </form>
+                                </x-ui.row-actions>
                             </td>
                         </tr>
                     @empty

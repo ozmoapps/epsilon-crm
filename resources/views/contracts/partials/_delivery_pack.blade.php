@@ -217,7 +217,7 @@
                     </div>
 
                     <div class="rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Gönderim Kaydı Önizleme') }}</p>
+                        <p class="text-xs font-semibold tracking-wide text-slate-500">{{ __('Gönderim Kaydı Önizleme') }}</p>
                         <div class="mt-3 grid gap-3 sm:grid-cols-2">
                             <div>
                                 <p class="text-xs text-slate-500">{{ __('Kanal') }}</p>

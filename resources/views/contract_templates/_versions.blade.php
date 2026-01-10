@@ -1,6 +1,6 @@
 <div class="overflow-hidden rounded-xl border border-gray-100">
     <table class="min-w-full divide-y divide-gray-100 text-sm">
-        <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+        <thead class="bg-gray-50 text-xs tracking-wide text-gray-500">
             <tr>
                 <th class="px-4 py-3 text-left">{{ __('Sürüm') }}</th>
                 <th class="px-4 py-3 text-left">{{ __('Not') }}</th>

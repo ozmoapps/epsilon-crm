@@ -142,42 +142,42 @@
             <x-card class="rounded-2xl border border-slate-200 bg-white shadow-sm !p-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Müşteri') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Müşteri') }}</p>
                         <a href="{{ route('admin.company-profiles.show', $salesOrder->customer_id) }}" class="text-sm font-medium text-slate-900 hover:text-brand-600 hover:underline decoration-brand-600/50 underline-offset-4 transition-all">
                             {{ $salesOrder->customer?->name ?? '-' }}
                         </a>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Tekne') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Tekne') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $salesOrder->vessel?->name ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('İş Emri') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('İş Emri') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $salesOrder->workOrder?->title ?? '-' }}</p>
                     </div>
                      <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Sipariş Tarihi') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Sipariş Tarihi') }}</p>
                         <p class="text-sm font-medium text-slate-900">
                             {{ $salesOrder->order_date ? $salesOrder->order_date->format('d.m.Y') : '-' }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Teslim Yeri') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Teslim Yeri') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $salesOrder->delivery_place ?? '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Teslim Süresi') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Teslim Süresi') }}</p>
                         <p class="text-sm font-medium text-slate-900">
                             {{ $salesOrder->delivery_days !== null ? $salesOrder->delivery_days . ' gün' : '-' }}
                         </p>
                     </div>
                     <div class="sm:col-span-2 border-t border-slate-100 pt-4 mt-2">
-                        <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Sipariş Başlığı') }}</p>
+                        <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Sipariş Başlığı') }}</p>
                         <p class="text-sm font-medium text-slate-900">{{ $salesOrder->title }}</p>
                     </div>
                      @if ($salesOrder->quote)
                         <div class="sm:col-span-2">
-                            <p class="text-xs font-bold tracking-wider text-slate-500 uppercase mb-1">{{ __('Kaynak Teklif') }}</p>
+                            <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Kaynak Teklif') }}</p>
                             <p class="mt-1 text-base font-medium text-slate-900">
                                 <a href="{{ route('quotes.show', $salesOrder->quote) }}" class="text-brand-600 hover:underline decoration-brand-600/50 underline-offset-4 transition-all">
                                     {{ $salesOrder->quote->quote_no }}
@@ -210,7 +210,7 @@
                          @forelse ($itemsBySection as $section => $items)
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between border-b border-slate-100 pb-1">
-                                    <h4 class="text-xs font-bold tracking-wider text-slate-900 uppercase">{{ $section }}</h4>
+                                    <h4 class="text-xs font-bold tracking-wider text-slate-900">{{ $section }}</h4>
                                 </div>
                                 <div class="space-y-3">
                                     @foreach ($items as $item)

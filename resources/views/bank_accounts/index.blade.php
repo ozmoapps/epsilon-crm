@@ -26,12 +26,8 @@
 
         <x-ui.card>
             <x-slot name="header">{{ __('Liste') }}</x-slot>
-            @php
-                $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
-                $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
-            @endphp
             <x-ui.table>
-                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3 text-left">{{ __('Hesap') }}</th>
                         <th class="px-4 py-3 text-left">{{ __('Banka') }}</th>
@@ -53,42 +49,16 @@
                                 {{ $bankAccount->currency?->code ?: __('Tanımsız') }}
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <x-ui.dropdown align="right" width="w-44">
-                                    <x-slot name="trigger">
-                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 ui-focus" aria-label="{{ __('İşlemler') }}">
-                                            <x-icon.dots class="h-4 w-4" />
-                                        </button>
-                                    </x-slot>
-                                    <x-slot name="content">
-                                        <a href="{{ route('admin.bank-accounts.show', $bankAccount) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.info class="h-4 w-4 text-sky-600" />
-                                            {{ __('Görüntüle') }}
-                                        </a>
-                                        <a href="{{ route('admin.bank-accounts.edit', $bankAccount) }}" class="{{ $actionItemClass }}">
-                                            <x-icon.pencil class="h-4 w-4 text-indigo-600" />
-                                            {{ __('Düzenle') }}
-                                        </a>
-                                        <form id="bank-account-delete-{{ $bankAccount->id }}" method="POST" action="{{ route('admin.bank-accounts.destroy', $bankAccount) }}" class="hidden">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                        <x-ui.confirm
-                                            title="{{ __('Silme işlemini onayla') }}"
-                                            message="{{ __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?') }}"
-                                            confirm-text="{{ __('Evet, sil') }}"
-                                            cancel-text="{{ __('Vazgeç') }}"
-                                            variant="danger"
-                                            form-id="bank-account-delete-{{ $bankAccount->id }}"
-                                        >
-                                            <x-slot name="trigger">
-                                                <button type="button" class="{{ $actionDangerClass }}">
-                                                    <x-icon.trash class="h-4 w-4" />
-                                                    {{ __('Sil') }}
-                                                </button>
-                                            </x-slot>
-                                        </x-ui.confirm>
-                                    </x-slot>
-                                </x-ui.dropdown>
+                                <form id="bank-account-delete-{{ $bankAccount->id }}" method="POST" action="{{ route('admin.bank-accounts.destroy', $bankAccount) }}" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                <x-ui.row-actions
+                                    show="{{ route('admin.bank-accounts.show', $bankAccount) }}"
+                                    edit="{{ route('admin.bank-accounts.edit', $bankAccount) }}"
+                                    delete="{{ route('admin.bank-accounts.destroy', $bankAccount) }}"
+                                    delete-form-id="bank-account-delete-{{ $bankAccount->id }}"
+                                />
                             </td>
                         </tr>
                     @empty

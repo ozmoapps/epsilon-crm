@@ -21,7 +21,7 @@
                     <x-icon.document-text class="h-4 w-4" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ __('Teklif') }}</div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-400">{{ __('Teklif') }}</div>
                     <div class="truncate text-sm font-semibold text-slate-900">
                         @if($quote)
                             {{ $quote->quote_no ?? $quote->id }}
@@ -56,7 +56,7 @@
                     <x-icon.shopping-bag class="h-4 w-4" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ __('Satış Siparişi') }}</div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-400">{{ __('Satış Siparişi') }}</div>
                     <div class="truncate text-sm font-semibold text-slate-900">
                         @if($salesOrder)
                             {{ $salesOrder->order_no ?? $salesOrder->id }}
@@ -98,7 +98,7 @@
                     <x-icon.pencil-alt class="h-4 w-4" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ __('Sözleşme') }}</div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-400">{{ __('Sözleşme') }}</div>
                     <div class="truncate text-sm font-semibold text-slate-900">
                         @if($contract)
                             {{ $contract->contract_no ?? $contract->id }}
@@ -137,7 +137,7 @@
                     <x-icon.briefcase class="h-4 w-4" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ __('İş Emri') }}</div>
+                    <div class="text-[10px] font-bold tracking-wider text-slate-400">{{ __('İş Emri') }}</div>
                     <div class="truncate text-sm font-semibold text-slate-900" title="{{ $workOrder->title ?? '' }}">
                         @if($workOrder)
                             {{ \Illuminate\Support\Str::limit($workOrder->title ?? $workOrder->id, 20) }}
