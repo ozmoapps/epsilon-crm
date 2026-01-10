@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Müşteriler') }}" subtitle="{{ __('Müşteri kayıtlarını hızlıca yönetin.') }}">
             <x-slot name="actions">
-                <x-button href="{{ route('customers.create') }}">
+                <x-button href="{{ route('customers.create') }}" size="sm">
                     {{ __('Yeni Müşteri') }}
                 </x-button>
             </x-slot>
@@ -18,8 +18,8 @@
                     <x-input id="search" name="search" type="text" class="mt-1" placeholder="{{ __('İsme göre ara') }}" :value="$search" />
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <x-button type="submit">{{ __('Ara') }}</x-button>
-                    <x-button href="{{ route('customers.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
+                    <x-button type="submit" size="sm">{{ __('Ara') }}</x-button>
+                    <x-button href="{{ route('customers.index') }}" variant="secondary" size="sm">{{ __('Temizle') }}</x-button>
                 </div>
             </form>
         </x-card>

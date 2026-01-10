@@ -40,7 +40,7 @@
                     {!! $previewHtml !!}
                 </div>
             @else
-                <p class="text-sm text-gray-500">{{ __('Henüz bir şablon uygulanmadı.') }}</p>
+                <p class="text-sm text-slate-500">{{ __('Henüz bir şablon uygulanmadı.') }}</p>
             @endif
         </x-card>
     </div>

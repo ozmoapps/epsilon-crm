@@ -1,6 +1,6 @@
 <div class="space-y-8">
-    <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-        <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700">{{ __('Genel Bilgiler') }}</h3>
+    <div class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-700">{{ __('Genel Bilgiler') }}</h3>
         <div class="mt-4 grid gap-4 md:grid-cols-2">
             <div>
                 <x-input-label for="issued_at" :value="__('Düzenleme Tarihi')" />
@@ -36,8 +36,8 @@
         </div>
     </div>
 
-    <div class="rounded-xl border border-gray-100 bg-white p-4">
-        <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-700">{{ __('Koşullar') }}</h3>
+    <div class="rounded-xl border border-slate-100 bg-white p-4">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-700">{{ __('Koşullar') }}</h3>
         <div class="mt-4 grid gap-4 md:grid-cols-2">
             <div>
                 <x-input-label for="payment_terms" :value="__('Ödeme Şartları')" />

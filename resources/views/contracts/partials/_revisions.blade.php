@@ -2,11 +2,11 @@
     <x-slot name="header">{{ __('Revizyonlar') }}</x-slot>
     <div class="space-y-3 text-sm">
         @foreach ($revisions as $revision)
-            <div class="flex flex-col gap-3 rounded-lg border border-gray-100 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-col gap-3 rounded-lg border border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="space-y-1">
-                    <p class="text-xs text-gray-500">{{ $revision->contract_no }}</p>
-                    <p class="text-base font-semibold text-gray-900">{{ $revision->revision_label }}</p>
-                    <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                    <p class="text-xs text-slate-500">{{ $revision->contract_no }}</p>
+                    <p class="text-base font-semibold text-slate-900">{{ $revision->revision_label }}</p>
+                    <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                         <span>{{ $revision->issued_at?->format('d.m.Y') ?? '-' }}</span>
                         <span>·</span>
                         <span>{{ $revision->signed_at?->format('d.m.Y H:i') ?? '-' }}</span>

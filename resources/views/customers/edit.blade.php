@@ -18,7 +18,7 @@
             @include('customers._form', ['customer' => $customer])
 
             <div class="flex items-center justify-end gap-3">
-                <x-button type="submit">{{ __('Güncelle') }}</x-button>
+                <x-button type="submit" size="sm">{{ __('Güncelle') }}</x-button>
             </div>
         </form>
     </x-card>
