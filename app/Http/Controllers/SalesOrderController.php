@@ -98,6 +98,11 @@ class SalesOrderController extends Controller
 
     public function edit(SalesOrder $salesOrder)
     {
+        if ($salesOrder->isLocked()) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        }
+
         if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
             return $response;
         }
@@ -113,6 +118,11 @@ class SalesOrderController extends Controller
 
     public function update(Request $request, SalesOrder $salesOrder)
     {
+        if ($salesOrder->isLocked()) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
+        }
+
         if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
             return $response;
         }
@@ -127,6 +137,11 @@ class SalesOrderController extends Controller
 
     public function destroy(SalesOrder $salesOrder)
     {
+        if ($salesOrder->isLocked()) {
+            return redirect()->route('sales-orders.show', $salesOrder)
+                ->with('error', 'Bu siparişin bağlı sözleşmesi olduğu için silinemez.');
+        }
+
         if ($response = $this->authorizeSalesOrder('delete', $salesOrder)) {
             return $response;
         }
