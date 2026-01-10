@@ -1,6 +1,11 @@
-@props(['logs'])
+@props([
+    'logs',
+    'title' => null,
+    'showSubject' => false,
+])
 
 @php
+    $title = $title ?? __('Aktivite');
     $actionLabels = [
         'created' => 'Oluşturuldu',
         'updated' => 'Güncellendi',
@@ -26,13 +31,31 @@
         \App\Models\SalesOrder::class => \App\Models\SalesOrder::statusOptions(),
         \App\Models\Contract::class => \App\Models\Contract::statusOptions(),
     ];
+    $subjectLabels = [
+        \App\Models\Quote::class => [
+            'label' => 'Teklif',
+            'field' => 'quote_no',
+        ],
+        \App\Models\SalesOrder::class => [
+            'label' => 'Satış Siparişi',
+            'field' => 'order_no',
+        ],
+        \App\Models\Contract::class => [
+            'label' => 'Sözleşme',
+            'field' => 'contract_no',
+        ],
+        \App\Models\WorkOrder::class => [
+            'label' => 'İş Emri',
+            'field' => 'title',
+        ],
+    ];
     $formatStatus = function ($log, $status) use ($statusLabelsByType) {
         return $statusLabelsByType[$log->subject_type][$status] ?? $status;
     };
 @endphp
 
 <x-ui.card>
-    <x-slot name="header">{{ __('Aktivite') }}</x-slot>
+    <x-slot name="header">{{ $title }}</x-slot>
 
     <div class="space-y-4">
         @forelse ($logs as $log)
@@ -41,6 +64,13 @@
                 $label = $actionLabels[$log->action] ?? $log->action;
                 $meta = $log->meta ?? [];
                 $actorName = $log->actor?->name ?? __('Sistem');
+                $subject = $log->subject;
+                $subjectMeta = $subjectLabels[$log->subject_type] ?? null;
+                $subjectLabel = $subjectMeta['label'] ?? __('Kayıt');
+                $subjectField = $subjectMeta['field'] ?? null;
+                $subjectIdentifier = $subjectField && $subject ? data_get($subject, $subjectField) : null;
+                $fallbackIdentifier = $subject?->title ?? $subject?->name ?? $subject?->id;
+                $subjectIdentifier = $subjectIdentifier ?: $fallbackIdentifier;
             @endphp
             <div class="flex gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
                 <div class="mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600">
@@ -62,6 +92,11 @@
                     <p class="text-xs text-slate-500">
                         {{ $actorName }} · {{ $log->created_at?->format('d.m.Y H:i') ?? '-' }}
                     </p>
+                    @if ($showSubject)
+                        <p class="text-xs text-slate-500">
+                            {{ $subjectLabel }}@if ($subjectIdentifier) · {{ $subjectIdentifier }}@endif
+                        </p>
+                    @endif
                     @if ($log->action === 'converted_to_sales_order' && ! empty($meta['sales_order_no']))
                         <p class="text-xs text-slate-500">{{ __('Sipariş No') }}: {{ $meta['sales_order_no'] }}</p>
                     @elseif ($log->action === 'created_from_quote' && ! empty($meta['quote_no']))
