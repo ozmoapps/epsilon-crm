@@ -60,9 +60,16 @@
             </div>
 
             <div>
-                <x-input-label for="currency" :value="__('Para Birimi')" />
-                <x-input id="currency" name="currency" type="text" class="mt-1" :value="old('currency', $quote->currency ?? '')" required />
-                <x-input-error :messages="$errors->get('currency')" class="mt-2" />
+                <x-input-label for="currency_id" :value="__('Para Birimi')" />
+                <x-select id="currency_id" name="currency_id" class="mt-1" required>
+                    <option value="">{{ __('Para birimi seçin') }}</option>
+                    @foreach ($currencies as $currency)
+                        <option value="{{ $currency->id }}" @selected(old('currency_id', $quote->currency_id) == $currency->id)>
+                            {{ $currency->code }} · {{ $currency->name }}
+                        </option>
+                    @endforeach
+                </x-select>
+                <x-input-error :messages="$errors->get('currency_id')" class="mt-2" />
             </div>
 
             <div>

@@ -8,6 +8,11 @@ use Illuminate\Auth\Access\Response;
 
 class QuotePolicy
 {
+    public function view(User $user, Quote $quote): bool
+    {
+        return $quote->created_by === $user->id;
+    }
+
     public function update(User $user, Quote $quote): Response
     {
         return $quote->isLocked()

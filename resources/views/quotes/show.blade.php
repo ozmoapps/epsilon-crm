@@ -62,6 +62,12 @@
                         {{ __('Düzenle') }}
                     </x-button>
                 @endif
+                <x-button href="{{ route('quotes.preview', $quote) }}" variant="secondary" size="sm">
+                    {{ __('Önizle') }}
+                </x-button>
+                <x-button href="{{ route('quotes.pdf', $quote) }}" variant="secondary" size="sm">
+                    {{ __('Yazdır/PDF') }}
+                </x-button>
                 <x-button href="{{ route('quotes.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm teklifler') }}
                 </x-button>
@@ -91,7 +97,9 @@
                 </div>
                 <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Para Birimi') }}</p>
-                    <p class="text-base font-medium text-gray-900">{{ $quote->currency }}</p>
+                    <p class="text-base font-medium text-gray-900">
+                        {{ $quote->currencyRelation?->code ?? $quote->currency ?? '-' }}
+                    </p>
                 </div>
                 <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Geçerlilik') }}</p>
@@ -141,8 +149,8 @@
         <x-card>
             @php
                 $itemTypes = config('quotes.item_types', []);
-                $currencySymbols = config('quotes.currency_symbols', []);
-                $currencySymbol = $currencySymbols[$quote->currency] ?? $quote->currency;
+                $currencyCode = $quote->currencyRelation?->code ?? $quote->currency;
+                $currencySymbol = $quote->currencyRelation?->symbol ?? $currencyCode;
                 $itemsBySection = $quote->items->groupBy(fn ($item) => $item->section ?: 'Genel');
                 $formatMoney = fn ($value) => number_format((float) $value, 2, ',', '.');
                 $unitOptions = config('quotes.unit_options', []);
@@ -298,7 +306,7 @@
 
                                                 <div class="space-y-1 text-sm font-semibold text-gray-900 lg:col-span-1 lg:text-right">
                                                     <span class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Toplam') }}</span>
-                                                    <div>{{ $currencySymbol }} {{ $formatMoney($lineTotal) }}</div>
+                                                    <div>{{ $formatMoney($lineTotal) }} {{ $currencySymbol }}</div>
                                                 </div>
 
                                                 <div class="flex flex-wrap items-center justify-end gap-2 lg:col-span-1">
@@ -452,7 +460,7 @@
 
                                 <div class="space-y-1 text-sm font-semibold text-gray-900 lg:col-span-1 lg:text-right">
                                     <span class="text-xs font-semibold text-gray-500 lg:sr-only">{{ __('Toplam') }}</span>
-                                    <div>{{ $currencySymbol }} --</div>
+                                    <div>-- {{ $currencySymbol }}</div>
                                 </div>
 
                                 <div class="flex flex-wrap items-center justify-end gap-2 lg:col-span-1">
@@ -478,7 +486,7 @@
             <div class="grid gap-4 md:grid-cols-12 md:items-start">
                 <div class="space-y-2 text-xs text-gray-500 md:col-span-8">
                     <p>
-                        {{ __('Ara Toplam - İndirim + KDV') }}: {{ $currencySymbol }} {{ $formatMoney($computedGrandTotal) }}
+                        {{ __('Ara Toplam - İndirim + KDV') }}: {{ $formatMoney($computedGrandTotal) }} {{ $currencySymbol }}
                     </p>
                     <p>{{ __('Opsiyon kalemler toplam dışında bırakılır.') }}</p>
                 </div>
@@ -489,19 +497,19 @@
                         <dl class="mt-3 space-y-2 text-sm text-gray-700">
                             <div class="flex items-center justify-between">
                                 <dt>{{ __('Ara Toplam') }}</dt>
-                                <dd class="font-semibold">{{ $currencySymbol }} {{ $formatMoney($quote->subtotal) }}</dd>
+                                <dd class="font-semibold">{{ $formatMoney($quote->subtotal) }} {{ $currencySymbol }}</dd>
                             </div>
                             <div class="flex items-center justify-between">
                                 <dt>{{ __('İndirim') }}</dt>
-                                <dd class="font-semibold">- {{ $currencySymbol }} {{ $formatMoney($discountTotal) }}</dd>
+                                <dd class="font-semibold">- {{ $formatMoney($discountTotal) }} {{ $currencySymbol }}</dd>
                             </div>
                             <div class="flex items-center justify-between">
                                 <dt>{{ __('KDV') }}</dt>
-                                <dd class="font-semibold">{{ $currencySymbol }} {{ $formatMoney($quote->vat_total) }}</dd>
+                                <dd class="font-semibold">{{ $formatMoney($quote->vat_total) }} {{ $currencySymbol }}</dd>
                             </div>
                             <div class="flex items-center justify-between border-t border-gray-200 pt-2 text-base">
                                 <dt>{{ __('Genel Toplam') }}</dt>
-                                <dd class="font-semibold text-gray-900">{{ $currencySymbol }} {{ $formatMoney($computedGrandTotal) }}</dd>
+                                <dd class="font-semibold text-gray-900">{{ $formatMoney($computedGrandTotal) }} {{ $currencySymbol }}</dd>
                             </div>
                         </dl>
                     </div>

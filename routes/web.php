@@ -38,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('currencies', CurrencyController::class);
     Route::resource('work-orders', WorkOrderController::class);
     Route::resource('quotes', QuoteController::class);
+    Route::get('quotes/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview');
+    Route::get('quotes/{quote}/pdf', [QuoteController::class, 'pdf'])->name('quotes.pdf');
     Route::resource('contracts', ContractController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
     Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy']);
     Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])

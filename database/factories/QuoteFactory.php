@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Customer;
+use App\Models\Currency;
 use App\Models\Quote;
 use App\Models\User;
 use App\Models\Vessel;
@@ -19,7 +20,7 @@ class QuoteFactory extends Factory
             'vessel_id' => Vessel::factory(),
             'title' => $this->faker->sentence(3),
             'status' => 'draft',
-            'currency' => 'EUR',
+            'currency_id' => Currency::factory(),
             'validity_days' => 15,
             'estimated_duration_days' => 7,
             'payment_terms' => 'Ödeme, teslimde yapılacaktır.',

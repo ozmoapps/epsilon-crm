@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Currency;
 use App\Models\Quote;
 use App\Models\SalesOrder;
 use App\Models\Vessel;
 use App\Models\WorkOrder;
+use App\Models\CompanyProfile;
+use App\Models\BankAccount;
 use App\Services\ActivityLogger;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
@@ -21,7 +24,7 @@ class QuoteController extends Controller
         $status = $request->input('status');
 
         $quotes = Quote::query()
-            ->with(['customer', 'vessel', 'salesOrder'])
+            ->with(['customer', 'vessel', 'salesOrder', 'currencyRelation'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -41,16 +44,23 @@ class QuoteController extends Controller
 
     public function create()
     {
+        $defaultCurrencyId = Quote::resolveDefaultCurrencyId();
+        $defaultCurrencyCode = $defaultCurrencyId
+            ? Currency::query()->whereKey($defaultCurrencyId)->value('code')
+            : config('quotes.default_currency');
+
         return view('quotes.create', [
             'quote' => new Quote([
                 'status' => 'draft',
-                'currency' => config('quotes.default_currency'),
+                'currency_id' => $defaultCurrencyId,
+                'currency' => $defaultCurrencyCode,
                 'validity_days' => config('quotes.default_validity_days'),
             ]),
             'customers' => Customer::orderBy('name')->get(),
             'vessels' => Vessel::with('customer')->orderBy('name')->get(),
             'workOrders' => WorkOrder::orderByDesc('id')->get(),
             'statuses' => Quote::statusOptions(),
+            'currencies' => $this->activeCurrencies(),
         ]);
     }
 
@@ -58,6 +68,8 @@ class QuoteController extends Controller
     {
         $validated = $request->validate($this->rules(), $this->messages());
 
+        $currency = Currency::query()->find($validated['currency_id']);
+        $validated['currency'] = $currency?->code ?? config('quotes.default_currency');
         $validated['created_by'] = $request->user()->id;
 
         Quote::create($validated);
@@ -68,9 +80,42 @@ class QuoteController extends Controller
 
     public function show(Quote $quote)
     {
-        $quote->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'salesOrder', 'activityLogs.actor']);
+        $quote->load([
+            'customer',
+            'vessel',
+            'workOrder',
+            'creator',
+            'items',
+            'salesOrder',
+            'activityLogs.actor',
+            'currencyRelation',
+        ]);
 
         return view('quotes.show', compact('quote'));
+    }
+
+    public function preview(Quote $quote)
+    {
+        $this->authorize('view', $quote);
+
+        $quote->loadMissing(['customer', 'vessel', 'items', 'currencyRelation', 'workOrder']);
+        $companyProfile = CompanyProfile::current();
+        $bankAccounts = BankAccount::query()->with('currency')->orderBy('bank_name')->get();
+
+        return view('quotes.preview', compact('quote', 'companyProfile', 'bankAccounts'));
+    }
+
+    public function pdf(Quote $quote)
+    {
+        $this->authorize('view', $quote);
+
+        $quote->loadMissing(['customer', 'vessel', 'items', 'currencyRelation', 'workOrder']);
+        $companyProfile = CompanyProfile::current();
+        $bankAccounts = BankAccount::query()->with('currency')->orderBy('bank_name')->get();
+
+        return response()
+            ->view('quotes.pdf', compact('quote', 'companyProfile', 'bankAccounts'))
+            ->header('Content-Type', 'application/pdf');
     }
 
     public function edit(Quote $quote)
@@ -90,6 +135,7 @@ class QuoteController extends Controller
             'vessels' => Vessel::with('customer')->orderBy('name')->get(),
             'workOrders' => WorkOrder::orderByDesc('id')->get(),
             'statuses' => Quote::statusOptions(),
+            'currencies' => $this->activeCurrencies(),
         ]);
     }
 
@@ -118,6 +164,9 @@ class QuoteController extends Controller
         if ($quote->status !== $nextStatus) {
             $quote->transitionTo($nextStatus, ['source' => 'update']);
         }
+
+        $currency = Currency::query()->find($validated['currency_id']);
+        $payload['currency'] = $currency?->code ?? $payload['currency'] ?? config('quotes.default_currency');
 
         $quote->fill($payload)->save();
 
@@ -173,7 +222,7 @@ class QuoteController extends Controller
 
     public function convertToSalesOrder(Request $request, Quote $quote)
     {
-        $quote->loadMissing(['items', 'salesOrder']);
+        $quote->loadMissing(['items', 'salesOrder', 'currencyRelation']);
 
         if ($quote->status !== 'accepted') {
             return redirect()->back()
@@ -193,7 +242,7 @@ class QuoteController extends Controller
                 'quote_id' => $quote->id,
                 'title' => $quote->title,
                 'status' => 'draft',
-                'currency' => $quote->currency,
+                'currency' => $quote->currencyRelation?->code ?? $quote->currency,
                 'order_date' => now()->toDateString(),
                 'delivery_place' => null,
                 'delivery_days' => null,
@@ -258,7 +307,7 @@ class QuoteController extends Controller
             'work_order_id' => ['nullable', 'exists:work_orders,id'],
             'title' => ['required', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in($statuses)],
-            'currency' => ['required', 'string', 'max:10'],
+            'currency_id' => ['required', Rule::exists('currencies', 'id')->where('is_active', true)],
             'validity_days' => ['nullable', 'integer', 'min:0'],
             'estimated_duration_days' => ['nullable', 'integer', 'min:0'],
             'payment_terms' => ['nullable', 'string'],
@@ -281,13 +330,21 @@ class QuoteController extends Controller
             'title.max' => 'Teklif konusu en fazla 255 karakter olabilir.',
             'status.required' => 'Durum alanı zorunludur.',
             'status.in' => 'Durum seçimi geçersiz.',
-            'currency.required' => 'Para birimi zorunludur.',
-            'currency.max' => 'Para birimi en fazla 10 karakter olabilir.',
+            'currency_id.required' => 'Para birimi zorunludur.',
+            'currency_id.exists' => 'Seçilen para birimi geçersiz.',
             'validity_days.integer' => 'Geçerlilik günü sayısal olmalıdır.',
             'validity_days.min' => 'Geçerlilik günü negatif olamaz.',
             'estimated_duration_days.integer' => 'Tahmini süre sayısal olmalıdır.',
             'estimated_duration_days.min' => 'Tahmini süre negatif olamaz.',
         ];
+    }
+
+    private function activeCurrencies()
+    {
+        return Currency::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
     }
 
     private function authorizeQuote(string $ability, Quote $quote)
