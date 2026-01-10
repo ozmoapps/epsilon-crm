@@ -7,13 +7,13 @@
     $classBasedType = get_class($context);
 @endphp
 
-<x-card class="overflow-hidden border border-slate-200 rounded-2xl shadow-sm !p-0 bg-white">
-    <div class="px-5 py-4 border-b border-slate-100 bg-white">
+<x-card class="overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm !p-0">
+    <div class="border-b border-slate-100 bg-white px-4 py-3">
         <h3 class="font-semibold text-slate-900">{{ __('Takip') }}</h3>
     </div>
 
-    <div class="p-5 space-y-5">
-        <form action="{{ route('follow-ups.store') }}" method="POST" class="flex flex-col gap-3">
+    <div class="space-y-5 p-4">
+        <form action="{{ route('follow-ups.store') }}" method="POST" class="space-y-3">
             @csrf
             <input type="hidden" name="subject_type" value="{{ $classBasedType }}">
             <input type="hidden" name="subject_id" value="{{ $context->id }}">
@@ -27,8 +27,8 @@
                 </div>
             </div>
             
-            <div class="flex justify-end">
-                <x-button type="submit" size="sm" variant="primary" class="!px-4">
+            <div>
+                <x-button type="submit" size="sm" variant="primary" class="w-full justify-center">
                     {{ __('Planla') }}
                 </x-button>
             </div>
