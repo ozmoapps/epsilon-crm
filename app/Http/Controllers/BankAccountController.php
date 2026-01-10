@@ -10,7 +10,7 @@ class BankAccountController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(BankAccount::class, 'bankAccount');
+        $this->authorizeResource(BankAccount::class, 'bank_account');
     }
 
     public function index(Request $request)

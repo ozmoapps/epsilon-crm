@@ -9,11 +9,12 @@ class CompanyProfileController extends Controller
 {
     public function __construct()
     {
-        $this->authorizeResource(CompanyProfile::class, 'companyProfile');
     }
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', CompanyProfile::class);
+
         $search = $request->input('search');
 
         $companyProfiles = CompanyProfile::query()
@@ -35,6 +36,8 @@ class CompanyProfileController extends Controller
                 ->with('info', 'Şirket profili zaten mevcut.');
         }
 
+        $this->authorize('create', CompanyProfile::class);
+
         return view('company_profiles.create', [
             'companyProfile' => new CompanyProfile(),
         ]);
@@ -50,6 +53,8 @@ class CompanyProfileController extends Controller
                 ->with('info', 'Şirket profili zaten mevcut.');
         }
 
+        $this->authorize('create', CompanyProfile::class);
+
         $validated = $request->validate($this->rules(), $this->messages());
 
         $companyProfile = CompanyProfile::create($validated);
@@ -60,16 +65,22 @@ class CompanyProfileController extends Controller
 
     public function show(CompanyProfile $companyProfile)
     {
+        $this->authorize('viewAny', CompanyProfile::class);
+
         return view('company_profiles.show', compact('companyProfile'));
     }
 
     public function edit(CompanyProfile $companyProfile)
     {
+        $this->authorize('update', $companyProfile);
+
         return view('company_profiles.edit', compact('companyProfile'));
     }
 
     public function update(Request $request, CompanyProfile $companyProfile)
     {
+        $this->authorize('update', $companyProfile);
+
         $validated = $request->validate($this->rules(), $this->messages());
 
         $companyProfile->update($validated);
@@ -80,6 +91,8 @@ class CompanyProfileController extends Controller
 
     public function destroy(CompanyProfile $companyProfile)
     {
+        $this->authorize('delete', $companyProfile);
+
         $companyProfile->delete();
 
         return redirect()->route('company-profiles.index')
