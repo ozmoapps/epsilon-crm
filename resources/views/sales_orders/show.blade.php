@@ -93,16 +93,16 @@
             <x-slot name="header">{{ __('Özet') }}</x-slot>
             <div class="grid gap-4 text-sm sm:grid-cols-2">
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Müşteri') }}</p>
-                    <p class="text-base font-medium text-gray-900">{{ $salesOrder->customer?->name ?? '-' }}</p>
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Müşteri') }}</p>
+                    <p class="text-base font-medium text-slate-900">{{ $salesOrder->customer?->name ?? '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Tekne') }}</p>
-                    <p class="text-base font-medium text-gray-900">{{ $salesOrder->vessel?->name ?? '-' }}</p>
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Tekne') }}</p>
+                    <p class="text-base font-medium text-slate-900">{{ $salesOrder->vessel?->name ?? '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('İş Emri') }}</p>
-                    <p class="text-base font-medium text-gray-900">{{ $salesOrder->workOrder?->title ?? '-' }}</p>
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('İş Emri') }}</p>
+                    <p class="text-base font-medium text-slate-900">{{ $salesOrder->workOrder?->title ?? '-' }}</p>
                 </div>
                 @php
                     $statusVariants = [
@@ -114,40 +114,40 @@
                     ];
                 @endphp
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Durum') }}</p>
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Durum') }}</p>
                     <x-ui.badge :variant="$statusVariants[$salesOrder->status] ?? 'neutral'">
                         {{ $salesOrder->status_label }}
                     </x-ui.badge>
                 </div>
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Sipariş Tarihi') }}</p>
-                    <p class="text-base font-medium text-gray-900">
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Sipariş Tarihi') }}</p>
+                    <p class="text-base font-medium text-slate-900">
                         {{ $salesOrder->order_date ? $salesOrder->order_date->format('d.m.Y') : '-' }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Teslim Yeri') }}</p>
-                    <p class="text-base font-medium text-gray-900">{{ $salesOrder->delivery_place ?? '-' }}</p>
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Teslim Yeri') }}</p>
+                    <p class="text-base font-medium text-slate-900">{{ $salesOrder->delivery_place ?? '-' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Teslim Süresi') }}</p>
-                    <p class="text-base font-medium text-gray-900">
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Teslim Süresi') }}</p>
+                    <p class="text-base font-medium text-slate-900">
                         {{ $salesOrder->delivery_days !== null ? $salesOrder->delivery_days . ' gün' : '-' }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Para Birimi') }}</p>
-                    <p class="text-base font-medium text-gray-900">{{ $salesOrder->currency }}</p>
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Para Birimi') }}</p>
+                    <p class="text-base font-medium text-slate-900">{{ $salesOrder->currency }}</p>
                 </div>
                 <div class="sm:col-span-2">
-                    <p class="text-xs tracking-wide text-gray-500">{{ __('Sipariş Başlığı') }}</p>
-                    <p class="text-base font-medium text-gray-900">{{ $salesOrder->title }}</p>
+                    <p class="text-xs tracking-wide text-slate-500">{{ __('Sipariş Başlığı') }}</p>
+                    <p class="text-base font-medium text-slate-900">{{ $salesOrder->title }}</p>
                 </div>
                 @if ($salesOrder->quote)
                     <div class="sm:col-span-2">
-                        <p class="text-xs tracking-wide text-gray-500">{{ __('Kaynak Teklif') }}</p>
-                        <p class="text-base font-medium text-gray-900">
-                            <a href="{{ route('quotes.show', $salesOrder->quote) }}" class="text-indigo-600 hover:text-indigo-500">
+                        <p class="text-xs tracking-wide text-slate-500">{{ __('Kaynak Teklif') }}</p>
+                        <p class="text-base font-medium text-slate-900">
+                            <a href="{{ route('quotes.show', $salesOrder->quote) }}" class="text-brand-600 hover:text-brand-500 ui-focus">
                                 {{ $salesOrder->quote->quote_no }}
                             </a>
                         </p>
@@ -158,25 +158,25 @@
 
         <x-card>
             <x-slot name="header">{{ __('Koşullar') }}</x-slot>
-            <div class="grid gap-4 text-sm text-gray-700 md:grid-cols-2">
+            <div class="grid gap-4 text-sm text-slate-700 md:grid-cols-2">
                 <div>
-                    <p class="font-semibold text-gray-900">{{ __('Ödeme Şartları') }}</p>
+                    <p class="font-semibold text-slate-900">{{ __('Ödeme Şartları') }}</p>
                     <p class="mt-1">{{ $salesOrder->payment_terms ?: '-' }}</p>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">{{ __('Garanti') }}</p>
+                    <p class="font-semibold text-slate-900">{{ __('Garanti') }}</p>
                     <p class="mt-1">{{ $salesOrder->warranty_text ?: '-' }}</p>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">{{ __('Hariçler') }}</p>
+                    <p class="font-semibold text-slate-900">{{ __('Hariçler') }}</p>
                     <p class="mt-1">{{ $salesOrder->exclusions ?: '-' }}</p>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">{{ __('Notlar') }}</p>
+                    <p class="font-semibold text-slate-900">{{ __('Notlar') }}</p>
                     <p class="mt-1">{{ $salesOrder->notes ?: '-' }}</p>
                 </div>
                 <div class="md:col-span-2">
-                    <p class="font-semibold text-gray-900">{{ __('Kur Notu') }}</p>
+                    <p class="font-semibold text-slate-900">{{ __('Kur Notu') }}</p>
                     <p class="mt-1">{{ $salesOrder->fx_note ?: '-' }}</p>
                 </div>
             </div>
@@ -203,14 +203,14 @@
             </x-slot>
 
             <div class="space-y-6">
-                <div class="hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs font-semibold tracking-wide text-gray-500 lg:grid lg:grid-cols-12 lg:items-center">
-                    <div class="lg:col-span-4">{{ __('Hizmet/Ürün') }}</div>
-                    <div class="lg:col-span-1 text-right">{{ __('Miktar') }}</div>
-                    <div class="lg:col-span-1 border-l border-gray-200 pl-2">{{ __('Birim') }}</div>
-                    <div class="lg:col-span-2 text-right">{{ __('Br. Fiyat') }}</div>
-                    <div class="lg:col-span-1 text-right">{{ __('İndirim') }}</div>
-                    <div class="lg:col-span-1 text-right">{{ __('KDV') }}</div>
-                    <div class="lg:col-span-1 text-right">{{ __('Toplam') }}</div>
+            <div class="hidden rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 lg:grid lg:grid-cols-12 lg:items-center">
+                <div class="lg:col-span-4">{{ __('Hizmet/Ürün') }}</div>
+                <div class="lg:col-span-1 text-right">{{ __('Miktar') }}</div>
+                <div class="lg:col-span-1 border-l border-slate-200 pl-2">{{ __('Birim') }}</div>
+                <div class="lg:col-span-2 text-right">{{ __('Br. Fiyat') }}</div>
+                <div class="lg:col-span-1 text-right">{{ __('İndirim') }}</div>
+                <div class="lg:col-span-1 text-right">{{ __('KDV') }}</div>
+                <div class="lg:col-span-1 text-right">{{ __('Toplam') }}</div>
                     <div class="lg:col-span-1 text-right">{{ __('Sil') }}</div>
                 </div>
 

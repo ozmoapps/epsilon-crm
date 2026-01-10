@@ -3,14 +3,20 @@
         <x-page-header
             title="{{ __('Satış Siparişleri') }}"
             subtitle="{{ __('Tüm satış siparişlerini görüntüleyin.') }}"
-        />
+        >
+            <x-slot name="actions">
+                <x-button href="{{ route('sales-orders.create') }}">
+                    {{ __('Yeni Satış Siparişi') }}
+                </x-button>
+            </x-slot>
+        </x-page-header>
     </x-slot>
 
     <div class="space-y-6">
         <x-card>
             <x-slot name="header">{{ __('Filtreler') }}</x-slot>
-            <div class="rounded-xl border border-gray-200 bg-slate-50/60 p-4">
-                <form method="GET" action="{{ route('sales-orders.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <form method="GET" action="{{ route('sales-orders.index') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
                     <div class="flex-1">
                         <x-input-label for="search" :value="__('Ara (Sipariş No / Başlık)')" />
                         <x-input id="search" name="search" type="text" class="mt-1 w-full" :value="$search" placeholder="SO-2026-0001" />
@@ -47,7 +53,7 @@
                 $actionItemClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50';
                 $actionDangerClass = 'flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50';
             @endphp
-            <x-ui.table>
+            <x-ui.table class="ui-table-sticky">
                 <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3 text-left">{{ __('Sipariş No') }}</th>
@@ -85,7 +91,7 @@
                                 <x-ui.dropdown align="right" width="w-44">
                                     <x-slot name="trigger">
                                         <x-ui.tooltip text="{{ __('İşlemler') }}">
-                                            <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900" aria-label="{{ __('İşlemler') }}">
+                                            <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 ui-focus" aria-label="{{ __('İşlemler') }}">
                                                 <x-icon.dots class="h-4 w-4" />
                                             </button>
                                         </x-ui.tooltip>
@@ -113,8 +119,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-6 text-center text-sm text-slate-500">
-                                {{ __('Henüz satış siparişi oluşturulmadı.') }}
+                            <td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">
+                                <div class="flex flex-col items-center gap-2">
+                                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                                        <x-icon.info class="h-5 w-5" />
+                                    </span>
+                                    <div class="text-sm font-semibold text-slate-700">{{ __('Henüz satış siparişi oluşturulmadı.') }}</div>
+                                    <div class="text-xs text-slate-500">{{ __('Yeni sipariş ekleyerek başlayabilirsiniz.') }}</div>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
