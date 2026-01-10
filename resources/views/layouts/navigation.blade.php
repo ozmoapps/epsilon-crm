@@ -1,6 +1,6 @@
 @php
     $navItemBase = 'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition ui-focus';
-    $navItemActive = 'bg-brand-50 text-brand-700 shadow-soft';
+    $navItemActive = 'relative bg-brand-50 text-brand-700 shadow-soft before:absolute before:inset-y-2 before:left-1 before:w-1 before:rounded-full before:bg-brand-500';
     $navItemInactive = 'text-slate-600 hover:bg-slate-100 hover:text-slate-900';
 @endphp
 
@@ -69,12 +69,33 @@
                         </svg>
                         <span>{{ __('Müşteriler') }}</span>
                     </a>
+                    <a
+                        href="{{ route('vessels.index') }}"
+                        class="{{ $navItemBase }} {{ request()->routeIs('vessels.*') ? $navItemActive : $navItemInactive }}"
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 17l4-6h10l4 6" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 17l3 4h8l3-4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 11V6a2 2 0 012-2h6a2 2 0 012 2v5" />
+                        </svg>
+                        <span>{{ __('Tekneler') }}</span>
+                    </a>
                 </div>
             </div>
 
             <div>
                 <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Satış') }}</p>
                 <div class="mt-3 space-y-1">
+                    <a
+                        href="{{ route('quotes.index') }}"
+                        class="{{ $navItemBase }} {{ request()->routeIs('quotes.*') ? $navItemActive : $navItemInactive }}"
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 12h8M7 17h6" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 4h11l3 3v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                        </svg>
+                        <span>{{ __('Teklifler') }}</span>
+                    </a>
                     <a
                         href="{{ route('sales-orders.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('sales-orders.*') ? $navItemActive : $navItemInactive }}"
@@ -95,6 +116,33 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6M9 17h4" />
                         </svg>
                         <span>{{ __('Sözleşmeler') }}</span>
+                    </a>
+                    <a
+                        href="{{ route('contract-templates.index') }}"
+                        class="{{ $navItemBase }} {{ request()->routeIs('contract-templates.*') ? $navItemActive : $navItemInactive }}"
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 3h7l5 5v10a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 3v5h5" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6M9 16h4" />
+                        </svg>
+                        <span>{{ __('Sözleşme Şablonları') }}</span>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">{{ __('Operasyon') }}</p>
+                <div class="mt-3 space-y-1">
+                    <a
+                        href="{{ route('work-orders.index') }}"
+                        class="{{ $navItemBase }} {{ request()->routeIs('work-orders.*') ? $navItemActive : $navItemInactive }}"
+                    >
+                        <svg class="h-5 w-5 text-slate-400 transition group-hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h12l4 5-4 5H4a2 2 0 01-2-2V9a2 2 0 012-2z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 12h5" />
+                        </svg>
+                        <span>{{ __('İş Emirleri') }}</span>
                     </a>
                 </div>
             </div>
