@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .ui-focus {
+        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+    }
+
+    .ui-card {
+        @apply rounded-2xl border border-slate-200/80 bg-white shadow-card;
+    }
+
+    .ui-table-sticky thead th {
+        @apply sticky top-0 z-10 bg-slate-50/95 backdrop-blur;
+    }
+}

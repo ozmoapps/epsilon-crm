@@ -12,12 +12,15 @@
     <div class="space-y-6">
         <x-card>
             <x-slot name="header">{{ __('Filtreler') }}</x-slot>
-            <form method="GET" action="{{ route('customers.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <form method="GET" action="{{ route('customers.index') }}" class="flex flex-col gap-4 sm:flex-row sm:items-end">
                 <div class="flex-1">
-                    <x-input name="search" type="text" placeholder="İsme göre ara" :value="$search" />
+                    <x-input-label for="search" :value="__('İsimle arayın')" />
+                    <x-input id="search" name="search" type="text" class="mt-1" placeholder="{{ __('İsme göre ara') }}" :value="$search" />
                 </div>
-                <x-button type="submit">{{ __('Ara') }}</x-button>
-                <x-button href="{{ route('customers.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
+                <div class="flex flex-wrap gap-2">
+                    <x-button type="submit">{{ __('Ara') }}</x-button>
+                    <x-button href="{{ route('customers.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
+                </div>
             </form>
         </x-card>
 
@@ -40,7 +43,7 @@
                         <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
                             <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $customer->name }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">
-                                {{ $customer->phone ?: 'Telefon yok' }}
+                                {{ $customer->phone ?: __('Telefon yok') }}
                                 @if ($customer->email)
                                     · {{ $customer->email }}
                                 @endif
@@ -48,7 +51,7 @@
                             <td class="px-4 py-3 text-right">
                                 <x-ui.dropdown align="right" width="w-44">
                                     <x-slot name="trigger">
-                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900" aria-label="{{ __('İşlemler') }}">
+                                        <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900 ui-focus" aria-label="{{ __('İşlemler') }}">
                                             <x-icon.dots class="h-4 w-4" />
                                         </button>
                                     </x-slot>
@@ -76,7 +79,13 @@
                     @empty
                         <tr>
                             <td colspan="3" class="px-4 py-6 text-center text-sm text-slate-500">
-                                {{ __('Kayıt bulunamadı.') }}
+                                <div class="flex flex-col items-center gap-2 py-4">
+                                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                                        <x-icon.info class="h-5 w-5" />
+                                    </span>
+                                    <div class="text-sm font-semibold text-slate-700">{{ __('Kayıt bulunamadı.') }}</div>
+                                    <div class="text-xs text-slate-500">{{ __('Yeni bir müşteri ekleyerek başlayabilirsiniz.') }}</div>
+                                </div>
                             </td>
                         </tr>
                     @endforelse

@@ -67,22 +67,24 @@
     }"
     class="relative inline-block text-left"
 >
-    <div x-ref="button" @click="toggle" :aria-expanded="open.toString()">
+    <div x-ref="button" @click="toggle" x-bind:aria-expanded="open.toString()">
         {{ $trigger }}
     </div>
 
-    <div
-        x-cloak
-        x-show="open"
-        x-ref="menu"
-        @click.outside="close"
-        @keydown.escape.window="close"
-        x-transition.opacity.duration.120ms
-        :style="styles"
-        class="fixed z-[9999]"
-    >
-        <div class="{{ $width }} rounded-xl border border-slate-200 bg-white shadow-lg ring-1 ring-black/5 overflow-hidden">
-            {{ $content }}
+    <template x-teleport="body">
+        <div
+            x-cloak
+            x-show="open"
+            x-ref="menu"
+            @click.outside="close"
+            @keydown.escape.window="close"
+            x-transition.opacity.duration.120ms
+            x-bind:style="styles"
+            class="fixed z-[9999]"
+        >
+            <div class="{{ $width }} overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft ring-1 ring-black/5">
+                {{ $content }}
+            </div>
         </div>
-    </div>
+    </template>
 </div>
