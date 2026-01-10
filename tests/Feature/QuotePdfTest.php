@@ -31,6 +31,7 @@ class QuotePdfTest extends TestCase
             'work_order_id' => null,
             'title' => 'Test teklifi',
             'status' => 'draft',
+            'issued_at' => now()->toDateString(),
             'currency_id' => $currency->id,
             'validity_days' => 10,
             'estimated_duration_days' => 5,

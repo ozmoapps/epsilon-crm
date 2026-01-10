@@ -8,6 +8,9 @@
     $discountTotal = (float) $quote->discount_total;
     $computedGrandTotal = $quote->subtotal - $discountTotal + $quote->vat_total;
     $validityDays = $quote->validity_days ?? 5;
+    $issuedAt = $quote->issued_at?->format('d.m.Y')
+        ?? $quote->created_at?->format('d.m.Y')
+        ?? now()->format('d.m.Y');
     $companyName = $companyProfile?->name ?? config('company.name');
     $companyAddress = $companyProfile?->address ?? config('company.address');
     $companyPhone = $companyProfile?->phone ?? config('company.phone');
@@ -25,7 +28,7 @@
         <table>
             <tr>
                 <td class="muted">{{ __('Teklif Tarihi') }}</td>
-                <td>{{ $quote->created_at?->format('d.m.Y') ?? now()->format('d.m.Y') }}</td>
+                <td>{{ $issuedAt }}</td>
             </tr>
             <tr>
                 <td class="muted">{{ __('Geçerlilik') }}</td>
@@ -50,6 +53,12 @@
         <h3>{{ __('Tekne') }}</h3>
         <p>{{ $quote->vessel?->name ?? '-' }}</p>
         <p class="muted">{{ $quote->customer?->address ?? '-' }}</p>
+    </div>
+    <div class="info-block">
+        <h3>{{ __('İletişim & Lokasyon') }}</h3>
+        <p>{{ $quote->contact_name ?: '-' }}</p>
+        <p class="muted">{{ $quote->contact_phone ?: '-' }}</p>
+        <p class="muted">{{ $quote->location ?: '-' }}</p>
     </div>
 </div>
 

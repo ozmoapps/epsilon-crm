@@ -96,6 +96,12 @@
                     <x-badge status="{{ $quote->status }}">{{ $quote->status_label }}</x-badge>
                 </div>
                 <div>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Teklif Tarihi') }}</p>
+                    <p class="text-base font-medium text-gray-900">
+                        {{ $quote->issued_at?->format('d.m.Y') ?? '-' }}
+                    </p>
+                </div>
+                <div>
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Para Birimi') }}</p>
                     <p class="text-base font-medium text-gray-900">
                         {{ $quote->currencyRelation?->code ?? $quote->currency ?? '-' }}
@@ -111,6 +117,21 @@
                     <p class="text-xs tracking-wide text-gray-500">{{ __('Tahmini Süre') }}</p>
                     <p class="text-base font-medium text-gray-900">
                         {{ $quote->estimated_duration_days !== null ? $quote->estimated_duration_days . ' gün' : '-' }}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('İletişim') }}</p>
+                    <p class="text-base font-medium text-gray-900">
+                        {{ $quote->contact_name ?: '-' }}
+                    </p>
+                    @if ($quote->contact_phone)
+                        <p class="text-xs text-gray-500">{{ $quote->contact_phone }}</p>
+                    @endif
+                </div>
+                <div>
+                    <p class="text-xs tracking-wide text-gray-500">{{ __('Lokasyon') }}</p>
+                    <p class="text-base font-medium text-gray-900">
+                        {{ $quote->location ?: '-' }}
                     </p>
                 </div>
                 <div class="sm:col-span-2">
