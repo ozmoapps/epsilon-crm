@@ -143,11 +143,11 @@
         <x-ui.card class="!p-0 overflow-hidden">
             @php
                 $statusVariants = [
-                    'draft' => 'draft',
-                    'planned' => 'neutral',
-                    'in_progress' => 'in_progress',
-                    'completed' => 'completed',
-                    'cancelled' => 'canceled',
+                    'draft' => 'neutral',
+                    'planned' => 'info',
+                    'in_progress' => 'info',
+                    'completed' => 'success',
+                    'cancelled' => 'danger',
                 ];
             @endphp
             <x-ui.table>

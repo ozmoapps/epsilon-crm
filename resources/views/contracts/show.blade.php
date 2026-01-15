@@ -151,7 +151,9 @@
                                 <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50 cursor-not-allowed opacity-60" disabled>
                                     <x-icon.trash class="h-4 w-4" />
                                     {{ __('Sil') }}
-                                    <span class="ml-auto text-[10px] bg-slate-100 px-1 rounded">{{ __('Kilitli') }}</span>
+                                    <x-ui.badge variant="neutral" class="ml-auto !px-1 !py-0.5 text-[10px]">
+                                        {{ __('Kilitli') }}
+                                    </x-ui.badge>
                                 </button>
                             @else
                                 <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}">

@@ -43,7 +43,9 @@
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="text-xs font-semibold text-slate-900">{{ $followUp->next_at->format('d.m.Y H:i') }}</span>
                                     @if($followUp->creator)
-                                         <span class="text-[10px] text-slate-500 font-medium px-1.5 py-0.5 rounded bg-slate-100">{{ $followUp->creator->name }}</span>
+                                        <x-ui.badge variant="neutral" class="!px-1.5 !py-0.5 text-[10px] font-medium">
+                                            {{ $followUp->creator->name }}
+                                        </x-ui.badge>
                                     @endif
                                 </div>
                                 <p class="text-sm text-slate-600 line-clamp-2 leading-relaxed" title="{{ $followUp->note }}">{{ $followUp->note }}</p>
