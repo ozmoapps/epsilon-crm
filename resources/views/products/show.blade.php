@@ -39,10 +39,37 @@
                     <div class="mt-6 pt-6 border-t border-slate-100">
                         <span class="block text-xs font-semibold text-slate-500 uppercase mb-2">{{ __('Etiketler') }}</span>
                         <div class="flex flex-wrap gap-2">
+                            @php
+                                $tagVariantMap = [
+                                    'emerald' => 'success',
+                                    'green' => 'success',
+                                    'teal' => 'success',
+                                    'lime' => 'success',
+                                    'red' => 'danger',
+                                    'rose' => 'danger',
+                                    'pink' => 'danger',
+                                    'fuchsia' => 'danger',
+                                    'amber' => 'info',
+                                    'yellow' => 'info',
+                                    'orange' => 'info',
+                                    'sky' => 'info',
+                                    'blue' => 'info',
+                                    'indigo' => 'info',
+                                    'purple' => 'info',
+                                    'slate' => 'neutral',
+                                    'gray' => 'neutral',
+                                    'zinc' => 'neutral',
+                                    'stone' => 'neutral',
+                                ];
+                            @endphp
                             @foreach($product->tags as $tag)
-                                <span class="px-2 py-1 rounded text-xs font-semibold bg-{{ $tag->color ?? 'slate' }}-100 text-{{ $tag->color ?? 'slate' }}-700 border border-{{ $tag->color ?? 'slate' }}-200">
+                                @php
+                                    $tagColor = strtolower($tag->color ?? 'slate');
+                                    $tagVariant = $tagVariantMap[$tagColor] ?? 'neutral';
+                                @endphp
+                                <x-ui.badge :variant="$tagVariant" class="!px-2 !py-1 text-xs font-semibold">
                                     {{ $tag->name }}
-                                </span>
+                                </x-ui.badge>
                             @endforeach
                         </div>
                     </div>
