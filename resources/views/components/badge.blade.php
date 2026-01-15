@@ -5,6 +5,8 @@
   $normalized = is_string($value) ? strtolower($value) : $value;
   $map = [
     'paid' => 'success',
+    'partial' => 'info',
+    'unpaid' => 'danger',
     'active' => 'success',
     'approved' => 'success',
     'accepted' => 'success',
@@ -13,14 +15,18 @@
     'sent' => 'info',
     'shared' => 'info',
     'info' => 'info',
+    'warning' => 'info',
     'draft' => 'neutral',
     'pending' => 'neutral',
     'neutral' => 'neutral',
+    'void' => 'danger',
     'cancelled' => 'danger',
     'canceled' => 'danger',
     'overdue' => 'danger',
     'error' => 'danger',
     'failed' => 'danger',
+    'rejected' => 'danger',
+    'expired' => 'danger',
     'danger' => 'danger',
     'success' => 'success',
   ];

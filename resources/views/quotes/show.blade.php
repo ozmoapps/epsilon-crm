@@ -135,10 +135,12 @@
                     </div>
                     <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">{{ __('Geçerlilik') }}</p>
                 </div>
-                <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2">
                     <p class="text-sm font-bold text-slate-900">{{ $quote->validity_days ? $quote->validity_days . ' gün' : '-' }}</p>
                     @if($quote->validity_date && $quote->validity_date->isPast())
-                        <span class="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium ml-auto">{{ __('Süresi Doldu') }}</span>
+                        <x-ui.badge variant="danger" class="!px-1.5 !py-0.5 text-[10px] font-medium ml-auto">
+                            {{ __('Süresi Doldu') }}
+                        </x-ui.badge>
                     @endif
                 </div>
             </div>

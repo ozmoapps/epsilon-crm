@@ -134,12 +134,12 @@
 
         @php
             $statusVariants = [
-                'draft' => 'draft',
-                'issued' => 'neutral',
-                'sent' => 'sent',
-                'signed' => 'signed',
+                'draft' => 'neutral',
+                'issued' => 'success',
+                'sent' => 'info',
+                'signed' => 'success',
                 'superseded' => 'neutral',
-                'cancelled' => 'cancelled',
+                'cancelled' => 'danger',
             ];
         @endphp
 
