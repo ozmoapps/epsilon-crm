@@ -20,7 +20,7 @@
     </div>
     <div class="flex items-center gap-3 pt-7">
         <input type="hidden" name="is_active" value="0">
-        <input id="is_active" name="is_active" type="checkbox" value="1" class="h-4 w-4 rounded border-slate-300 text-brand-600 shadow-sm focus:ring-brand-500 ui-focus" @checked(old('is_active', $currency->is_active ?? true))>
+        <input id="is_active" name="is_active" type="checkbox" value="1" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 ui-focus" @checked(old('is_active', $currency->is_active ?? true))>
         <label for="is_active" class="text-sm text-slate-700">{{ __('Aktif') }}</label>
         <x-input-error class="mt-2" :messages="$errors->get('is_active')" />
     </div>

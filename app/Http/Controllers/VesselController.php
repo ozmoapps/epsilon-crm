@@ -48,9 +48,21 @@ class VesselController extends Controller
     public function show(Vessel $vessel)
     {
         $this->authorize('view', $vessel);
-        $vessel->load('customer');
+        $vessel->load([
+            'customer',
+            'ownerHistories.oldCustomer',
+            'ownerHistories.newCustomer',
+            'ownerHistories.changedBy'
+        ]);
 
-        return view('vessels.show', compact('vessel'));
+        // Fetch activity logs
+        $timeline = \App\Models\ActivityLog::with(['actor', 'subject'])
+            ->where('subject_type', \App\Models\Vessel::class)
+            ->where('subject_id', $vessel->id)
+            ->latest()
+            ->get();
+
+        return view('vessels.show', compact('vessel', 'timeline'));
     }
 
     public function edit(Vessel $vessel)

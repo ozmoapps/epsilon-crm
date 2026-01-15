@@ -11,6 +11,7 @@ class QuoteItem extends Model
 
     protected $fillable = [
         'quote_id',
+        'product_id',
         'section',
         'item_type',
         'description',
@@ -34,5 +35,10 @@ class QuoteItem extends Model
     public function quote()
     {
         return $this->belongsTo(Quote::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }

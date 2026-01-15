@@ -82,7 +82,7 @@
             @endphp
             <div class="flex gap-3 relative pb-4 last:pb-0">
                  <!-- Line -->
-                <div class="absolute left-[1.125rem] top-8 bottom-0 w-px bg-slate-100 last:hidden"></div>
+                <div class="absolute left-[1.125rem] top-0 bottom-0 w-px bg-slate-100 first:top-5 last:bottom-auto last:h-6"></div>
                 
                 <div class="relative z-10 mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-500 ring-4 ring-white">
                     <x-dynamic-component :component="'icon.' . $icon" class="h-4 w-4" />
@@ -167,7 +167,7 @@
             @endphp
             <div class="flex gap-3 relative pb-4 last:pb-0" x-show="expanded" x-cloak>
                  <!-- Line -->
-                <div class="absolute left-[1.125rem] top-8 bottom-0 w-px bg-slate-100 last:hidden"></div>
+                <div class="absolute left-[1.125rem] top-0 bottom-0 w-px bg-slate-100 first:top-5 last:bottom-auto last:h-6"></div>
 
                 <div class="relative z-10 mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white border border-slate-200 text-slate-500 ring-4 ring-white">
                     <x-dynamic-component :component="'icon.' . $icon" class="h-4 w-4" />

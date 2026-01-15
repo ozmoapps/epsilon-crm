@@ -66,7 +66,7 @@ class QuotePdfTest extends TestCase
         $response->assertHeader('Content-Type', 'application/pdf');
     }
 
-    public function test_quote_pdf_endpoint_is_forbidden_for_other_users(): void
+    public function test_quote_pdf_endpoint_is_accessible_for_other_users_in_shared_workspace(): void
     {
         $owner = User::factory()->create();
         $otherUser = User::factory()->create();
@@ -79,6 +79,6 @@ class QuotePdfTest extends TestCase
 
         $response = $this->actingAs($otherUser)->get(route('quotes.pdf', $quote));
 
-        $response->assertForbidden();
+        $response->assertOk();
     }
 }

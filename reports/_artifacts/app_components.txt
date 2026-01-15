@@ -1,0 +1,6 @@
+app/Console/Commands:
+AuditVesselOwnership.php
+CrmDemoCommand.php
+
+app/Http/Middleware:
+EnsureAdmin.php

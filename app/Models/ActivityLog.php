@@ -31,4 +31,19 @@ class ActivityLog extends Model
     {
         return $this->morphTo();
     }
+
+    public function getDescriptionAttribute(): string
+    {
+        $actorName = $this->actor ? $this->actor->name : 'Sistem';
+        $action = match ($this->action) {
+            'created' => 'oluşturdu',
+            'updated' => 'güncelledi',
+            'deleted' => 'sildi',
+            'login' => 'giriş yaptı',
+            default => $this->action,
+        };
+        $subjectName = $this->subject_type ? class_basename($this->subject_type) : 'Öğe';
+
+        return "{$actorName} {$subjectName} {$action}";
+    }
 }

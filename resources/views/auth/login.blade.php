@@ -32,7 +32,7 @@
         <!-- Remember Me -->
         <div class="mt-4">
             <label for="remember_me" class="inline-flex items-center gap-2 text-sm text-slate-600">
-                <input id="remember_me" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-600 shadow-sm focus:ring-brand-500 ui-focus" name="remember">
+                <input id="remember_me" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500 ui-focus" name="remember">
                 <span>{{ __('Beni hatırla') }}</span>
             </label>
         </div>

@@ -24,8 +24,8 @@
             @include('layouts.navigation')
 
             <div class="lg:pl-72">
-                <main class="py-6 sm:py-8">
-                    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <main class="page-section">
+                    <div class="page-container">
                         @isset($header)
                             <div class="pb-6">
                                 {{ $header }}
@@ -39,5 +39,11 @@
                 </main>
             </div>
         </div>
+
+        {{-- Global Confirm Dialog --}}
+        <x-ui.confirm />
+
+        {{-- Toast Notification Stack --}}
+        <x-ui.toast-stack />
     </body>
 </html>

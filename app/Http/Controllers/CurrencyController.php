@@ -36,7 +36,7 @@ class CurrencyController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate($this->rules(), $this->messages());
-        $validated['code'] = strtoupper($validated['code']);
+        $validated['code'] = mb_strtoupper($validated['code']);
 
         $currency = Currency::create($validated);
 
@@ -57,7 +57,7 @@ class CurrencyController extends Controller
     public function update(Request $request, Currency $currency)
     {
         $validated = $request->validate($this->rules($currency), $this->messages());
-        $validated['code'] = strtoupper($validated['code']);
+        $validated['code'] = mb_strtoupper($validated['code']);
 
         $currency->update($validated);
 

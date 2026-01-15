@@ -41,6 +41,16 @@ class Vessel extends Model
         return $this->hasMany(WorkOrder::class);
     }
 
+    public function contacts()
+    {
+        return $this->hasMany(VesselContact::class);
+    }
+
+    public function ownerHistories()
+    {
+        return $this->hasMany(VesselOwnerHistory::class)->latest('changed_at');
+    }
+
     public function getBoatTypeLabelAttribute(): ?string
     {
         if (! $this->boat_type) {

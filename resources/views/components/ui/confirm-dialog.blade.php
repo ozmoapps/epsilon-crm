@@ -66,10 +66,10 @@
         >
             <div class="space-y-3">
                 <div class="space-y-1">
-                    <h2 id="{{ $titleId }}" class="text-lg font-semibold text-slate-900">
+                    <h2 id="{{ $titleId }}" class="text-heading-4 text-slate-900">
                         {{ $title }}
                     </h2>
-                    <p id="{{ $messageId }}" class="text-sm text-slate-600">
+                    <p id="{{ $messageId }}" class="text-body-sm text-slate-600">
                         {{ $message }}
                     </p>
                 </div>

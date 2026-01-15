@@ -1,0 +1,12 @@
+epsilon-crm@ /Users/vahapcansari/Desktop/epsilon-crm
+├── @tailwindcss/forms@0.5.11
+├── @tailwindcss/vite@4.1.18
+├── alpinejs@3.15.3
+├── autoprefixer@10.4.23
+├── axios@1.13.2
+├── concurrently@9.2.1
+├── laravel-vite-plugin@2.0.1
+├── postcss@8.5.6
+├── tailwindcss@3.4.19
+└── vite@7.3.1
+

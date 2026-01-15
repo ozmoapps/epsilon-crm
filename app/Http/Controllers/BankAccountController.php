@@ -5,112 +5,159 @@ namespace App\Http\Controllers;
 use App\Models\BankAccount;
 use App\Models\Currency;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class BankAccountController extends Controller
 {
-    public function __construct()
-    {
-        $this->authorizeResource(BankAccount::class, 'bank_account');
-    }
-
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $query = BankAccount::query()
+            ->with(['currency'])
+            ->orderBy('is_active', 'desc')
+            ->orderBy('type')
+            ->orderBy('name');
 
-        $bankAccounts = BankAccount::query()
-            ->with('currency')
-            ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
-            ->orderBy('name')
-            ->paginate(10)
-            ->withQueryString();
+        if ($request->filled('q')) {
+            $query->where('name', 'like', '%' . $request->q . '%');
+        }
 
-        return view('bank_accounts.index', compact('bankAccounts', 'search'));
+        $accounts = $query->paginate(20);
+
+        return view('bank-accounts.index', compact('accounts'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        return view('bank_accounts.create', [
-            'bankAccount' => new BankAccount(),
-            'currencies' => $this->currencyOptions(),
-        ]);
+        $currencies = Currency::where('is_active', true)->orderBy('code')->get();
+        return view('bank-accounts.create', compact('currencies'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate($this->rules(), $this->messages());
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => ['required', Rule::in(['bank', 'cash'])],
+            'currency_id' => 'required|exists:currencies,id',
+            'opening_balance' => 'nullable|numeric',
+            'opening_balance_date' => 'nullable|date',
 
-        $validated['iban'] = strtoupper($validated['iban']);
+            // Bank only required fields
+            'bank_name' => [Rule::requiredIf(fn() => $request->input('type') === 'bank'), 'nullable', 'string', 'max:255'],
+            'iban' => [Rule::requiredIf(fn() => $request->input('type') === 'bank'), 'nullable', 'string', 'max:50'],
 
-        $bankAccount = BankAccount::create($validated);
+            // Optional
+            'branch_name' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
+        ]);
 
-        return redirect()->route('bank-accounts.show', $bankAccount)
-            ->with('success', 'Banka hesabı oluşturuldu.');
+        $data['opening_balance'] = $data['opening_balance'] ?? 0;
+        $data['is_active'] = $request->has('is_active');
+
+        // If it's a CASH account, wipe bank fields to avoid accidental stale input
+        if (($data['type'] ?? null) === 'cash') {
+            $data['bank_name'] = null;
+            $data['branch_name'] = null;
+            $data['iban'] = null;
+        }
+
+        BankAccount::create($data);
+
+        return redirect()->route('bank-accounts.index')->with('success', 'Hesap başarıyla oluşturuldu.');
     }
 
-    public function show(BankAccount $bankAccount)
+    /**
+     * Display the specified resource.
+     */
+    public function show(BankAccount $bankAccount, Request $request)
     {
+        $pQuery = $bankAccount->payments()->with(['invoice.customer']);
+
+        if ($bankAccount->opening_balance_date) {
+            $pQuery->where('payment_date', '>', $bankAccount->opening_balance_date);
+        }
+
+        $payments = $pQuery->latest('payment_date')->latest('id')->paginate(50);
+
         $bankAccount->load('currency');
 
-        return view('bank_accounts.show', compact('bankAccount'));
+        return view('bank-accounts.show', compact('bankAccount', 'payments'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(BankAccount $bankAccount)
     {
-        $bankAccount->load('currency');
-
-        return view('bank_accounts.edit', [
-            'bankAccount' => $bankAccount,
-            'currencies' => $this->currencyOptions(),
-        ]);
+        $currencies = Currency::where('is_active', true)->orderBy('code')->get();
+        return view('bank-accounts.edit', compact('bankAccount', 'currencies'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, BankAccount $bankAccount)
     {
-        $validated = $request->validate($this->rules(), $this->messages());
+        $hasTx = $bankAccount->payments()->exists();
 
-        $validated['iban'] = strtoupper($validated['iban']);
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => ['required', Rule::in(['bank', 'cash'])],
+            'currency_id' => 'required|exists:currencies,id',
+            'opening_balance' => 'nullable|numeric',
+            'opening_balance_date' => 'nullable|date',
 
-        $bankAccount->update($validated);
+            'bank_name' => [Rule::requiredIf(fn() => $request->input('type') === 'bank'), 'nullable', 'string', 'max:255'],
+            'iban' => [Rule::requiredIf(fn() => $request->input('type') === 'bank'), 'nullable', 'string', 'max:50'],
 
-        return redirect()->route('bank-accounts.show', $bankAccount)
-            ->with('success', 'Banka hesabı güncellendi.');
+            'branch_name' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
+        ]);
+
+        $data['opening_balance'] = $data['opening_balance'] ?? 0;
+        $data['is_active'] = $request->boolean('is_active');
+
+        // ✅ GUARD: If there are transactions, lock critical identity fields
+        if ($hasTx) {
+            if (($data['currency_id'] ?? null) != $bankAccount->currency_id) {
+                return back()->withInput()->with('error', 'Bu hesapta işlem hareketi var. Para birimi değiştirilemez.');
+            }
+            if (($data['type'] ?? null) !== $bankAccount->type) {
+                return back()->withInput()->with('error', 'Bu hesapta işlem hareketi var. Hesap tipi (Banka/Kasa) değiştirilemez.');
+            }
+        }
+
+        // If it's a CASH account, wipe bank fields
+        if (($data['type'] ?? null) === 'cash') {
+            $data['bank_name'] = null;
+            $data['branch_name'] = null;
+            $data['iban'] = null;
+        }
+
+        $bankAccount->update($data);
+
+        return redirect()->route('bank-accounts.index')->with('success', 'Hesap güncellendi.');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(BankAccount $bankAccount)
     {
+        if ($bankAccount->payments()->exists()) {
+            return back()->with('error', 'Bu hesaba ait işlem hareketleri var, silinemez.');
+        }
+
         $bankAccount->delete();
 
-        return redirect()->route('bank-accounts.index')
-            ->with('success', 'Banka hesabı silindi.');
-    }
-
-    private function rules(): array
-    {
-        return [
-            'name' => ['required', 'string', 'max:255'],
-            'bank_name' => ['required', 'string', 'max:255'],
-            'branch_name' => ['nullable', 'string', 'max:255'],
-            'iban' => ['required', 'string', 'max:34'],
-            'currency_id' => ['nullable', 'exists:currencies,id'],
-        ];
-    }
-
-    private function messages(): array
-    {
-        return [
-            'name.required' => 'Hesap adı zorunludur.',
-            'name.max' => 'Hesap adı en fazla 255 karakter olabilir.',
-            'bank_name.required' => 'Banka adı zorunludur.',
-            'bank_name.max' => 'Banka adı en fazla 255 karakter olabilir.',
-            'branch_name.max' => 'Şube adı en fazla 255 karakter olabilir.',
-            'iban.required' => 'IBAN zorunludur.',
-            'iban.max' => 'IBAN en fazla 34 karakter olabilir.',
-            'currency_id.exists' => 'Seçilen para birimi geçerli değil.',
-        ];
-    }
-
-    private function currencyOptions()
-    {
-        return Currency::query()->orderBy('name')->get();
+        return redirect()->route('bank-accounts.index')->with('success', 'Hesap silindi.');
     }
 }

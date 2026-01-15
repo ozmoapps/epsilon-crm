@@ -1,0 +1,8 @@
+Category,Finding,Risk Level,Recommendation
+Code Standard,Formatlama hataları (Pint),Low,Run ./vendor/bin/pint
+Architecture,Eksik app/Jobs & app/Events,Medium,"Async yapılar kurgulanmalı"
+Database,SQLite kullanımı,Low (Dev) / High (Prod),"Prod geçişinde MySQL planlanmalı"
+Operational,Log dosyası boyutu (5.2MB),Low,"Log rotate konfigürasyonu"
+Security,Hardcoded env() kullanımı,None,"Temiz (Tespit edilmedi)"
+Testing,Smoke Test Mevcudiyeti,Info,"CI pipeline'ına eklenmeli"
+Integration,Laravel v12.46.0,Info,"Sürüm takibi yapılmalı"

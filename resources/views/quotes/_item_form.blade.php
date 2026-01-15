@@ -70,12 +70,12 @@
         </div>
 
         <div class="flex items-center gap-2 pt-7">
-            <input id="is_optional_{{ $fieldPrefix }}" name="is_optional" type="checkbox" value="1" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" @checked(old('is_optional', $item->is_optional))>
-            <label for="is_optional_{{ $fieldPrefix }}" class="text-sm text-gray-700">{{ __('Opsiyon') }}</label>
+            <input id="is_optional_{{ $fieldPrefix }}" name="is_optional" type="checkbox" value="1" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500" @checked(old('is_optional', $item->is_optional))>
+            <label for="is_optional_{{ $fieldPrefix }}" class="text-sm text-slate-700">{{ __('Opsiyon') }}</label>
         </div>
     </div>
 
     <div>
-        <x-button type="submit">{{ $buttonLabel }}</x-button>
+        <x-ui.button type="submit">{{ $buttonLabel }}</x-ui.button>
     </div>
 </form>

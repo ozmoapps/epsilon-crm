@@ -33,10 +33,14 @@ class SalesOrder extends Model
         'vat_total',
         'grand_total',
         'created_by',
+        'stock_posted_at',
+        'stock_posted_warehouse_id',
+        'stock_posted_by',
     ];
 
     protected $casts = [
         'order_date' => 'date',
+        'stock_posted_at' => 'datetime',
         'delivery_days' => 'integer',
         'subtotal' => 'decimal:2',
         'discount_total' => 'decimal:2',
@@ -113,6 +117,16 @@ class SalesOrder extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function stockPostedWarehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'stock_posted_warehouse_id');
+    }
+
+    public function stockPostedBy()
+    {
+        return $this->belongsTo(User::class, 'stock_posted_by');
     }
 
     public function items()
@@ -212,5 +226,19 @@ class SalesOrder extends Model
     public function openFollowUps()
     {
         return $this->followUps()->whereNull('completed_at')->orderBy('next_at');
+    }
+    public function shipments()
+    {
+        return $this->hasMany(SalesOrderShipment::class)->orderByDesc('created_at');
+    }
+
+    public function returns()
+    {
+        return $this->hasMany(SalesOrderReturn::class)->orderByDesc('created_at');
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class)->orderByDesc('created_at');
     }
 }

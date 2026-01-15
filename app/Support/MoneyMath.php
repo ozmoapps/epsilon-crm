@@ -244,4 +244,9 @@ class MoneyMath
         // TR format: decimals=2, dec_point=',', thousands_sep='.'
         return number_format($val, 2, ',', '.');
     }
+
+    public static function formatQty($qty): string
+    {
+        return self::formatTR($qty);
+    }
 }

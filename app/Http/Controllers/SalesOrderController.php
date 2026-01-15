@@ -12,7 +12,7 @@ use App\Models\ActivityLog;
 use App\Services\ActivityLogger;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+
 
 class SalesOrderController extends Controller
 {
@@ -94,9 +94,9 @@ class SalesOrderController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\SalesOrderStoreRequest $request)
     {
-        $validated = $request->validate($this->rules(), $this->messages());
+        $validated = $request->validated();
 
         $validated['created_by'] = $request->user()->id;
 
@@ -110,7 +110,34 @@ class SalesOrderController extends Controller
     {
         $this->authorize('view', $salesOrder);
 
-        $salesOrder->load(['customer', 'vessel', 'workOrder', 'creator', 'items', 'quote', 'contract', 'openFollowUps.creator']);
+        $salesOrder->load(['customer', 'vessel', 'workOrder', 'creator', 'quote', 'contract', 'openFollowUps.creator']);
+
+        // Load items with aggregated shipment and return quantities
+        $salesOrder->load(['items' => function ($query) {
+            $query->withSum(['shipmentLines' => function ($q) {
+                $q->whereHas('shipment', function ($sq) {
+                    $sq->where('status', 'posted');
+                });
+            }], 'qty');
+            
+            // For returns, we need to sum return lines linked to shipment lines of this item
+            // This is complex via standard relationship without deeper nested hasManyThrough.
+            // Simplified approach: Load shipmentLines with their posted return lines sum.
+            $query->with(['shipmentLines' => function($q) {
+                $q->whereHas('shipment', fn($s) => $s->where('status', 'posted'))
+                  ->withSum(['returnLines' => function($rq) {
+                        $rq->whereHas('return', fn($r) => $r->where('status', 'posted'));
+                  }], 'qty');
+            }]);
+        }]);
+
+        // Transform items to attach "shipped_qty" and "returned_qty" directly for easier view access
+        foreach ($salesOrder->items as $item) {
+            $item->shipped_qty = $item->shipment_lines_sum_qty ?? 0;
+            // Sum return qty from shipment lines
+            $item->returned_qty = $item->shipmentLines->sum('return_lines_sum_qty');
+            $item->remaining_qty = max(0, $item->qty - $item->shipped_qty);
+        }
 
         $quote = $salesOrder->quote;
         $contract = $salesOrder->contract;
@@ -189,7 +216,7 @@ class SalesOrderController extends Controller
         ]);
     }
 
-    public function update(Request $request, SalesOrder $salesOrder)
+    public function update(\App\Http\Requests\SalesOrderUpdateRequest $request, SalesOrder $salesOrder)
     {
         if ($salesOrder->isLocked()) {
             return redirect()->route('sales-orders.show', $salesOrder)
@@ -200,7 +227,7 @@ class SalesOrderController extends Controller
             return $response;
         }
 
-        $validated = $request->validate($this->rules(), $this->messages());
+        $validated = $request->validated();
 
         $nextStatus = $validated['status'];
         $payload = $validated;
@@ -270,49 +297,6 @@ class SalesOrderController extends Controller
             ->with('success', 'Satış siparişi silindi.');
     }
 
-    private function rules(): array
-    {
-        $statuses = array_keys(SalesOrder::statusOptions());
-
-        return [
-            'customer_id' => ['required', 'exists:customers,id'],
-            'vessel_id' => ['required', 'exists:vessels,id'],
-            'work_order_id' => ['nullable', 'exists:work_orders,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'status' => ['required', 'string', Rule::in($statuses)],
-            'currency' => ['required', 'string', 'max:10'],
-            'order_date' => ['nullable', 'date'],
-            'delivery_place' => ['nullable', 'string', 'max:255'],
-            'delivery_days' => ['nullable', 'integer', 'min:0'],
-            'payment_terms' => ['nullable', 'string'],
-            'warranty_text' => ['nullable', 'string'],
-            'exclusions' => ['nullable', 'string'],
-            'notes' => ['nullable', 'string'],
-            'fx_note' => ['nullable', 'string'],
-        ];
-    }
-
-    private function messages(): array
-    {
-        return [
-            'customer_id.required' => 'Müşteri seçimi zorunludur.',
-            'customer_id.exists' => 'Seçilen müşteri geçersiz.',
-            'vessel_id.required' => 'Tekne seçimi zorunludur.',
-            'vessel_id.exists' => 'Seçilen tekne geçersiz.',
-            'work_order_id.exists' => 'Seçilen iş emri geçersiz.',
-            'title.required' => 'Sipariş başlığı zorunludur.',
-            'title.max' => 'Sipariş başlığı en fazla 255 karakter olabilir.',
-            'status.required' => 'Durum alanı zorunludur.',
-            'status.in' => 'Durum seçimi geçersiz.',
-            'currency.required' => 'Para birimi zorunludur.',
-            'currency.max' => 'Para birimi en fazla 10 karakter olabilir.',
-            'order_date.date' => 'Sipariş tarihi geçerli değil.',
-            'delivery_place.max' => 'Teslim yeri en fazla 255 karakter olabilir.',
-            'delivery_days.integer' => 'Teslim günü sayısal olmalıdır.',
-            'delivery_days.min' => 'Teslim günü negatif olamaz.',
-        ];
-    }
-
     private function transitionStatus(SalesOrder $salesOrder, string $from, string $to, string $message)
     {
         if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
@@ -340,5 +324,57 @@ class SalesOrderController extends Controller
         }
 
         return null;
+    }
+    public function postStock(\Illuminate\Http\Request $request, SalesOrder $salesOrder, \App\Services\StockService $stockService)
+    {
+        if ($salesOrder->stock_posted_at) {
+            return redirect()->back()->with('info', 'Stok zaten düşüldü.');
+        }
+        
+        if ($salesOrder->shipments()->exists()) {
+            return redirect()->back()->with('error', 'Bu siparişe ait sevkiyatlar (taslak veya işlenmiş) mevcut. Lütfen sevkiyat modülünü kullanın veya onları silin.');
+        }
+
+        $warehouseId = $request->input('warehouse_id');
+        if (!$warehouseId) {
+             return redirect()->back()->with('error', 'Depo seçimi zorunludur.');
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($salesOrder, $warehouseId, $request, $stockService) {
+            $salesOrder->lockForUpdate();
+
+            if ($salesOrder->stock_posted_at) {
+                return; // Double check inside lock
+            }
+
+            foreach ($salesOrder->items as $item) {
+                if ($item->product_id && $item->qty > 0) {
+                     // Check if product tracks stock ideally, but for now assuming if product_id is there, we try/check service
+                     // Actually StockService doesn't check track_stock, so we should check properties if we can or trust the user.
+                     // Better: Load product and check track_stock.
+                     $product = $item->product; 
+                     if ($product && $product->track_stock) {
+                        $stockService->createMovement(
+                            warehouseId: $warehouseId,
+                            productId: $item->product_id,
+                            qty: $item->qty,
+                            direction: 'out',
+                            type: 'sale_out',
+                            reference: $salesOrder,
+                            note: "Sipariş #{$salesOrder->order_no}",
+                            userId: $request->user()->id
+                        );
+                     }
+                }
+            }
+
+            $salesOrder->update([
+                'stock_posted_at' => now(),
+                'stock_posted_warehouse_id' => $warehouseId,
+                'stock_posted_by' => $request->user()->id,
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Stok düşüşü gerçekleştirildi.');
     }
 }

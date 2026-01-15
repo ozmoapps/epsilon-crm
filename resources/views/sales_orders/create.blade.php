@@ -4,9 +4,9 @@
             title="{{ __('Yeni Satış Siparişi') }}"
         >
             <x-slot name="actions">
-                <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
+                <x-ui.button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm satış siparişleri') }}
-                </x-button>
+                </x-ui.button>
             </x-slot>
         </x-page-header>
     </x-slot>
@@ -16,7 +16,7 @@
         @include('sales_orders._form', ['salesOrder' => $salesOrder])
 
         <div class="flex justify-end gap-3">
-            <x-button type="submit">{{ __('Kaydet') }}</x-button>
+            <x-ui.button type="submit">{{ __('Kaydet') }}</x-ui.button>
         </div>
     </form>
 </x-app-layout>

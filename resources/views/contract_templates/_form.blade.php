@@ -24,12 +24,12 @@
             <x-input-error :messages="$errors->get('format')" class="mt-2" />
         </div>
         <div class="flex flex-col gap-3">
-            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" name="is_default" value="1" class="rounded border-gray-300" @checked(old('is_default', $template->is_default))>
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="is_default" value="1" class="rounded border-slate-300" @checked(old('is_default', $template->is_default))>
                 {{ __('Varsayılan olarak ayarla') }}
             </label>
-            <label class="inline-flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" name="is_active" value="1" class="rounded border-gray-300" @checked(old('is_active', $template->is_active ?? true))>
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="is_active" value="1" class="rounded border-slate-300" @checked(old('is_active', $template->is_active ?? true))>
                 {{ __('Aktif') }}
             </label>
         </div>
@@ -39,7 +39,7 @@
         <x-input-label for="content" :value="__('Şablon İçeriği')" />
         <x-textarea id="content" name="content" rows="14" class="mt-1">{{ old('content', $template->content) }}</x-textarea>
         <x-input-error :messages="$errors->get('content')" class="mt-2" />
-        <p class="mt-2 text-xs text-gray-500">
+        <p class="mt-2 text-xs text-slate-500">
             @php
                 $helpText = __('Kullanılabilir alanlar: {{contract.contract_no}}, {{contract.issued_at}}, {{customer.name}}, {{customer.address}}, {{sales_order.no}}, {{totals.grand_total}}, {{currency}}, {{line_items_table}}');
             @endphp
@@ -54,8 +54,8 @@
     </div>
 
     @if ($previewHtml)
-        <div class="rounded-xl border border-gray-100 bg-gray-50/60 p-4">
-            <h3 class="text-sm font-semibold tracking-wide text-gray-700">{{ __('Önizleme') }}</h3>
+        <div class="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+            <h3 class="text-sm font-semibold tracking-wide text-slate-700">{{ __('Önizleme') }}</h3>
             <div class="mt-4 prose max-w-none">
                 {!! $previewHtml !!}
             </div>

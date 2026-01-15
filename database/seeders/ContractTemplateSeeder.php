@@ -12,10 +12,10 @@ class ContractTemplateSeeder extends Seeder
         ContractTemplate::query()->where('locale', 'tr')->update(['is_default' => false]);
         ContractTemplate::query()->where('locale', 'en')->update(['is_default' => false]);
 
-        $trTemplate = <<<HTML
+        $trTemplate = <<<'HTML'
 <div class="section">
     <h1>Sözleşme</h1>
-    <p class="muted">No: {{contract.contract_no}} · Tarih: {{contract.issued_at}}</p>
+    <p class="muted">No: {{ $contract->contract_no }} · Tarih: {{ $utils->formatDate($contract->issued_at) }}</p>
 </div>
 
 <div class="section">
@@ -27,18 +27,18 @@ class ContractTemplateSeeder extends Seeder
         </tr>
         <tr>
             <td>
-                <strong>{{customer.name}}</strong><br>
-                {{customer.company}}<br>
-                {{customer.address}}<br>
-                {{customer.phone}}<br>
-                {{customer.email}}
+                <strong>{{ $customer->name }}</strong><br>
+                {{ $company->name }}<br>
+                {{ $customer->address }}<br>
+                {{ $customer->phone }}<br>
+                {{ $customer->email }}
             </td>
             <td>
-                <strong>{{company.name}}</strong><br>
-                {{company.address}}<br>
-                {{company.phone}}<br>
-                {{company.email}}<br>
-                {{company.tax_no}}
+                <strong>{{ $company->name }}</strong><br>
+                {{ $company->address }}<br>
+                {{ $company->phone }}<br>
+                {{ $company->email }}<br>
+                {{ $company->tax_no }}
             </td>
         </tr>
     </table>
@@ -46,12 +46,32 @@ class ContractTemplateSeeder extends Seeder
 
 <div class="section">
     <h2>Kapsam</h2>
-    <p>Bu sözleşme kapsamında satış siparişi no: {{sales_order.no}} üzerinden belirlenen işler yapılacaktır.</p>
+    <p>Bu sözleşme kapsamında satış siparişi no: {{ $salesOrder->order_no }} üzerinden belirlenen işler yapılacaktır.</p>
 </div>
 
 <div class="section">
     <h2>Kalemler</h2>
-    {{line_items_table}}
+    <table>
+        <thead>
+            <tr>
+                <th>Açıklama</th>
+                <th>Miktar</th>
+                <th>Birim Fiyat</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($items as $item)
+            <tr>
+                <td>
+                    {{ $item->description }}<br>
+                    <span style="color:#6b7280; font-size: 10px;">{{ $item->section ?: 'Genel' }}</span>
+                </td>
+                <td>{{ $item->qty }} {{ $item->unit }}</td>
+                <td>{{ $utils->formatCurrency($item->unit_price) }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
 
 <div class="section">
@@ -63,9 +83,9 @@ class ContractTemplateSeeder extends Seeder
             <th>Genel Toplam</th>
         </tr>
         <tr class="totals">
-            <td>{{totals.subtotal}} {{currency}}</td>
-            <td>{{totals.tax_total}} {{currency}}</td>
-            <td>{{totals.grand_total}} {{currency}}</td>
+            <td>{{ $utils->formatCurrency($contract->subtotal) }}</td>
+            <td>{{ $utils->formatCurrency($contract->tax_total) }}</td>
+            <td>{{ $utils->formatCurrency($contract->grand_total) }}</td>
         </tr>
     </table>
 </div>
@@ -99,14 +119,14 @@ class ContractTemplateSeeder extends Seeder
 </div>
 
 <div class="footer">
-    <p>{{company.footer_text}}</p>
+    <p>{{ $company->footer_text }}</p>
 </div>
 HTML;
 
-        $enTemplate = <<<HTML
+        $enTemplate = <<<'HTML'
 <div class="section">
     <h1>Contract</h1>
-    <p class="muted">No: {{contract.contract_no}} · Date: {{contract.issued_at}}</p>
+    <p class="muted">No: {{ $contract->contract_no }} · Date: {{ $utils->formatDate($contract->issued_at) }}</p>
 </div>
 
 <div class="section">
@@ -118,18 +138,18 @@ HTML;
         </tr>
         <tr>
             <td>
-                <strong>{{customer.name}}</strong><br>
-                {{customer.company}}<br>
-                {{customer.address}}<br>
-                {{customer.phone}}<br>
-                {{customer.email}}
+                <strong>{{ $customer->name }}</strong><br>
+                {{ $company->name }}<br>
+                {{ $customer->address }}<br>
+                {{ $customer->phone }}<br>
+                {{ $customer->email }}
             </td>
             <td>
-                <strong>{{company.name}}</strong><br>
-                {{company.address}}<br>
-                {{company.phone}}<br>
-                {{company.email}}<br>
-                {{company.tax_no}}
+                <strong>{{ $company->name }}</strong><br>
+                {{ $company->address }}<br>
+                {{ $company->phone }}<br>
+                {{ $company->email }}<br>
+                {{ $company->tax_no }}
             </td>
         </tr>
     </table>
@@ -137,12 +157,32 @@ HTML;
 
 <div class="section">
     <h2>Scope</h2>
-    <p>Services will be delivered according to sales order no: {{sales_order.no}}.</p>
+    <p>Services will be delivered according to sales order no: {{ $salesOrder->order_no }}.</p>
 </div>
 
 <div class="section">
     <h2>Line Items</h2>
-    {{line_items_table}}
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($items as $item)
+            <tr>
+                <td>
+                    {{ $item->description }}<br>
+                    <span style="color:#6b7280; font-size: 10px;">{{ $item->section ?: 'General' }}</span>
+                </td>
+                <td>{{ $item->qty }} {{ $item->unit }}</td>
+                <td>{{ $utils->formatCurrency($item->unit_price) }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
 </div>
 
 <div class="section">
@@ -154,9 +194,9 @@ HTML;
             <th>Grand Total</th>
         </tr>
         <tr class="totals">
-            <td>{{totals.subtotal}} {{currency}}</td>
-            <td>{{totals.tax_total}} {{currency}}</td>
-            <td>{{totals.grand_total}} {{currency}}</td>
+            <td>{{ $utils->formatCurrency($contract->subtotal) }}</td>
+            <td>{{ $utils->formatCurrency($contract->tax_total) }}</td>
+            <td>{{ $utils->formatCurrency($contract->grand_total) }}</td>
         </tr>
     </table>
 </div>
@@ -190,7 +230,7 @@ HTML;
 </div>
 
 <div class="footer">
-    <p>{{company.footer_text}}</p>
+    <p>{{ $company->footer_text }}</p>
 </div>
 HTML;
 

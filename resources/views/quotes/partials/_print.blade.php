@@ -109,20 +109,7 @@
     </table>
 </div>
 
-@if ($bankAccounts->isNotEmpty())
-    <div class="section">
-        <h3>{{ __('Ödeme Bilgileri') }}</h3>
-        <ul class="payment-list">
-            @foreach ($bankAccounts as $account)
-                <li>
-                    <strong>{{ $account->bank_name }}{{ $account->branch_name ? ' · ' . $account->branch_name : '' }}</strong>
-                    <span>{{ $account->iban }}</span>
-                    <span class="muted">({{ $account->currency?->code ?? __('Para Birimi') }})</span>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+<x-doc.payment-instructions />
 
 <div class="section">
     <h3>{{ __('Şartlar') }}</h3>

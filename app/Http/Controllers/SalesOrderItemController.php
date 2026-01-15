@@ -72,6 +72,8 @@ class SalesOrderItemController extends Controller
         $types = array_keys(config('sales_orders.item_types', []));
 
         return [
+            'sales_order_id' => ['required', 'exists:sales_orders,id'],
+            'product_id' => ['nullable', 'exists:products,id'],
             'section' => ['nullable', 'string', 'max:255'],
             'item_type' => ['required', 'string', Rule::in($types)],
             'description' => ['required', 'string'],

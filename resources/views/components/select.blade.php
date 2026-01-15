@@ -1,3 +1,13 @@
-<select {{ $attributes->merge(['class' => 'block h-10 w-full rounded-xl border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 ui-focus']) }}>
+@props(['size' => 'md'])
+
+@php
+    $sizeClasses = [
+        'md' => 'h-10',
+        'sm' => 'h-9 text-sm',
+    ];
+    $sizeClass = $sizeClasses[$size] ?? $sizeClasses['md'];
+@endphp
+
+<select {{ $attributes->merge(['class' => "block {$sizeClass} ui-input"]) }}>
     {{ $slot }}
 </select>

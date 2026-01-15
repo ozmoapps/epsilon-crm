@@ -7,7 +7,7 @@
     $classBasedType = get_class($context);
 @endphp
 
-<x-card class="overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm !p-0">
+<x-ui.card class="overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-card !p-0">
     <div class="border-b border-slate-100 bg-white px-4 py-3">
         <h3 class="font-semibold text-slate-900">{{ __('Takip') }}</h3>
     </div>
@@ -20,17 +20,17 @@
             
             <div class="space-y-3">
                  <div>
-                     <input type="datetime-local" name="next_at" required class="block w-full rounded-lg border-slate-200 py-2 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500" value="{{ now()->addDay()->setTime(10,0)->format('Y-m-d\TH:i') }}">
+                     <input type="datetime-local" name="next_at" required class="block w-full rounded-xl border-slate-200 py-2 text-sm focus:border-brand-500 focus:ring-brand-500" value="{{ now()->addDay()->setTime(10,0)->format('Y-m-d\TH:i') }}">
                 </div>
                 <div>
-                    <textarea name="note" rows="2" placeholder="{{ __('Takip notu...') }}" class="block w-full rounded-lg border-slate-200 py-2 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500 min-h-24 resize-none"></textarea>
+                    <textarea name="note" rows="2" placeholder="{{ __('Takip notu...') }}" class="block w-full rounded-xl border-slate-200 py-2 text-sm focus:border-brand-500 focus:ring-brand-500 min-h-24 resize-none"></textarea>
                 </div>
             </div>
             
             <div>
-                <x-button type="submit" size="sm" variant="primary" class="w-full justify-center">
+                <x-ui.button type="submit" size="sm" variant="primary" class="w-full justify-center">
                     {{ __('Planla') }}
-                </x-button>
+                </x-ui.button>
             </div>
         </form>
 
@@ -62,4 +62,4 @@
             </div>
         @endif
     </div>
-</x-card>
+</x-ui.card>

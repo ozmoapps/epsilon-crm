@@ -10,11 +10,12 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-card sm:rounded-2xl">
+                <div class="p-6 text-slate-900">
                     
                     @if(session('success'))
                         <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                            <input id="is_shared" type="checkbox" class="rounded border-slate-300 text-brand-600 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" name="is_shared" value="1">
                             <span class="block sm:inline">{{ session('success') }}</span>
                         </div>
                     @endif
@@ -63,17 +64,13 @@
                                         </td>
                                         <td class="px-6 py-3 whitespace-nowrap text-sm text-slate-600">
                                             @if($view->is_shared)
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                    Evet
-                                                </span>
+                                                <x-ui.badge variant="info">{{ __('Evet') }}</x-ui.badge>
                                             @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                    Hayır
-                                                </span>
+                                                <x-ui.badge variant="neutral">{{ __('Hayır') }}</x-ui.badge>
                                             @endif
                                         </td>
                                         <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ $targetRoute }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Uygula</a>
+                                            <a href="{{ $targetRoute }}" class="text-brand-600 hover:text-brand-900 mr-4">Uygula</a>
                                             
                                             @if($view->user_id === auth()->id())
                                                 <form action="{{ route('saved-views.destroy', $view) }}" method="POST" class="inline-block" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
@@ -86,8 +83,18 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
-                                            Henüz kayıtlı bir görünüm yok.
+                                        <td colspan="5" class="px-6 py-4">
+                                            <x-ui.empty-state
+                                                title="{{ __('Kayıt bulunamadı') }}"
+                                                description="{{ __('Henüz kaydedilmiş bir görünümünüz bulunmuyor.') }}"
+                                            >
+                                                <x-slot:actions>
+                                                    <x-ui.button href="{{ route('saved-views.index') }}" variant="secondary" size="sm">
+                                                        <x-icon.refresh-cw class="w-4 h-4 mr-1.5" />
+                                                        {{ __('Filtreleri Sıfırla') }}
+                                                    </x-ui.button>
+                                                </x-slot:actions>
+                                            </x-ui.empty-state>
                                         </td>
                                     </tr>
                                 @endforelse

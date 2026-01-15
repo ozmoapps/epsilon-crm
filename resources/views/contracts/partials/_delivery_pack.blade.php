@@ -8,7 +8,7 @@
             <p class="text-sm text-slate-500">{{ __('Sözleşmeyi paylaşın, ekleri yönetin ve gönderim geçmişini takip edin.') }}</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-            <x-button
+            <x-ui.button
                 href="{{ route('contracts.pdf', $contract) }}"
                 variant="secondary"
                 size="sm"
@@ -17,8 +17,8 @@
             >
                 <span x-show="!downloadingPdf">{{ __('PDF İndir') }}</span>
                 <span x-cloak x-show="downloadingPdf">{{ __('Hazırlanıyor...') }}</span>
-            </x-button>
-            <x-button
+            </x-ui.button>
+            <x-ui.button
                 href="{{ route('contracts.delivery_pack', $contract) }}"
                 variant="secondary"
                 size="sm"
@@ -27,12 +27,12 @@
             >
                 <span x-show="!downloadingZip">{{ __('ZIP İndir') }}</span>
                 <span x-cloak x-show="downloadingZip">{{ __('Hazırlanıyor...') }}</span>
-            </x-button>
+            </x-ui.button>
         </div>
     </div>
 
     <div class="md:hidden">
-        <div class="flex items-center gap-2 rounded-lg bg-slate-50 p-2 text-sm" role="tablist">
+        <div class="flex items-center gap-2 rounded-xl bg-slate-50 p-2 text-sm" role="tablist">
             <button
                 type="button"
                 role="tab"
@@ -71,7 +71,7 @@
 
     <div class="grid gap-4 md:grid-cols-2">
         <div class="space-y-4" x-show="tab === 'message' || isDesktop" x-cloak>
-            <x-card>
+            <x-ui.card>
                 <x-slot name="header">
                     <div class="flex items-start justify-between gap-4">
                         <div>
@@ -128,22 +128,22 @@
                     <div class="space-y-3">
                         <x-input-label :value="__('Gönderim Kanalı')" />
                         <div class="grid gap-2 sm:grid-cols-3">
-                            <label class="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm text-slate-700" :class="channel === 'email' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : ''">
-                                <input class="mt-1 rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500" type="radio" name="channel" value="email" x-model="channel">
+                            <label class="flex items-start gap-2 rounded-xl border border-slate-200 p-3 text-sm text-slate-700" :class="channel === 'email' ? 'border-brand-500 bg-brand-50 text-brand-700' : ''">
+                                <input class="mt-1 rounded border-slate-300 text-brand-600 focus:ring-brand-500" type="radio" name="channel" value="email" x-model="channel">
                                 <span class="space-y-1">
                                     <span class="block font-semibold">{{ __('E-posta') }}</span>
                                     <span class="block text-xs text-slate-500">{{ __('Kopyala & gönder.') }}</span>
                                 </span>
                             </label>
-                            <label class="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm text-slate-700" :class="channel === 'whatsapp' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : ''">
-                                <input class="mt-1 rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500" type="radio" name="channel" value="whatsapp" x-model="channel">
+                            <label class="flex items-start gap-2 rounded-xl border border-slate-200 p-3 text-sm text-slate-700" :class="channel === 'whatsapp' ? 'border-brand-500 bg-brand-50 text-brand-700' : ''">
+                                <input class="mt-1 rounded border-slate-300 text-brand-600 focus:ring-brand-500" type="radio" name="channel" value="whatsapp" x-model="channel">
                                 <span class="space-y-1">
                                     <span class="block font-semibold">{{ __('WhatsApp') }}</span>
                                     <span class="block text-xs text-slate-500">{{ __('Hızlı paylaşım.') }}</span>
                                 </span>
                             </label>
-                            <label class="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm text-slate-700" :class="channel === 'manual' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : ''">
-                                <input class="mt-1 rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500" type="radio" name="channel" value="manual" x-model="channel">
+                            <label class="flex items-start gap-2 rounded-xl border border-slate-200 p-3 text-sm text-slate-700" :class="channel === 'manual' ? 'border-brand-500 bg-brand-50 text-brand-700' : ''">
+                                <input class="mt-1 rounded border-slate-300 text-brand-600 focus:ring-brand-500" type="radio" name="channel" value="manual" x-model="channel">
                                 <span class="space-y-1">
                                     <span class="block font-semibold">{{ __('Manuel') }}</span>
                                     <span class="block text-xs text-slate-500">{{ __('Kaydı elle gir.') }}</span>
@@ -170,11 +170,11 @@
 
                     <div class="flex flex-wrap gap-4 text-sm text-slate-700">
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="included_pdf" value="1" x-model="includedPdf" class="rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                            <input type="checkbox" name="included_pdf" value="1" x-model="includedPdf" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
                             {{ __('PDF dahil') }}
                         </label>
                         <label class="flex items-center gap-2">
-                            <input type="checkbox" name="included_attachments" value="1" x-model="includedAttachments" class="rounded border-slate-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                            <input type="checkbox" name="included_attachments" value="1" x-model="includedAttachments" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
                             {{ __('Ekler dahil') }}
                         </label>
                     </div>
@@ -185,7 +185,7 @@
                                 <x-input-label :value="__('Mesaj Şablonu')" />
                                 <p class="text-xs text-slate-500">{{ __('Kısa veya detaylı metni seçin.') }}</p>
                             </div>
-                            <div class="flex items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs">
+                            <div class="flex items-center gap-2 rounded-xl bg-slate-50 p-2 text-xs">
                                 <button type="button" class="rounded-md px-3 py-1 font-semibold" :class="templateLength === 'short' ? 'bg-white text-slate-900 shadow' : 'text-slate-500'" @click="templateLength = 'short'; updateMessage()">
                                     {{ __('Kısa') }}
                                 </button>
@@ -208,15 +208,15 @@
                                 <span>{{ __('Metni düzenleyebilir veya kopyalayabilirsiniz.') }}</span>
                                 <div class="flex items-center gap-2">
                                     <span x-cloak x-show="copied" class="rounded-full bg-emerald-50 px-2 py-1 font-medium text-emerald-700">{{ __('Kopyalandı') }}</span>
-                                    <x-button type="button" size="sm" variant="secondary" @click="copyMessage()">
+                                    <x-ui.button type="button" size="sm" variant="secondary" @click="copyMessage()">
                                         {{ __('Kopyala') }}
-                                    </x-button>
+                                    </x-ui.button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm">
+                    <div class="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm">
                         <p class="text-xs font-semibold tracking-wide text-slate-500">{{ __('Gönderim Kaydı Önizleme') }}</p>
                         <div class="mt-3 grid gap-3 sm:grid-cols-2">
                             <div>
@@ -239,13 +239,13 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-end gap-3">
-                        <x-button type="submit" x-bind:disabled="loading">
+                        <x-ui.button type="submit" x-bind:disabled="loading">
                             <span x-show="!loading">{{ __('Paketi Hazırla') }}</span>
                             <span x-cloak x-show="loading">{{ __('Hazırlanıyor...') }}</span>
-                        </x-button>
+                        </x-ui.button>
                     </div>
                 </form>
-            </x-card>
+            </x-ui.card>
         </div>
 
         <div class="space-y-4" x-show="tab !== 'message' || isDesktop" x-cloak>

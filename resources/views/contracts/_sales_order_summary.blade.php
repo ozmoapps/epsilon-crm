@@ -4,7 +4,7 @@
     $formatMoney = fn ($value) => number_format((float) $value, 2, ',', '.');
 @endphp
 
-<x-card>
+<x-ui.card>
     <x-slot name="header">{{ __('Satış Siparişi Özeti') }}</x-slot>
     <div class="grid gap-4 text-sm sm:grid-cols-2">
         <div>
@@ -36,13 +36,13 @@
             <p class="text-base font-medium text-slate-900">{{ $formatMoney($salesOrder->grand_total) }} {{ $currencySymbol }}</p>
         </div>
     </div>
-</x-card>
+</x-ui.card>
 
-<x-card>
+<x-ui.card>
     <x-slot name="header">{{ __('Kalem Özeti') }}</x-slot>
     <div class="space-y-4">
         @forelse ($salesOrder->items as $item)
-            <div class="flex flex-col gap-2 rounded-lg border border-slate-100 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-col gap-2 rounded-xl border border-slate-100 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p class="font-medium text-slate-900">{{ $item->description }}</p>
                     <p class="text-xs text-slate-500">{{ $item->section ?: __('Genel') }}</p>
@@ -55,4 +55,4 @@
             <p class="text-sm text-slate-500">{{ __('Kalem bulunamadı.') }}</p>
         @endforelse
     </div>
-</x-card>
+</x-ui.card>

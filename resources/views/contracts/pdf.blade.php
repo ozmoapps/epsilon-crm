@@ -28,6 +28,8 @@
     <p class="muted">{{ $revisionLabel }}: {{ $contract->revision_label }}</p>
     {!! $contract->rendered_body !!}
 
+    <x-doc.payment-instructions />
+
     <div class="footer">
         {{ $contractLabel }}: {{ $contract->contract_no }}
         · {{ $revisionLabel }}: {{ $contract->revision_label }}

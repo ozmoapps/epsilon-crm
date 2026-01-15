@@ -32,7 +32,7 @@ class CompanyProfileController extends Controller
 
         if ($existing) {
             return redirect()
-                ->route('company-profiles.edit', $existing)
+                ->route('admin.company-profiles.edit', $existing)
                 ->with('info', 'Şirket profili zaten mevcut.');
         }
 
@@ -49,7 +49,7 @@ class CompanyProfileController extends Controller
 
         if ($existing) {
             return redirect()
-                ->route('company-profiles.edit', $existing)
+                ->route('admin.company-profiles.edit', $existing)
                 ->with('info', 'Şirket profili zaten mevcut.');
         }
 
@@ -59,7 +59,7 @@ class CompanyProfileController extends Controller
 
         $companyProfile = CompanyProfile::create($validated);
 
-        return redirect()->route('company-profiles.show', $companyProfile)
+        return redirect()->route('admin.company-profiles.show', $companyProfile)
             ->with('success', 'Şirket profili oluşturuldu.');
     }
 
@@ -85,7 +85,7 @@ class CompanyProfileController extends Controller
 
         $companyProfile->update($validated);
 
-        return redirect()->route('company-profiles.show', $companyProfile)
+        return redirect()->route('admin.company-profiles.show', $companyProfile)
             ->with('success', 'Şirket profili güncellendi.');
     }
 
@@ -95,7 +95,7 @@ class CompanyProfileController extends Controller
 
         $companyProfile->delete();
 
-        return redirect()->route('company-profiles.index')
+        return redirect()->route('admin.company-profiles.index')
             ->with('success', 'Şirket profili silindi.');
     }
 

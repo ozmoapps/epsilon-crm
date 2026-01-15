@@ -8,20 +8,30 @@
 
 @php
     $isDisabled = $disabled || $loading;
-    $baseClasses = 'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition ui-focus disabled:pointer-events-none disabled:opacity-60';
+    $baseClasses = 'inline-flex items-center justify-center gap-2 rounded-full font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed';
 
     $variantClasses = [
-        'primary' => 'bg-brand-600 text-white shadow-soft hover:bg-brand-500',
-        'secondary' => 'bg-white text-slate-700 ring-1 ring-inset ring-slate-200 hover:bg-slate-50',
-        'ghost' => 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-        'danger' => 'bg-rose-600 text-white shadow-soft hover:bg-rose-500',
+        'primary' => 'bg-slate-900 text-white shadow-sm hover:bg-slate-800 focus:ring-slate-500',
+        'secondary' => 'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 shadow-sm hover:bg-slate-50 focus:ring-slate-300',
+        'danger' => 'bg-rose-600 text-white shadow-sm hover:bg-rose-700 focus:ring-rose-500',
+        'ghost' => 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-300',
+        'link' => 'bg-transparent text-slate-900 hover:underline shadow-none p-0 h-auto focus:ring-slate-500',
     ];
 
     $sizeClasses = [
-        'sm' => 'h-9 px-3 text-xs',
+        'sm' => 'h-8 px-3 text-xs', // Adjusted for rounded-full look
         'md' => 'h-10 px-4 text-sm',
-        'lg' => 'h-11 px-5 text-sm',
+        'lg' => 'h-12 px-6 text-base',
     ];
+
+    // Override size for link variant
+    if ($variant === 'link') {
+        $sizeClasses = [
+            'sm' => 'text-xs',
+            'md' => 'text-sm',
+            'lg' => 'text-base',
+        ];
+    }
 
     $classes = $baseClasses . ' ' . ($variantClasses[$variant] ?? $variantClasses['primary']) . ' ' . ($sizeClasses[$size] ?? $sizeClasses['md']);
 @endphp

@@ -1,15 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-partials.page-header
+        <x-ui.page-header
             title="{{ __('Satış Siparişleri') }}"
             subtitle="{{ __('Tüm satış siparişlerini görüntüleyin.') }}"
         >
             <x-slot name="actions">
-                <x-button href="{{ route('sales-orders.create') }}">
+                <x-ui.button href="{{ route('sales-orders.create') }}">
                     {{ __('Yeni Satış Siparişi') }}
-                </x-button>
+                </x-ui.button>
             </x-slot>
-        </x-partials.page-header>
+        </x-ui.page-header>
     </x-slot>
 
     <div class="space-y-6">
@@ -17,42 +17,43 @@
             <x-slot name="actions">
                 <x-ui.dropdown align="right" width="w-64">
                     <x-slot name="trigger">
-                        <button class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition duration-150 ease-in-out">
-                            <span>{{ __('Görünüm') }}</span>
-                            <x-icon.chevron-down class="ml-1 h-4 w-4" />
-                        </button>
+                        <x-ui.button variant="secondary" class="shadow-soft px-2">
+                            <x-icon.bookmark class="h-4 w-4 text-slate-500" />
+                        </x-ui.button>
                     </x-slot>
                     <x-slot name="content">
-                        <div class="px-4 py-2 text-xs text-gray-400 font-bold text-center">
+                        <div class="px-4 py-2 text-xs text-slate-400 font-bold text-center">
                             {{ __('Kayıtlı Görünümler') }}
                         </div>
                         @forelse($savedViews as $view)
-                            <a href="{{ route('sales-orders.index', $view->query) }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out flex justify-between items-center">
+                            <a href="{{ route('sales-orders.index', $view->query) }}" class="block px-4 py-2 text-sm leading-5 text-slate-700 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 transition duration-150 ease-in-out flex justify-between items-center">
                                 <span>{{ $view->name }}</span>
                                 @if($view->is_shared)
-                                    <span class="px-1.5 py-0.5 text-[10px] rounded bg-blue-100 text-blue-800">{{ __('Ortak') }}</span>
+                                    <x-ui.badge variant="info">{{ __('Ortak') }}</x-ui.badge>
                                 @endif
                             </a>
                         @empty
-                            <div class="px-4 py-2 text-sm text-gray-500 text-center italic">
+                            <div class="px-4 py-2 text-sm text-slate-500 text-center italic">
                                 {{ __('Görünüm yok') }}
                             </div>
                         @endforelse
-                        <div class="border-t border-gray-100"></div>
-                        <a href="{{ route('saved-views.index', ['scope' => 'sales_orders']) }}" class="block px-4 py-2 text-sm leading-5 text-indigo-600 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out text-center font-medium">
+                        <div class="border-t border-slate-100"></div>
+                        <a href="{{ route('saved-views.index', ['scope' => 'sales_orders']) }}" class="block px-4 py-2 text-sm leading-5 text-brand-600 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 transition duration-150 ease-in-out text-center font-medium">
                             {{ __('Görünümleri Yönet') }}
                         </a>
                     </x-slot>
                 </x-ui.dropdown>
 
-                <button 
+                <x-ui.button 
                     type="button" 
+                    variant="ghost"
                     x-data=""
                     x-on:click.prevent="$dispatch('open-modal', 'save-view-modal')"
-                    class="text-sm text-indigo-600 hover:text-indigo-900 font-medium ml-2"
+                    class="text-slate-400 hover:text-brand-600 transition-colors ml-2 px-2"
+                    title="{{ __('Görünümü Kaydet') }}"
                 >
-                    {{ __('Görünümü Kaydet') }}
-                </button>
+                    <x-icon.save class="h-4 w-4" />
+                </x-ui.button>
             </x-slot>
 
             <x-slot name="filters">
@@ -125,8 +126,8 @@
 
                     {{-- Actions --}}
                     <div class="col-span-1 md:col-span-2 lg:col-span-4 flex items-center justify-end space-x-2 mt-2">
-                        <x-button type="submit" class="w-full sm:w-auto justify-center">{{ __('Filtrele') }}</x-button>
-                        <x-button href="{{ route('sales-orders.index') }}" variant="secondary" class="w-full sm:w-auto justify-center">{{ __('Temizle') }}</x-button>
+                        <x-ui.button type="submit" class="w-full sm:w-auto justify-center">{{ __('Filtrele') }}</x-ui.button>
+                        <x-ui.button href="{{ route('sales-orders.index') }}" variant="secondary" class="w-full sm:w-auto justify-center">{{ __('Temizle') }}</x-ui.button>
                     </div>
                 </form>
             </x-slot>
@@ -134,12 +135,12 @@
 
         {{-- Save View Modal --}}
         <x-modal name="save-view-modal" :show="false" focusable>
-            <form method="POST" action="{{ route('saved-views.store') }}" class="p-6">
+            <form method="POST" action="{{ route('saved-views.store') }}">
                 @csrf
-                <h2 class="text-lg font-medium text-gray-900">
+                <h2 class="text-lg font-medium text-slate-900">
                     {{ __('Görünümü Kaydet') }}
                 </h2>
-                <p class="mt-1 text-sm text-gray-600">
+                <p class="mt-1 text-sm text-slate-600">
                     {{ __('Mevcut filtrelerinizi daha sonra hızlıca kullanmak için kaydedin.') }}
                 </p>
 
@@ -153,23 +154,23 @@
 
                 <div class="mt-4 block">
                     <label for="is_shared" class="inline-flex items-center">
-                        <input id="is_shared" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" name="is_shared" value="1">
-                        <span class="ml-2 text-sm text-gray-600">{{ __('Ekip ile paylaş') }}</span>
+                        <input id="is_shared" type="checkbox" class="rounded border-slate-300 text-brand-600 focus:border-brand-300 focus:ring focus:ring-brand-200 focus:ring-opacity-50" name="is_shared" value="1">
+                        <span class="ml-2 text-sm text-slate-600">{{ __('Ekip ile paylaş') }}</span>
                     </label>
                 </div>
 
                 <div class="mt-6 flex justify-end">
-                    <x-button type="button" variant="secondary" x-on:click="$dispatch('close-modal', 'save-view-modal')">
+                    <x-ui.button type="button" variant="secondary" x-on:click="$dispatch('close-modal', 'save-view-modal')">
                         {{ __('İptal') }}
-                    </x-button>
-                    <x-button class="ml-3">
+                    </x-ui.button>
+                    <x-ui.button class="ml-3">
                         {{ __('Kaydet') }}
-                    </x-button>
+                    </x-ui.button>
                 </div>
             </form>
         </x-modal>
 
-        <x-card class="!p-0 overflow-hidden">
+        <x-ui.card class="!p-0 overflow-hidden">
             @php
                 $statusVariants = [
                     'draft' => 'draft',
@@ -234,25 +235,17 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center justify-center space-y-3">
-                                    <div class="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center">
-                                        <x-icon.inbox class="h-6 w-6 text-indigo-600" />
-                                    </div>
-                                    <div class="text-center">
-                                        <p class="text-sm font-medium text-gray-900">{{ __('Henüz satış siparişi oluşturulmadı.') }}</p>
-                                        <p class="mt-1 text-sm text-gray-500">{{ __('Yeni sipariş ekleyerek başlayabilirsiniz.') }}</p>
-                                        <div class="mt-4">
-                                            <x-button href="{{ route('sales-orders.create') }}" size="sm">{{ __('Yeni Sipariş Oluştur') }}</x-button>
-                                        </div>
-                                    </div>
-                                </div>
+                            <td colspan="7" class="px-6">
+                                <x-ui.empty-state
+                                    title="{{ __('Kayıt bulunamadı') }}"
+                                    description="{{ __('Filtreleri temizleyip tekrar deneyin.') }}"
+                                />
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </x-ui.table>
-        </x-card>
+        </x-ui.card>
 
         <div class="mt-4">
             {{ $salesOrders->links() }}

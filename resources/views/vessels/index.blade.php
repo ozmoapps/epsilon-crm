@@ -2,24 +2,24 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Tekneler') }}" subtitle="{{ __('Tekne kayıtlarını yönetin.') }}">
             <x-slot name="actions">
-                <x-button href="{{ route('vessels.create') }}">{{ __('Yeni Tekne') }}</x-button>
+                <x-ui.button href="{{ route('vessels.create') }}">{{ __('Yeni Tekne') }}</x-ui.button>
             </x-slot>
         </x-page-header>
     </x-slot>
 
     <div class="space-y-6">
-        <x-card>
+        <x-ui.card>
             <x-slot name="header">{{ __('Filtreler') }}</x-slot>
             <form method="GET" action="{{ route('vessels.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div class="flex-1">
                     <x-input name="search" type="text" placeholder="İsme göre ara" :value="$search" />
                 </div>
-                <x-button type="submit">{{ __('Ara') }}</x-button>
-                <x-button href="{{ route('vessels.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
+                <x-ui.button type="submit">{{ __('Ara') }}</x-ui.button>
+                <x-ui.button href="{{ route('vessels.index') }}" variant="secondary">{{ __('Temizle') }}</x-ui.button>
             </form>
-        </x-card>
+        </x-ui.card>
 
-        <x-card>
+        <x-ui.card>
             <x-slot name="header">{{ __('Liste') }}</x-slot>
             <x-ui.table>
                 <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
@@ -35,7 +35,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($vessels as $vessel)
-                        <tr class="odd:bg-white even:bg-slate-50 hover:bg-slate-100/60">
+                        <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="px-4 py-3 text-sm font-semibold text-slate-900 max-w-0 truncate">{{ $vessel->name }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600 max-w-0 truncate">{{ $vessel->customer?->name ?? 'Müşteri yok' }}</td>
                             <td class="px-4 py-3 text-sm text-slate-600">{{ $vessel->boat_type_label ?: '—' }}</td>
@@ -57,14 +57,20 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-6 text-center text-sm text-slate-500">
-                                {{ __('Kayıt bulunamadı.') }}
+                            <td colspan="7" class="px-4 py-6">
+                                <x-ui.empty-state
+                                    icon="inbox"
+                                    title="{{ __('Kayıt bulunamadı.') }}"
+                                    description="{{ __('Yeni bir tekne ekleyerek başlayabilirsiniz.') }}"
+                                    action="{{ route('vessels.create') }}"
+                                    action-label="{{ __('Yeni Tekne') }}"
+                                />
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </x-ui.table>
-        </x-card>
+        </x-ui.card>
 
         <div>
             {{ $vessels->links() }}
