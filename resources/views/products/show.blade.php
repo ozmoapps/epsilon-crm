@@ -107,8 +107,10 @@
                         </div>
 
                         @if($product->critical_stock_level)
-                             <div class="text-xs text-center text-rose-600 font-medium bg-rose-50 rounded py-1 mt-2">
-                                 {{ __('Kritik Seviye: ') }} {{ $product->critical_stock_level }}
+                             <div class="mt-2 text-center">
+                                 <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-medium">
+                                     {{ __('Kritik Seviye: ') }} {{ $product->critical_stock_level }}
+                                 </x-ui.badge>
                              </div>
                         @endif
                      </div>

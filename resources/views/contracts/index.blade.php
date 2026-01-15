@@ -59,7 +59,7 @@
                             <a href="{{ route('contracts.index', $view->query) }}" class="block px-4 py-2 text-sm leading-5 text-slate-700 hover:bg-slate-100 focus:outline-none focus:bg-slate-100 transition duration-150 ease-in-out flex justify-between items-center">
                                 <span>{{ $view->name }}</span>
                                 @if($view->is_shared)
-                                    <span class="px-1.5 py-0.5 text-[10px] rounded bg-blue-100 text-blue-800">{{ __('Ortak') }}</span>
+                                    <x-ui.badge variant="info" class="!px-1.5 !py-0.5 text-[10px]">{{ __('Ortak') }}</x-ui.badge>
                                 @endif
                             </a>
                         @empty

@@ -33,7 +33,7 @@
                     <p class="text-base font-medium text-slate-900">
                         {{ $template->is_active ? __('Aktif') : __('Pasif') }}
                         @if ($template->is_default)
-                            <span class="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{{ __('Varsayılan') }}</span>
+                            <x-ui.badge variant="success" class="ml-2 !px-2 !py-0.5 text-xs">{{ __('Varsayılan') }}</x-ui.badge>
                         @endif
                     </p>
                 </div>

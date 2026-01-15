@@ -19,9 +19,9 @@
                     <div class="flex items-center justify-between">
                         <span>{{ __('Transfer Detayları') }}</span>
                         @if($stockTransfer->status === 'draft')
-                            <x-badge variant="warning">{{ __('Taslak') }}</x-badge>
+                            <x-ui.badge variant="neutral">{{ __('Taslak') }}</x-ui.badge>
                         @else
-                            <x-badge variant="success">{{ __('İşlendi') }}</x-badge>
+                            <x-ui.badge variant="success">{{ __('İşlendi') }}</x-ui.badge>
                         @endif
                     </div>
                 </x-slot>

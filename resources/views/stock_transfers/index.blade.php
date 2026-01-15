@@ -41,9 +41,9 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if($transfer->status === 'draft')
-                                    <x-badge variant="warning">{{ __('Taslak') }}</x-badge>
+                                    <x-ui.badge variant="neutral">{{ __('Taslak') }}</x-ui.badge>
                                 @else
-                                    <x-badge variant="success">{{ __('İşlendi') }}</x-badge>
+                                    <x-ui.badge variant="success">{{ __('İşlendi') }}</x-ui.badge>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right text-sm text-slate-600">

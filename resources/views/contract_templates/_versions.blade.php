@@ -15,7 +15,7 @@
                     <td class="px-4 py-3 font-semibold text-slate-900">
                         v{{ $version->version }}
                         @if ($template->current_version_id === $version->id)
-                            <span class="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">{{ __('Aktif') }}</span>
+                            <x-ui.badge variant="success" class="ml-2 !px-2 !py-0.5 text-xs">{{ __('Aktif') }}</x-ui.badge>
                         @endif
                     </td>
                     <td class="px-4 py-3 text-slate-700">{{ $version->change_note ?: '-' }}</td>

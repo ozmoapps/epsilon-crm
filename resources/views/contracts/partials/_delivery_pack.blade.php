@@ -207,7 +207,7 @@
                             <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
                                 <span>{{ __('Metni düzenleyebilir veya kopyalayabilirsiniz.') }}</span>
                                 <div class="flex items-center gap-2">
-                                    <span x-cloak x-show="copied" class="rounded-full bg-emerald-50 px-2 py-1 font-medium text-emerald-700">{{ __('Kopyalandı') }}</span>
+                                    <x-ui.badge x-cloak x-show="copied" variant="success" class="!px-2 !py-1 font-medium">{{ __('Kopyalandı') }}</x-ui.badge>
                                     <x-ui.button type="button" size="sm" variant="secondary" @click="copyMessage()">
                                         {{ __('Kopyala') }}
                                     </x-ui.button>

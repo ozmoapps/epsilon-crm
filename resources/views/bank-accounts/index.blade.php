@@ -50,9 +50,9 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $account->type === 'cash' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800' }}">
+                                        <x-ui.badge variant="info">
                                             {{ $account->type === 'cash' ? 'Kasa' : 'Banka' }}
-                                        </span>
+                                        </x-ui.badge>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                         @if($account->type === 'bank')
@@ -66,9 +66,9 @@
                                         {{ number_format($account->balance, 2) }} {{ $account->currency->code ?? '' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        <span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 {{ $account->is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-800' }}">
+                                        <x-ui.badge :variant="$account->is_active ? 'success' : 'neutral'">
                                             {{ $account->is_active ? 'Aktif' : 'Pasif' }}
-                                        </span>
+                                        </x-ui.badge>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex justify-end space-x-2">

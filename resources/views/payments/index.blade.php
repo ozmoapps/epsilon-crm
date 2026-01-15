@@ -128,13 +128,13 @@
                                     @endphp
                                     
                                     @if($unallocated > 0.001)
-                                        <span class="inline-flex items-center rounded-xl bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                                        <x-ui.badge variant="info" class="!px-2 !py-0.5 text-xs font-medium">
                                             {{ __('Kalan') }}: {{ number_format($unallocated, 2) }} {{ $curr }}
-                                        </span>
+                                        </x-ui.badge>
                                     @else
-                                         <span class="inline-flex items-center rounded-xl bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                                         <x-ui.badge variant="neutral" class="!px-2 !py-0.5 text-xs font-medium">
                                             {{ __('Tamamı Dağıtıldı') }}
-                                        </span>
+                                        </x-ui.badge>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm font-medium">
