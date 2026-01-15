@@ -15,9 +15,7 @@
 >
     <div class="bg-slate-900/90 backdrop-blur-md text-white rounded-full shadow-2xl px-6 py-3 flex items-center justify-between border border-slate-700/50">
         <div class="flex items-center space-x-4">
-            <x-ui.badge variant="info" class="!px-2 !py-0.5 text-xs font-bold min-w-[1.5rem] justify-center">
-                {{ $count }}
-            </x-ui.badge>
+            <x-ui.badge variant="info" class="!px-2 !py-0.5 text-xs font-bold min-w-[1.5rem] justify-center">{{ $count }}</x-ui.badge>
             <span class="text-sm font-medium text-slate-200">
                 {{ __('seçildi') }}
             </span>
