@@ -116,12 +116,12 @@
                     <span>{{ __('Cari Hesap Özeti') }}</span>
                     <div class="flex gap-2">
                         @foreach($balances as $currency => $balance)
-                            <span class="inline-flex items-center rounded-xl px-2 py-1 text-xs font-medium ring-1 ring-inset {{ $balance >= 0 ? 'bg-red-50 text-red-700 ring-red-600/10' : 'bg-green-50 text-green-700 ring-green-600/10' }}">
+                            <x-ui.badge :variant="$balance >= 0 ? 'danger' : 'success'" class="!px-2 !py-1 text-xs font-medium">
                                 {{ $currency }}: {{ number_format(abs($balance), 2) }} {{ $balance >= 0 ? '(Borç)' : '(Alacak)' }}
-                            </span>
+                            </x-ui.badge>
                         @endforeach
                         @if($balances->isEmpty())
-                             <span class="inline-flex items-center rounded-xl bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10">{{ __('Bakiye Yok') }}</span>
+                             <x-ui.badge variant="neutral" class="!px-2 !py-1 text-xs font-medium">{{ __('Bakiye Yok') }}</x-ui.badge>
                         @endif
                     </div>
                 </div>
@@ -202,9 +202,9 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($entry->type === 'invoice')
-                                        <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/10">{{ __('Fatura') }}</span>
+                                        <x-ui.badge variant="danger">{{ __('Fatura') }}</x-ui.badge>
                                     @elseif($entry->type === 'payment')
-                                        <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/10">{{ __('Tahsilat') }}</span>
+                                        <x-ui.badge variant="success">{{ __('Tahsilat') }}</x-ui.badge>
                                     @else
                                         {{ $entry->type }}
                                     @endif

@@ -216,7 +216,7 @@
              <x-ui.card class="rounded-2xl border border-slate-200 bg-white shadow-card !p-0 overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 bg-white flex items-center justify-between">
                     <h3 class="font-semibold text-slate-900">{{ __('Satış Siparişi Kalemleri') }}</h3>
-                    <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">{{ count($contract->salesOrder->items) }} {{ __('kalem') }}</span>
+                    <x-ui.badge variant="neutral" class="!px-2 !py-1 text-xs font-medium text-slate-600">{{ count($contract->salesOrder->items) }} {{ __('kalem') }}</x-ui.badge>
                 </div>
                 <div class="p-5 space-y-4">
                     @forelse ($contract->salesOrder->items as $item)
@@ -224,7 +224,7 @@
                             <div>
                                 <div class="flex items-center gap-2">
                                      @if ($item->is_optional)
-                                        <span class="rounded bg-yellow-100 px-1.5 py-0.5 text-[10px] font-medium text-yellow-800">{{ __('Opsiyon') }}</span>
+                                        <x-ui.badge variant="neutral" class="!px-1.5 !py-0.5 text-[10px] font-medium">{{ __('Opsiyon') }}</x-ui.badge>
                                     @endif
                                     <p class="font-medium text-slate-900">{{ $item->description }}</p>
                                 </div>

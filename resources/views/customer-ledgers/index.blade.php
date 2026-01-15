@@ -216,9 +216,10 @@
                             ? request()->fullUrlWithQuery(['quick' => null, 'page' => null])
                             : request()->fullUrlWithQuery(['quick' => 'open_invoice', 'page' => null]);
                     @endphp
-                    <a href="{{ $urlInv }}"
-                       class="px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-200 {{ $isQuickInv ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                        {{ __('Açık Fatura') }}
+                    <a href="{{ $urlInv }}" class="transition-colors duration-200">
+                        <x-ui.badge :variant="$isQuickInv ? 'danger' : 'neutral'" class="!px-3 !py-1 text-xs font-semibold {{ $isQuickInv ? '' : 'hover:bg-slate-100' }}">
+                            {{ __('Açık Fatura') }}
+                        </x-ui.badge>
                     </a>
 
                     {{-- Open Advance --}}
@@ -228,9 +229,10 @@
                             ? request()->fullUrlWithQuery(['quick' => null, 'page' => null])
                             : request()->fullUrlWithQuery(['quick' => 'open_advance', 'page' => null]);
                     @endphp
-                    <a href="{{ $urlAdv }}"
-                       class="px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-200 {{ $isQuickAdv ? 'bg-brand-100 text-brand-800 border border-brand-200' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                        {{ __('Avans') }}
+                    <a href="{{ $urlAdv }}" class="transition-colors duration-200">
+                        <x-ui.badge :variant="$isQuickAdv ? 'info' : 'neutral'" class="!px-3 !py-1 text-xs font-semibold {{ $isQuickAdv ? '' : 'hover:bg-slate-100' }}">
+                            {{ __('Avans') }}
+                        </x-ui.badge>
                     </a>
 
                     {{-- Debtor --}}
@@ -240,9 +242,10 @@
                             ? request()->fullUrlWithQuery(['quick' => null, 'page' => null])
                             : request()->fullUrlWithQuery(['quick' => 'debtor', 'page' => null]);
                     @endphp
-                    <a href="{{ $urlDebt }}"
-                       class="px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-200 {{ $isQuickDebt ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                        {{ __('Borçlu') }}
+                    <a href="{{ $urlDebt }}" class="transition-colors duration-200">
+                        <x-ui.badge :variant="$isQuickDebt ? 'danger' : 'neutral'" class="!px-3 !py-1 text-xs font-semibold {{ $isQuickDebt ? '' : 'hover:bg-slate-100' }}">
+                            {{ __('Borçlu') }}
+                        </x-ui.badge>
                     </a>
 
                     {{-- Overdue (Sprint 3.11) --}}
@@ -252,9 +255,10 @@
                             ? request()->fullUrlWithQuery(['quick' => null, 'page' => null])
                             : request()->fullUrlWithQuery(['quick' => 'overdue', 'page' => null]);
                     @endphp
-                    <a href="{{ $urlOverdue }}"
-                       class="px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-200 {{ $isQuickOverdue ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100' }}">
-                        {{ __('Vadesi Geçmiş') }}
+                    <a href="{{ $urlOverdue }}" class="transition-colors duration-200">
+                        <x-ui.badge :variant="$isQuickOverdue ? 'danger' : 'neutral'" class="!px-3 !py-1 text-xs font-semibold {{ $isQuickOverdue ? '' : 'hover:bg-slate-100' }}">
+                            {{ __('Vadesi Geçmiş') }}
+                        </x-ui.badge>
                     </a>
                 </div>
             </div>
@@ -422,12 +426,16 @@
                                                         @endphp
 
                                                         @if($isDebt)
-                                                            <a href="{{ route('customers.ledger', ['customer' => $customer->id, 'currency' => $bal->currency]) }}" class="inline-flex items-center px-2 py-1 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition" title="{{ __('Müşteri size borçlu') }}">
-                                                                {{ number_format(abs($val), 2, ',', '.') }} {{ $bal->currency }} · {{ __('Borçlu') }}
+                                                            <a href="{{ route('customers.ledger', ['customer' => $customer->id, 'currency' => $bal->currency]) }}" class="transition" title="{{ __('Müşteri size borçlu') }}">
+                                                                <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-semibold hover:bg-rose-100">
+                                                                    {{ number_format(abs($val), 2, ',', '.') }} {{ $bal->currency }} · {{ __('Borçlu') }}
+                                                                </x-ui.badge>
                                                             </a>
                                                         @elseif($isCredit)
-                                                            <a href="{{ route('customers.ledger', ['customer' => $customer->id, 'currency' => $bal->currency]) }}" class="inline-flex items-center px-2 py-1 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition" title="{{ __('Müşteriye borcunuz var') }}">
-                                                                {{ number_format(abs($val), 2, ',', '.') }} {{ $bal->currency }} · {{ __('Alacaklı') }}
+                                                            <a href="{{ route('customers.ledger', ['customer' => $customer->id, 'currency' => $bal->currency]) }}" class="transition" title="{{ __('Müşteriye borcunuz var') }}">
+                                                                <x-ui.badge variant="success" class="!px-2 !py-1 text-xs font-semibold hover:bg-emerald-100">
+                                                                    {{ number_format(abs($val), 2, ',', '.') }} {{ $bal->currency }} · {{ __('Alacaklı') }}
+                                                                </x-ui.badge>
                                                             </a>
                                                         @endif
                                                     @endif
@@ -445,8 +453,10 @@
                                                 @foreach($customer->open_advances as $curr => $amt)
                                                     @if(!$selectedCurrency || $selectedCurrency === $curr)
                                                         @if((float)$amt > 0.001)
-                                                            <a href="{{ route('payments.index', ['customer_id' => $customer->id, 'only_open' => 1, 'currency' => $curr]) }}" class="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-brand-50 text-brand-700 border border-brand-200 hover:bg-brand-100 transition" title="{{ __('Kullanılabilir avans: otomatik mahsuplaşma için hazır kredi') }}">
-                                                                {{ number_format((float)$amt, 2, ',', '.') }} {{ $curr }} · {{ __('Avans') }}
+                                                            <a href="{{ route('payments.index', ['customer_id' => $customer->id, 'only_open' => 1, 'currency' => $curr]) }}" class="transition" title="{{ __('Kullanılabilir avans: otomatik mahsuplaşma için hazır kredi') }}">
+                                                                <x-ui.badge variant="info" class="!px-2 !py-1 text-xs font-medium hover:bg-sky-100">
+                                                                    {{ number_format((float)$amt, 2, ',', '.') }} {{ $curr }} · {{ __('Avans') }}
+                                                                </x-ui.badge>
                                                             </a>
                                                         @endif
                                                     @endif
@@ -472,14 +482,18 @@
                                                         @endphp
                                                         @if($amt > 0.001)
                                                             <div class="flex flex-col items-start gap-1">
-                                                                <a href="{{ route('invoices.index', ['customer_id' => $customer->id, 'open' => 1, 'currency' => $curr]) }}" class="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition" title="{{ __('Ödenmemiş (kalan) fatura bakiyesi') }}">
-                                                                    {{ number_format($amt, 2, ',', '.') }} {{ $curr }} · {{ __('Açık') }}
+                                                                <a href="{{ route('invoices.index', ['customer_id' => $customer->id, 'open' => 1, 'currency' => $curr]) }}" class="transition" title="{{ __('Ödenmemiş (kalan) fatura bakiyesi') }}">
+                                                                    <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-medium hover:bg-rose-100">
+                                                                        {{ number_format($amt, 2, ',', '.') }} {{ $curr }} · {{ __('Açık') }}
+                                                                    </x-ui.badge>
                                                                 </a>
 
                                                                 @if($isOverdue)
                                                                     @php $odAmt = (float)($customer->overdue_invoice_amounts[$curr]['amount'] ?? 0); @endphp
-                                                                    <a href="{{ route('invoices.index', ['customer_id' => $customer->id, 'overdue' => 1, 'currency' => $curr]) }}" class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100 hover:bg-rose-100 transition" title="{{ __('Vadesi geçmiş tutar') }}">
-                                                                        {{ number_format($odAmt, 2, ',', '.') }} {{ $curr }} · {{ __('Vadesi Geçmiş') }}
+                                                                    <a href="{{ route('invoices.index', ['customer_id' => $customer->id, 'overdue' => 1, 'currency' => $curr]) }}" class="transition" title="{{ __('Vadesi geçmiş tutar') }}">
+                                                                        <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-bold hover:bg-rose-100">
+                                                                            {{ number_format($odAmt, 2, ',', '.') }} {{ $curr }} · {{ __('Vadesi Geçmiş') }}
+                                                                        </x-ui.badge>
                                                                     </a>
                                                                 @endif
                                                             </div>
@@ -591,13 +605,13 @@
                                                     @php $v = $sumBalance($curr); @endphp
                                                     @if(abs($v) > 0.001)
                                                         @if($v > 0)
-                                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                                            <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-bold">
                                                                 {{ number_format(abs($v), 2, ',', '.') }} {{ $curr }} · {{ __('Borçlu') }}
-                                                            </span>
+                                                            </x-ui.badge>
                                                         @else
-                                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                            <x-ui.badge variant="success" class="!px-2 !py-1 text-xs font-bold">
                                                                 {{ number_format(abs($v), 2, ',', '.') }} {{ $curr }} · {{ __('Alacaklı') }}
-                                                            </span>
+                                                            </x-ui.badge>
                                                         @endif
                                                     @endif
                                                 @endif
@@ -612,9 +626,9 @@
                                                 @if(!$selectedCurrency || $selectedCurrency === $curr)
                                                     @php $v = $sumAdv($curr); @endphp
                                                     @if($v > 0.001)
-                                                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-brand-100 text-brand-800 border border-brand-200">
+                                                        <x-ui.badge variant="info" class="!px-2 !py-1 text-xs font-bold">
                                                             {{ number_format($v, 2, ',', '.') }} {{ $curr }} · {{ __('Avans') }}
-                                                        </span>
+                                                        </x-ui.badge>
                                                     @endif
                                                 @endif
                                             @endforeach
@@ -632,13 +646,13 @@
                                                     @endphp
                                                     @if($amt > 0.001)
                                                         <div class="flex flex-col items-start gap-1">
-                                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                                            <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-bold">
                                                                 {{ number_format($amt, 2, ',', '.') }} {{ $curr }} · {{ __('Açık') }}
-                                                            </span>
+                                                            </x-ui.badge>
                                                             @if($odAmt > 0.001)
-                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                                                <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-bold">
                                                                     {{ number_format($odAmt, 2, ',', '.') }} {{ $curr }} · {{ __('Vadesi Geçmiş') }}
-                                                                </span>
+                                                                </x-ui.badge>
                                                             @endif
                                                         </div>
                                                     @endif
@@ -665,13 +679,13 @@
                                                         @php $v = (float)($grandTotals['balances'][$curr] ?? 0); @endphp
                                                         @if(abs($v) > 0.001)
                                                             @if($v > 0)
-                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-white text-rose-800 border border-rose-200">
+                                                                <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-bold">
                                                                     {{ number_format(abs($v), 2, ',', '.') }} {{ $curr }} · {{ __('Borçlu') }}
-                                                                </span>
+                                                                </x-ui.badge>
                                                             @else
-                                                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-white text-emerald-800 border border-emerald-200">
+                                                                <x-ui.badge variant="success" class="!px-2 !py-1 text-xs font-bold">
                                                                     {{ number_format(abs($v), 2, ',', '.') }} {{ $curr }} · {{ __('Alacaklı') }}
-                                                                </span>
+                                                                </x-ui.badge>
                                                             @endif
                                                         @endif
                                                     @endif
@@ -686,9 +700,9 @@
                                                     @if(!$selectedCurrency || $selectedCurrency === $curr)
                                                         @php $v = (float)($grandTotals['open_advances'][$curr] ?? 0); @endphp
                                                         @if($v > 0.001)
-                                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-white text-brand-800 border border-brand-200">
+                                                            <x-ui.badge variant="info" class="!px-2 !py-1 text-xs font-bold">
                                                                 {{ number_format($v, 2, ',', '.') }} {{ $curr }} · {{ __('Avans') }}
-                                                            </span>
+                                                            </x-ui.badge>
                                                         @endif
                                                     @endif
                                                 @endforeach
@@ -702,9 +716,9 @@
                                                     @if(!$selectedCurrency || $selectedCurrency === $curr)
                                                         @php $amt = (float)($grandTotals['open_invoices'][$curr] ?? 0); @endphp
                                                         @if($amt > 0.001)
-                                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-white text-amber-800 border border-amber-200">
+                                                            <x-ui.badge variant="danger" class="!px-2 !py-1 text-xs font-bold">
                                                                 {{ number_format($amt, 2, ',', '.') }} {{ $curr }} · {{ __('Açık') }}
-                                                            </span>
+                                                            </x-ui.badge>
                                                         @endif
                                                     @endif
                                                 @endforeach

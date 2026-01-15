@@ -34,10 +34,10 @@
             <div class="flex items-center gap-2">
                 @if ($quote->sales_order_id)
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 flex items-center gap-1">
+                        <x-ui.badge variant="success" class="!px-2 !py-1 text-xs font-bold gap-1">
                             <x-icon.check class="w-3 h-3" />
                             {{ __('Sipariş Oluşturuldu') }}
-                        </span>
+                        </x-ui.badge>
                         <x-ui.button href="{{ route('sales-orders.show', $quote->sales_order_id) }}" variant="secondary" size="sm">
                             {{ __('Siparişi Gör') }}
                         </x-ui.button>
@@ -175,9 +175,9 @@
             <div class="p-6 md:p-8">
                 <div class="flex items-center justify-between mb-8">
                     <h3 class="text-heading-3 font-bold text-slate-900">{{ __('Hizmet ve Ürünler') }}</h3>
-                    <span class="text-xs font-medium text-brand-700 bg-brand-50 border border-brand-100 px-3 py-1 rounded-full">
+                    <x-ui.badge variant="info" class="!px-3 !py-1 text-xs font-medium">
                         {{ count($quote->items) }} {{ __('kalem') }}
-                    </span>
+                    </x-ui.badge>
                 </div>
 
                 <div class="space-y-10">
@@ -235,11 +235,11 @@
                                                         <div class="flex items-center gap-2 mb-1.5">
                                                             <p class="font-bold text-slate-900 text-lg">{{ $item->description }}</p>
                                                             @if ($item->is_optional)
-                                                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">{{ __('Opsiyon') }}</span>
+                                                                <x-ui.badge variant="neutral" class="!px-2 !py-0.5 text-[10px] font-bold uppercase tracking-wider">{{ __('Opsiyon') }}</x-ui.badge>
                                                             @endif
                                                         </div>
                                                         <div class="flex items-center gap-4 text-sm text-slate-500">
-                                                            <span class="px-2 py-0.5 rounded bg-slate-50 text-xs font-medium border border-slate-100">{{ config('quotes.item_types')[$item->item_type] ?? $item->item_type }}</span>
+                                                            <x-ui.badge variant="neutral" class="!px-2 !py-0.5 text-xs font-medium">{{ config('quotes.item_types')[$item->item_type] ?? $item->item_type }}</x-ui.badge>
                                                             <div class="flex items-center gap-1">
                                                                 <span class="font-bold text-slate-700">{{ $item->qty }}</span> {{ $item->unit }} x <span class="font-medium text-slate-700">{{ $formatMoney($item->unit_price) }}</span> {{ $currencySymbol }}
                                                             </div>
@@ -248,12 +248,12 @@
                                                 </div>
                                                 
                                                 @if($item->discount_amount > 0)
-                                                    <div class="mt-2 flex items-center gap-2 text-xs font-medium text-rose-600 bg-rose-50 w-fit px-2 py-0.5 rounded">
+                                                    <x-ui.badge variant="danger" class="mt-2 !px-2 !py-0.5 text-xs font-medium gap-2">
                                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3">
                                                           <path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
                                                         </svg>
                                                         İndirim: -{{ $formatMoney($item->discount_amount) }}
-                                                    </div>
+                                                    </x-ui.badge>
                                                 @endif
                                             </div>
                                             

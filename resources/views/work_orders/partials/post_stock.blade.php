@@ -3,11 +3,11 @@
         <h3 class="font-semibold text-slate-900">{{ __('Stok İşlemleri') }}</h3>
         
         @if($workOrder->stock_posted_at)
-            <div class="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+            <x-ui.badge variant="success" class="!px-3 !py-1.5 text-sm font-medium gap-2">
                 <x-icon.check class="w-4 h-4" />
                 <span>{{ __('Stoktan düşüldü') }}</span>
                 <span class="text-xs text-emerald-500">({{ $workOrder->stock_posted_at->format('d.m.Y H:i') }})</span>
-            </div>
+            </x-ui.badge>
         @endif
     </div>
     

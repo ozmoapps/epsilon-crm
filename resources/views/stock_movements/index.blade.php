@@ -87,9 +87,9 @@
                                 <span class="text-xs text-slate-400 block">{{ $movement->product->sku }}</span>
                             </td>
                             <td class="px-4 py-3 text-xs">
-                                <span class="px-2 py-1 rounded border {{ $movement->direction == 'in' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200' }}">
+                                <x-ui.badge :variant="$movement->direction == 'in' ? 'success' : 'danger'" class="!px-2 !py-1 text-xs">
                                     {{ $movement->type }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                             <td class="px-4 py-3 text-right font-mono text-sm {{ $movement->direction == 'in' ? 'text-emerald-600' : 'text-rose-600' }}">
                                 {{ $movement->direction == 'in' ? '+' : '-' }}{{ $movement->qty + 0 }}

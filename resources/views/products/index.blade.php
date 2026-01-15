@@ -58,9 +58,9 @@
                         <tr class="hover:bg-slate-50/70 transition-colors">
                             <td class="px-4 py-3 text-xs">
                                 @if($product->type == 'service')
-                                    <span class="px-2 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">{{ __('Hizmet') }}</span>
+                                    <x-ui.badge variant="info" class="!px-2 !py-1 text-xs">{{ __('Hizmet') }}</x-ui.badge>
                                 @else
-                                    <span class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">{{ __('Ürün') }}</span>
+                                    <x-ui.badge variant="success" class="!px-2 !py-1 text-xs">{{ __('Ürün') }}</x-ui.badge>
                                 @endif
                             </td>
                             <td class="px-4 py-3">

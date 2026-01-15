@@ -74,10 +74,10 @@
                                     default => 'Taslak',
                                 };
 
-                                $badgeClass = match ($status) {
-                                    'issued' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-                                    'cancelled' => 'bg-rose-50 text-rose-700 ring-rose-200',
-                                    default => 'bg-slate-50 text-slate-700 ring-slate-200',
+                                $badgeVariant = match ($status) {
+                                    'issued' => 'success',
+                                    'cancelled' => 'danger',
+                                    default => 'neutral',
                                 };
 
                                 $customerName = $invoice->salesOrder?->customer?->name ?? '-';
@@ -107,9 +107,9 @@
                                 </td>
 
                                 <td class="px-4 py-3">
-                                    <span class="inline-flex items-center rounded-xl px-2 py-1 text-xs font-semibold ring-1 ring-inset {{ $badgeClass }}">
+                                    <x-ui.badge :variant="$badgeVariant" class="!px-2 !py-1 text-xs font-semibold">
                                         {{ $statusLabel }}
-                                    </span>
+                                    </x-ui.badge>
                                 </td>
 
                                 <td class="px-4 py-3 text-right text-sm font-semibold text-slate-900">
