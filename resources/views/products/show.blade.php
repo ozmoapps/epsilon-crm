@@ -67,9 +67,7 @@
                                     $tagColor = strtolower($tag->color ?? 'slate');
                                     $tagVariant = $tagVariantMap[$tagColor] ?? 'neutral';
                                 @endphp
-                                <x-ui.badge :variant="$tagVariant" class="!px-2 !py-1 text-xs font-semibold">
-                                    {{ $tag->name }}
-                                </x-ui.badge>
+                                <x-ui.badge :variant="$tagVariant">{{ $tag->name }}</x-ui.badge>
                             @endforeach
                         </div>
                     </div>
