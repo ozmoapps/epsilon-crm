@@ -60,7 +60,7 @@
 
     <div class="section">
         <h3 class="section-title">İş Emri Başlığı</h3>
-        <p class="text-lg font-semibold border p-4 bg-gray-50">{{ $workOrder->title }}</p>
+        <p class="text-lg font-semibold border p-4 bg-slate-50">{{ $workOrder->title }}</p>
     </div>
 
     @if($workOrder->description)

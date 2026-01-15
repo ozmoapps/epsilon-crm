@@ -2,26 +2,26 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Sözleşme Şablonları') }}" subtitle="{{ __('Sözleşme şablonlarını yönetin.') }}">
             <x-slot name="actions">
-                <x-button href="{{ route('admin.contract-templates.create') }}">
+                <x-ui.button href="{{ route('admin.contract-templates.create') }}">
                     {{ __('Yeni Şablon') }}
-                </x-button>
+                </x-ui.button>
             </x-slot>
         </x-page-header>
     </x-slot>
 
     <div class="space-y-6">
-        <x-card>
+        <x-ui.card>
             <x-slot name="header">{{ __('Filtreler') }}</x-slot>
             <form method="GET" action="{{ route('admin.contract-templates.index') }}" class="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div class="flex-1">
                     <x-input name="search" type="text" placeholder="İsme göre ara" :value="$search" />
                 </div>
-                <x-button type="submit">{{ __('Ara') }}</x-button>
-                <x-button href="{{ route('admin.contract-templates.index') }}" variant="secondary">{{ __('Temizle') }}</x-button>
+                <x-ui.button type="submit">{{ __('Ara') }}</x-ui.button>
+                <x-ui.button href="{{ route('admin.contract-templates.index') }}" variant="secondary">{{ __('Temizle') }}</x-ui.button>
             </form>
-        </x-card>
+        </x-ui.card>
 
-        <x-card>
+        <x-ui.card>
             <x-slot name="header">{{ __('Liste') }}</x-slot>
             <x-ui.table>
                 <thead class="bg-slate-50 text-xs font-semibold tracking-wide text-slate-500">
@@ -40,9 +40,9 @@
                                 <div class="flex items-center gap-2">
                                     <span class="truncate">{{ $template->name }}</span>
                                     @if ($template->is_default)
-                                        <span class="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                        <x-ui.badge variant="success" class="ml-2">
                                             {{ __('Varsayılan') }}
-                                        </span>
+                                        </x-ui.badge>
                                     @endif
                                 </div>
                             </td>
@@ -57,7 +57,7 @@
                                         @csrf
                                         <button
                                             type="submit"
-                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-emerald-600 transition hover:bg-emerald-50 hover:text-emerald-700"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-emerald-600 transition hover:bg-emerald-50 hover:text-emerald-700"
                                             title="{{ __('Varsayılan Yap') }}"
                                             aria-label="{{ __('Varsayılan Yap') }}"
                                         >
@@ -68,7 +68,7 @@
                                         @csrf
                                         <button
                                             type="submit"
-                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-amber-500 transition hover:bg-amber-50 hover:text-amber-600"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-amber-500 transition hover:bg-amber-50 hover:text-amber-600"
                                             title="{{ $template->is_active ? __('Pasifleştir') : __('Aktifleştir') }}"
                                             aria-label="{{ $template->is_active ? __('Pasifleştir') : __('Aktifleştir') }}"
                                         >
@@ -87,7 +87,7 @@
                     @endforelse
                 </tbody>
             </x-ui.table>
-        </x-card>
+        </x-ui.card>
 
         <div>
             {{ $templates->links() }}

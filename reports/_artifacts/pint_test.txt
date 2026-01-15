@@ -1,0 +1,86 @@
+
+  ..⨯⨯.⨯..⨯......⨯⨯..
+  ............⨯......
+  ⨯⨯.⨯.⨯⨯⨯....⨯..⨯⨯..
+  .⨯⨯....⨯..⨯..⨯..⨯.⨯
+  ....⨯⨯...........⨯⨯
+  ⨯⨯..⨯⨯⨯⨯⨯⨯⨯⨯.⨯.....
+  .....⨯⨯⨯⨯⨯..⨯⨯⨯⨯⨯⨯⨯
+  ⨯⨯..⨯.⨯⨯⨯.⨯⨯⨯......
+  ...⨯..⨯...⨯........
+  .⨯.⨯.⨯⨯⨯..⨯.⨯...⨯⨯
+
+  ─────────── Laravel  
+    FAIL    189 files, 71 style issues  
+  ⨯ app/Console/Commands/AuditVesselOwnership.php function_declaration, trailing_comma_in_multiline  
+  ⨯ app/Console/Commands/CrmDemoCommand.php single_space_around_construct, concat_space, not_operator_with_successor_space, blank_line_before_statement, phpdoc_align, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/Admin/UserAdminController.php no_trailing_whitespace, statement_indentation, no_unused_imports, not_operator_with_successor_space, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/Api/ApiLookupController.php function_declaration, no_superfluous_phpdoc_tags, no_trailing_whitespace, no_trailing_whitespace_in_comment, trailing_comma_in_multiline, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/BankAccountController.php new_with_parentheses  
+  ⨯ app/Http/Controllers/CompanyProfileController.php new_with_parentheses, single_line_empty_body  
+  ⨯ app/Http/Controllers/ContractAttachmentController.php concat_space, unary_operator_spaces, not_operator_with_successor_space  
+  ⨯ app/Http/Controllers/ContractController.php class_attributes_separation, method_argument_space, control_structure_braces, unary_operator_spaces, braces_position, statement_indentation, no_unused_imports, not_operator_with_successor_space, single_line_empty_body, blank_line_before_statement, ordered_imports, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/ContractDeliveryController.php new_with_parentheses, concat_space, unary_operator_spaces, not_operator_with_successor_space  
+  ⨯ app/Http/Controllers/ContractTemplateController.php new_with_parentheses, unary_operator_spaces, not_operator_with_successor_space, blank_line_before_statement  
+  ⨯ app/Http/Controllers/CurrencyController.php new_with_parentheses  
+  ⨯ app/Http/Controllers/CustomerController.php new_with_parentheses, trailing_comma_in_multiline, blank_line_before_statement, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/DashboardController.php ordered_imports  
+  ⨯ app/Http/Controllers/FollowUpController.php no_trailing_whitespace, trailing_comma_in_multiline  
+  ⨯ app/Http/Controllers/QuoteController.php class_attributes_separation, no_unused_imports, single_line_after_imports, no_extra_blank_lines, blank_line_before_statement, ordered_imports, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/SalesOrderController.php function_declaration, control_structure_braces, unary_operator_spaces, braces_position, statement_indentation, not_operator_with_successor_space, single_line_after_imports, blank_line_before_statement, ordered_imports, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/SavedViewController.php statement_indentation, no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/VesselContactController.php no_whitespace_in_blank_line  
+  ⨯ app/Http/Controllers/VesselController.php new_with_parentheses, concat_space, trailing_comma_in_multiline  
+  ⨯ app/Http/Controllers/WorkOrderController.php new_with_parentheses, method_argument_space, control_structure_braces, braces_position, statement_indentation, blank_line_before_statement, ordered_imports  
+  ⨯ app/Http/Middleware/EnsureAdmin.php not_operator_with_successor_space, no_extra_blank_lines  
+  ⨯ app/Http/Requests/QuoteStoreRequest.php control_structure_braces, unary_operator_spaces, braces_position, statement_indentation, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Http/Requests/QuoteUpdateRequest.php control_structure_braces, no_trailing_whitespace, unary_operator_spaces, braces_position, statement_indentation, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Http/Requests/SalesOrderStoreRequest.php unary_operator_spaces, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Http/Requests/SalesOrderUpdateRequest.php unary_operator_spaces, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Http/Requests/WorkOrderStoreRequest.php unary_operator_spaces, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Http/Requests/WorkOrderUpdateRequest.php unary_operator_spaces, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Models/Contract.php class_attributes_separation, concat_space, unary_operator_spaces, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Models/ContractSequence.php class_attributes_separation  
+  ⨯ app/Models/Quote.php class_attributes_separation, new_with_parentheses, concat_space, unary_operator_spaces, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Models/QuoteSequence.php class_attributes_separation  
+  ⨯ app/Models/SalesOrder.php class_attributes_separation, new_with_parentheses, concat_space, unary_operator_spaces, not_operator_with_successor_space, ordered_imports  
+  ⨯ app/Models/SalesOrderSequence.php class_attributes_separation  
+  ⨯ app/Models/SavedView.php method_chaining_indentation  
+  ⨯ app/Models/WorkOrder.php class_attributes_separation  
+  ⨯ app/Observers/VesselOwnerHistoryObserver.php not_operator_with_successor_space  
+  ⨯ app/Providers/AppServiceProvider.php ordered_imports  
+  ⨯ app/Services/ContractPdfService.php unary_operator_spaces, braces_position, not_operator_with_successor_space, single_line_empty_body, ordered_imports  
+  ⨯ app/Services/ContractTemplateRenderer.php single_quote, concat_space, braces_position, no_unused_imports, single_line_empty_body, no_whitespace_in_blank_line  
+  ⨯ app/Services/ContractWorkflowService.php unary_operator_spaces, braces_position, no_unused_imports, not_operator_with_successor_space, single_line_empty_body  
+  ⨯ app/Services/TotalsCalculator.php no_whitespace_in_blank_line  
+  ⨯ app/Support/DemoData.php function_declaration, not_operator_with_successor_space, no_whitespace_in_blank_line  
+  ⨯ app/Support/MoneyMath.php no_superfluous_phpdoc_tags, control_structure_braces, no_trailing_whitespace, braces_position, statement_indentation, not_operator_with_successor_space, phpdoc_align, no_whitespace_in_blank_line  
+  ⨯ config/contracts.php single_quote  
+  ⨯ config/quotes.php single_quote  
+  ⨯ database/factories/BankAccountFactory.php concat_space  
+  ⨯ database/factories/CurrencyFactory.php concat_space  
+  ⨯ database/factories/QuoteFactory.php ordered_imports  
+  ⨯ database/migrations/2026_01_10_125707_create_follow_ups_table.php class_definition, braces_position, no_whitespace_in_blank_line  
+  ⨯ database/migrations/2026_01_11_174045_ensure_customer_id_on_vessels_table.php class_definition, single_line_comment_spacing, no_trailing_whitespace, braces_position, not_operator_with_successor_space, no_whitespace_in_blank_line  
+  ⨯ database/migrations/2026_01_11_191925_enforce_vessels_customer_id_not_null.php class_definition, function_declaration, single_quote, no_trailing_whitespace, braces_position, statement_indentation, not_operator_with_successor_space, ordered_imports, no_whitespace_in_blank_line  
+  ⨯ database/migrations/2026_01_11_193507_fix_sqlite_vessel_fks_after_rename.php class_definition, no_trailing_whitespace, braces_position, ordered_imports, no_whitespace_in_blank_line  
+  ⨯ database/migrations/2026_01_11_234249_sqlite_fix_vessels_old_foreign_keys.php class_definition, function_declaration, braces_position  
+  ⨯ database/migrations/2026_01_15_000000_add_revision_fields_to_contracts_table.php class_definition, braces_position, not_operator_with_successor_space  
+  ⨯ database/migrations/2026_02_10_000001_add_meta_fields_to_quotes_table.php class_definition, braces_position, no_unused_imports  
+  ⨯ database/migrations/2026_02_15_000000_verify_utf8mb4_collation.php class_definition, braces_position, no_whitespace_in_blank_line  
+  ⨯ database/migrations/2026_02_15_000001_add_performance_indexes.php class_definition, control_structure_braces, braces_position, statement_indentation, not_operator_with_successor_space, blank_line_before_statement, ordered_imports, no_whitespace_in_blank_line  
+  ⨯ database/seeders/ContractTemplateSeeder.php unary_operator_spaces, not_operator_with_successor_space, blank_line_before_statement  
+  ⨯ database/seeders/CrmDemoSeeder.php single_quote, concat_space, not_operator_with_successor_space, blank_line_before_statement, ordered_imports, no_whitespace_in_blank_line  
+  ⨯ database/seeders/DatabaseSeeder.php no_unused_imports  
+  ⨯ database/seeders/DemoDataSeeder.php concat_space, statement_indentation, not_operator_with_successor_space, ordered_imports  
+  ⨯ routes/console.php single_quote, concat_space, unary_operator_spaces, not_operator_with_successor_space, no_extra_blank_lines, blank_line_before_statement, ordered_imports  
+  ⨯ routes/web.php c…  
+  ⨯ tests/Feature/ContractDeliveryTest.php new_with_parentheses, concat_space  
+  ⨯ tests/Feature/ContractTemplateTest.php no_extra_blank_lines  
+  ⨯ tests/Feature/ContractTest.php concat_space  
+  ⨯ tests/Feature/CurrencyTest.php no_trailing_whitespace  
+  ⨯ tests/Feature/NoBidiControlCharsTest.php concat_space, unary_operator_spaces, not_operator_with_successor_space  
+  ⨯ tests/Feature/SharedWorkspaceTest.php no_trailing_whitespace, no_unused_imports, no_whitespace_in_blank_line  
+  ⨯ tests/Feature/TurkishCharacterTest.php ordered_imports, no_whitespace_in_blank_line  
+  ⨯ tests/Feature/UiSmokeTest.php not_operator_with_successor_space, no_whitespace_in_blank_line  
+

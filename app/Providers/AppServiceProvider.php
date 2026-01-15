@@ -46,5 +46,8 @@ class AppServiceProvider extends ServiceProvider
         Quote::observe(ActivityLogObserver::class);
         SalesOrder::observe(ActivityLogObserver::class);
         Contract::observe(ActivityLogObserver::class);
+        \App\Models\Customer::observe(ActivityLogObserver::class);
+        \App\Models\Vessel::observe(ActivityLogObserver::class);
+        \App\Models\Vessel::observe(\App\Observers\VesselOwnerHistoryObserver::class);
     }
 }

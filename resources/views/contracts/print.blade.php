@@ -76,7 +76,7 @@
                 <tbody>
                     @foreach ($itemsBySection as $section => $sectionItems)
                         <tr>
-                            <td colspan="4" class="font-bold bg-gray-50">{{ $section }}</td>
+                            <td colspan="4" class="font-bold bg-slate-50">{{ $section }}</td>
                         </tr>
                         @foreach ($sectionItems as $item)
                         <tr>
@@ -110,6 +110,8 @@
             {!! $contract->rendered_body !!}
         </div>
     </div>
+
+    <x-doc.payment-instructions />
 
     <div class="footer">
         <p>{{ $companyFooter }}</p>

@@ -1,11 +1,11 @@
-<div {{ $attributes->merge(['class' => 'overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm']) }}>
+<div {{ $attributes->merge(['class' => 'overflow-hidden ui-card']) }}>
     @isset($header)
-        <div class="border-b border-slate-100 bg-slate-50/70 px-6 py-4 text-base font-semibold text-slate-900">
+        <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 text-heading-4 text-slate-900">
             {{ $header }}
         </div>
     @endisset
 
-    <div class="p-5">
+    <div class="p-6">
         {{ $slot }}
     </div>
 </div>

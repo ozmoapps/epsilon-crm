@@ -73,26 +73,26 @@
                 @endslot
                 
                 @slot('actions')
-                    <x-button href="{{ route('contracts.print', $contract) }}" variant="secondary" size="sm">
+                    <x-ui.button href="{{ route('contracts.print', $contract) }}" variant="secondary" size="sm">
                         {{ __('Yazdır') }}
-                    </x-button>
+                    </x-ui.button>
 
-                    <x-button href="#delivery-pack" variant="secondary" size="sm">
+                    <x-ui.button href="#delivery-pack" variant="secondary" size="sm">
                         {{ __('Gönderim Paketi') }}
-                    </x-button>
+                    </x-ui.button>
 
                     @if ($contract->isEditable())
-                        <x-button href="{{ route('contracts.edit', $contract) }}" variant="secondary" size="sm">
+                        <x-ui.button href="{{ route('contracts.edit', $contract) }}" variant="secondary" size="sm">
                             {{ __('Düzenle') }}
-                        </x-button>
+                        </x-ui.button>
                     @endif
                     
                     <x-ui.dropdown align="right" width="w-60">
                         <x-slot name="trigger">
-                            <x-button type="button" variant="secondary" size="sm" class="inline-flex items-center gap-2">
+                            <x-ui.button type="button" variant="secondary" size="sm" class="inline-flex items-center gap-2">
                                 {{ __('İşlemler') }}
                                 <x-icon.dots class="h-4 w-4" />
-                            </x-button>
+                            </x-ui.button>
                         </x-slot>
                         <x-slot name="content">
                              @if ($contract->canCreateRevision())
@@ -128,10 +128,17 @@
                             @endif
     
                             @if ($canCancel)
-                                <form method="POST" action="{{ route('contracts.cancel', $contract) }}">
+                                <form id="contract-cancel-{{ $contract->id }}" method="POST" action="{{ route('contracts.cancel', $contract) }}">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50" onclick="return confirm('Sözleşme iptal edilsin mi?')">
+                                    <button type="submit" 
+                                        class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50"
+                                        data-confirm
+                                        data-confirm-title="{{ __('Emin misiniz?') }}"
+                                        data-confirm-message="{{ __('Sözleşme iptal edilecek. Bu işlem geri alınamaz.') }}"
+                                        data-confirm-text="{{ __('İptal Et') }}"
+                                        data-confirm-cancel-text="{{ __('Vazgeç') }}"
+                                        data-confirm-submit="contract-cancel-{{ $contract->id }}">
                                         <x-icon.x class="h-4 w-4" />
                                         {{ __('İptal') }}
                                     </button>
@@ -144,13 +151,20 @@
                                 <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50 cursor-not-allowed opacity-60" disabled>
                                     <x-icon.trash class="h-4 w-4" />
                                     {{ __('Sil') }}
-                                    <span class="ml-auto text-[10px] bg-gray-100 px-1 rounded">{{ __('Kilitli') }}</span>
+                                    <span class="ml-auto text-[10px] bg-slate-100 px-1 rounded">{{ __('Kilitli') }}</span>
                                 </button>
                             @else
                                 <form id="contract-delete-{{ $contract->id }}" method="POST" action="{{ route('contracts.destroy', $contract) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50" onclick="return confirm('Silme işlemini onayla')">
+                                    <button type="submit" 
+                                        class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50"
+                                        data-confirm
+                                        data-confirm-title="{{ __('Emin misiniz?') }}"
+                                        data-confirm-message="{{ __('Sözleşme silinecek. Bu işlem geri alınamaz.') }}"
+                                        data-confirm-text="{{ __('Sil') }}"
+                                        data-confirm-cancel-text="{{ __('Vazgeç') }}"
+                                        data-confirm-submit="contract-delete-{{ $contract->id }}">
                                         <x-icon.trash class="h-4 w-4" />
                                         {{ __('Sil') }}
                                     </button>
@@ -159,15 +173,15 @@
                         </x-slot>
                     </x-ui.dropdown>
     
-                    <x-button href="{{ route('contracts.index') }}" variant="secondary" size="sm">
+                    <x-ui.button href="{{ route('contracts.index') }}" variant="secondary" size="sm">
                         {{ __('Listeye Dön') }}
-                    </x-button>
+                    </x-ui.button>
                 @endslot
             @endcomponent
         @endslot
 
         @slot('left')
-            <x-card class="rounded-2xl border border-slate-200 bg-white shadow-sm !p-5">
+            <x-ui.card class="rounded-2xl border border-slate-200 bg-white shadow-card !p-5">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                     <h3 class="font-semibold text-slate-900">{{ __('Sözleşme Bilgileri') }}</h3>
                 </div>
@@ -177,7 +191,7 @@
                     'formatMoney' => $formatMoney,
                     'statusVariants' => $statusVariants,
                 ])
-            </x-card>
+            </x-ui.card>
 
             @include('contracts.partials._revisions', [
                 'revisions' => $revisions,
@@ -199,14 +213,14 @@
                 'maxAttachmentSizeKb' => $maxAttachmentSizeKb,
             ])
 
-             <x-card class="rounded-2xl border border-slate-200 bg-white shadow-sm !p-0 overflow-hidden">
+             <x-ui.card class="rounded-2xl border border-slate-200 bg-white shadow-card !p-0 overflow-hidden">
                 <div class="px-5 py-4 border-b border-slate-100 bg-white flex items-center justify-between">
                     <h3 class="font-semibold text-slate-900">{{ __('Satış Siparişi Kalemleri') }}</h3>
                     <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">{{ count($contract->salesOrder->items) }} {{ __('kalem') }}</span>
                 </div>
                 <div class="p-5 space-y-4">
                     @forelse ($contract->salesOrder->items as $item)
-                        <div class="flex flex-col gap-2 rounded-lg border border-slate-100 p-3 text-sm sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50 transition-colors">
+                        <div class="flex flex-col gap-2 rounded-xl border border-slate-100 p-3 text-sm sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50 transition-colors">
                             <div>
                                 <div class="flex items-center gap-2">
                                      @if ($item->is_optional)
@@ -226,7 +240,7 @@
                         <p class="text-sm text-slate-500 italic">{{ __('Kalem bulunamadı.') }}</p>
                     @endforelse
                 </div>
-            </x-card>
+            </x-ui.card>
         @endslot
 
         @slot('right')
@@ -242,14 +256,14 @@
 
             <x-partials.follow-up-card :context="$contract" />
 
-            <x-card class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm !p-0">
+            <x-ui.card class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card !p-0">
                 <div class="border-b border-slate-100 bg-white px-4 py-3">
                     <h3 class="font-semibold text-slate-900">{{ __('Aktivite') }}</h3>
                 </div>
                 <div class="bg-slate-50/40 p-4">
                     <x-activity-timeline :logs="$timeline" :show-subject="true" />
                 </div>
-            </x-card>
+            </x-ui.card>
         @endslot
     @endcomponent
 </x-app-layout>

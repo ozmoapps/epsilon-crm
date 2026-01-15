@@ -11,6 +11,7 @@ use App\Models\SalesOrder;
 use App\Models\Quote;
 use App\Models\Contract;
 use App\Models\ActivityLog;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class WorkOrderController extends Controller
@@ -61,10 +62,10 @@ class WorkOrderController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\WorkOrderStoreRequest $request)
     {
         $this->authorize('create', WorkOrder::class);
-        $validated = $request->validate($this->rules(), $this->messages());
+        $validated = $request->validated();
 
         $validated['created_by'] = $request->user()->id;
         WorkOrder::create($validated);
@@ -86,21 +87,16 @@ class WorkOrderController extends Controller
         if ($quote) $subjects[] = [Quote::class, $quote->id];
         if ($salesOrder) $subjects[] = [SalesOrder::class, $salesOrder->id];
         if ($contract) $subjects[] = [Contract::class, $contract->id];
+        $workOrder->load(['customer', 'vessel', 'creator', 'items.product']);
 
-        $timeline = ActivityLog::query()
-            ->with(['actor', 'subject'])
-            ->where(function ($q) use ($subjects) {
-                foreach ($subjects as [$type, $id]) {
-                    $q->orWhere(function ($sub) use ($type, $id) {
-                        $sub->where('subject_type', $type)->where('subject_id', $id);
-                    });
-                }
-            })
-            ->orderByDesc('created_at')
-            ->limit(50)
+        $timeline = $workOrder->activityLogs()
+            ->with('causer')
+            ->latest()
             ->get();
 
-        return view('work_orders.show', compact('workOrder', 'quote', 'salesOrder', 'contract', 'timeline'));
+        $products = Product::select('id', 'name', 'type', 'sku')->orderBy('name')->get();
+
+        return view('work_orders.show', compact('workOrder', 'timeline', 'products'));
     }
 
     public function printView(WorkOrder $workOrder)
@@ -124,10 +120,10 @@ class WorkOrderController extends Controller
         ]);
     }
 
-    public function update(Request $request, WorkOrder $workOrder)
+    public function update(\App\Http\Requests\WorkOrderUpdateRequest $request, WorkOrder $workOrder)
     {
         $this->authorize('update', $workOrder);
-        $validated = $request->validate($this->rules(), $this->messages());
+        $validated = $request->validated();
 
         $workOrder->update($validated);
 
@@ -144,34 +140,51 @@ class WorkOrderController extends Controller
             ->with('success', 'İş emri silindi.');
     }
 
-    private function rules(): array
+    public function postStock(Request $request, WorkOrder $workOrder, \App\Services\StockService $stockService)
     {
-        return [
-            'customer_id' => ['required', 'exists:customers,id'],
-            'vessel_id' => ['required', 'exists:vessels,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'status' => ['required', 'string', 'max:50'],
-            'planned_start_at' => ['nullable', 'date'],
-            'planned_end_at' => ['nullable', 'date', 'after_or_equal:planned_start_at'],
-        ];
-    }
+        // Simple authorization
+        // $this->authorize('update', $workOrder); 
 
-    private function messages(): array
-    {
-        return [
-            'customer_id.required' => 'Müşteri seçimi zorunludur.',
-            'customer_id.exists' => 'Seçilen müşteri geçersiz.',
-            'vessel_id.required' => 'Tekne seçimi zorunludur.',
-            'vessel_id.exists' => 'Seçilen tekne geçersiz.',
-            'title.required' => 'Başlık alanı zorunludur.',
-            'title.max' => 'Başlık alanı en fazla 255 karakter olabilir.',
-            'status.required' => 'Durum alanı zorunludur.',
-            'status.max' => 'Durum alanı en fazla 50 karakter olabilir.',
-            'planned_start_at.date' => 'Planlanan başlangıç tarihi geçerli değil.',
-            'planned_end_at.date' => 'Planlanan bitiş tarihi geçerli değil.',
-            'planned_end_at.after_or_equal' => 'Planlanan bitiş tarihi başlangıç tarihinden önce olamaz.',
-        ];
-    }
+        if ($workOrder->stock_posted_at) {
+            return redirect()->back()->with('info', 'Bu iş emri için stok zaten düşülmüş.');
+        }
 
+        $warehouseId = $request->input('warehouse_id');
+        if (!$warehouseId) {
+            // Fallback to default warehouse if not selected
+            $defaultWarehouse = \App\Models\Warehouse::where('is_default', true)->first();
+            if (!$defaultWarehouse) {
+                return redirect()->back()->with('error', 'Lütfen bir depo seçin (Varsayılan depo bulunamadı).');
+            }
+            $warehouseId = $defaultWarehouse->id;
+        }
+
+        // Process items
+        $items = $workOrder->items()->with('product')->get();
+        $processedCount = 0;
+
+        foreach ($items as $item) {
+            if ($item->product_id && $item->product && $item->product->track_stock) {
+                $stockService->createMovement(
+                    warehouseId: $warehouseId,
+                    productId: $item->product_id,
+                    qty: $item->qty,
+                    direction: 'out',
+                    type: 'workorder_consume',
+                    reference: $workOrder,
+                    note: "İş Emri #{$workOrder->id} - Malzeme Kullanımı",
+                    userId: $request->user()->id
+                );
+                $processedCount++;
+            }
+        }
+
+        $workOrder->update([
+            'stock_posted_at' => now(),
+            'stock_posted_warehouse_id' => $warehouseId,
+            'stock_posted_by' => $request->user()->id,
+        ]);
+
+        return redirect()->back()->with('success', "Stok düşüşü gerçekleştirildi ({$processedCount} kalem).");
+    }
 }

@@ -1,0 +1,159 @@
+customers:
+  - key: C1
+    name: "Blue Horizon Charter"
+  - key: C2
+    name: "Marmaris Marine Services"
+  - key: C3
+    name: "Ege Yat Yönetimi"
+  - key: C4
+    name: "Sunset Marina Client"
+  - key: C5
+    name: "Aegean Private Owner"
+  - key: C6
+    name: "Coastal Yachtworks"
+  - key: C7
+    name: "Delta Sailing Club"
+  - key: C8
+    name: "Göcek Boutique Charter"
+  - key: C9
+    name: "Mediterranean Refits"
+  - key: C10
+    name: "Teknesiz Demo Müşteri"
+
+vessels:
+  - key: V1
+    name: "M/Y LUNA 55"
+    owner: C1
+  - key: V2
+    name: "S/Y AURORA 42"
+    owner: C1
+
+  - key: V3
+    name: "M/Y NEPTUNE 48"
+    owner: C2
+
+  - key: V4
+    name: "M/Y ORION 62"
+    owner: C3
+  - key: V5
+    name: "S/Y VEGA 39"
+    owner: C3
+  - key: V6
+    name: "M/Y NEREID 50"
+    owner: C3
+
+  - key: V7
+    name: "M/Y BOREAS 46"
+    owner: C4
+  - key: V8
+    name: "S/Y ATLAS 37"
+    owner: C4
+
+  - key: V9
+    name: "M/Y DELTA 44"
+    owner: C5
+
+  - key: V10
+    name: "M/Y SAHIL 58"
+    owner: C6
+  - key: V11
+    name: "S/Y EGE 34"
+    owner: C6
+
+  - key: V12
+    name: "M/Y MARMARIS 52"
+    owner: C7
+
+  - key: V13
+    name: "S/Y GÖCEK 41"
+    owner: C8
+
+  - key: V14
+    name: "M/Y POSEIDON 60"
+    owner: C9
+
+vessel_contacts_defaults:
+  - role: "primary_contact"
+    name: "Primary Contact"
+  - role: "captain"
+    name: "Captain"
+
+quote_items_catalog:
+  - code: "SERV-001"
+    title: "Karina hazırlık + antifouling uygulaması"
+    unit: "job"
+    unit_price: 1900
+  - code: "SERV-002"
+    title: "Borda boya sistemi (astar + sonkat)"
+    unit: "job"
+    unit_price: 5400
+  - code: "SERV-003"
+    title: "Üst yapı boya sistemi (astar + sonkat)"
+    unit: "job"
+    unit_price: 4200
+  - code: "SERV-004"
+    title: "Zımpara + dolgu macun (fairing) işleri"
+    unit: "job"
+    unit_price: 3100
+  - code: "SERV-005"
+    title: "Vernik uygulaması (2K sistem)"
+    unit: "job"
+    unit_price: 3600
+  - code: "SERV-006"
+    title: "Teak bakım / zımpara / temizlik"
+    unit: "job"
+    unit_price: 1200
+  - code: "SERV-007"
+    title: "Polish + detail temizlik"
+    unit: "job"
+    unit_price: 850
+  - code: "SERV-008"
+    title: "Donanım sök-tak (hassas parça koruma dahil)"
+    unit: "job"
+    unit_price: 900
+  - code: "SERV-009"
+    title: "Elektrik/elektronik kontrol & küçük onarımlar"
+    unit: "job"
+    unit_price: 650
+  - code: "SERV-010"
+    title: "Mekanik kontrol & periyodik bakım"
+    unit: "job"
+    unit_price: 780
+
+  - code: "LAB-001"
+    title: "Usta işçilik"
+    unit: "hour"
+    unit_price: 32
+  - code: "LAB-002"
+    title: "Yardımcı işçilik"
+    unit: "hour"
+    unit_price: 22
+
+  - code: "MAT-001"
+    title: "Epoksi astar / bariyer kat"
+    unit: "lt"
+    unit_price: 28
+  - code: "MAT-002"
+    title: "Akrilik sonkat boya"
+    unit: "lt"
+    unit_price: 35
+  - code: "MAT-003"
+    title: "Antifouling boya"
+    unit: "lt"
+    unit_price: 24
+  - code: "MAT-004"
+    title: "Tiner / solvent"
+    unit: "lt"
+    unit_price: 8
+  - code: "MAT-005"
+    title: "Maskeleme sarf (bant, örtü, zımpara)"
+    unit: "job"
+    unit_price: 160
+
+documents_plan:
+  quotes: 12
+  sales_orders: 8
+  work_orders: 6
+  contracts: 5
+
+currency: "EUR"

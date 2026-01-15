@@ -26,9 +26,9 @@
 
                 @slot('actions')
                     @if ($hasContract)
-                        <x-button href="{{ route('contracts.show', $salesOrder->contract) }}" variant="secondary" size="sm">
+                        <x-ui.button href="{{ route('contracts.show', $salesOrder->contract) }}" variant="secondary" size="sm">
                             {{ __('Sözleşmeyi Görüntüle') }}
-                        </x-button>
+                        </x-ui.button>
                     @else
                         <form id="sales-order-contract-create-{{ $salesOrder->id }}" method="GET" action="{{ route('sales-orders.contracts.create', $salesOrder) }}" class="hidden"></form>
                         <x-ui.confirm
@@ -40,16 +40,16 @@
                             form-id="sales-order-contract-create-{{ $salesOrder->id }}"
                         >
                             <x-slot name="trigger">
-                                <x-button type="button" size="sm">
+                                <x-ui.button type="button" size="sm">
                                     {{ __('Sözleşme Oluştur') }}
-                                </x-button>
+                                </x-ui.button>
                             </x-slot>
                         </x-ui.confirm>
                     @endif
 
                     <x-ui.dropdown align="right" width="w-60">
                         <x-slot name="trigger">
-                             <button class="inline-flex items-center px-3 py-2 border border-slate-200 shadow-sm text-sm leading-4 font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition ease-in-out duration-150 gap-2">
+                             <button class="inline-flex items-center px-3 py-2 border border-slate-200 shadow-card text-sm leading-4 font-medium rounded-xl text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition ease-in-out duration-150 gap-2">
                                 {{ __('İşlemler') }}
                                 <x-icon.dots class="h-4 w-4" />
                             </button>
@@ -86,10 +86,17 @@
                                 </form>
                             @endif
                              @if ($canCancel)
-                                <form method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}">
+                                <form id="sales-order-cancel-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.cancel', $salesOrder) }}">
                                     @csrf
                                     @method('PATCH')
-                                    <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50" onclick="return confirm('Satış siparişi iptal edilsin mi?')">
+                                    <button type="submit" 
+                                        class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50"
+                                        data-confirm
+                                        data-confirm-title="{{ __('Emin misiniz?') }}"
+                                        data-confirm-message="{{ __('Satış siparişi iptal edilecek. Bu işlem geri alınamaz.') }}"
+                                        data-confirm-text="{{ __('İptal Et') }}"
+                                        data-confirm-cancel-text="{{ __('Vazgeç') }}"
+                                        data-confirm-submit="sales-order-cancel-{{ $salesOrder->id }}">
                                         <x-icon.x class="h-4 w-4" />
                                         {{ __('İptal') }}
                                     </button>
@@ -100,13 +107,13 @@
     
                             @if ($isLocked)
                                  <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 cursor-not-allowed opacity-60" disabled>
-                                    <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                    <x-icon.pencil class="h-4 w-4 text-brand-600" />
                                     {{ __('Düzenle') }}
-                                    <span class="ml-auto text-[10px] bg-gray-100 px-1 rounded">{{ __('Kilitli') }}</span>
+                                    <span class="ml-auto text-[10px] bg-slate-100 px-1 rounded">{{ __('Kilitli') }}</span>
                                 </button>
                             @else
                                  <a href="{{ route('sales-orders.edit', $salesOrder) }}" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50">
-                                    <x-icon.pencil class="h-4 w-4 text-indigo-600" />
+                                    <x-icon.pencil class="h-4 w-4 text-brand-600" />
                                     {{ __('Düzenle') }}
                                 </a>
                             @endif
@@ -115,13 +122,20 @@
                                 <button type="button" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50 cursor-not-allowed opacity-60" disabled>
                                     <x-icon.trash class="h-4 w-4" />
                                     {{ __('Sil') }}
-                                    <span class="ml-auto text-[10px] bg-gray-100 px-1 rounded">{{ __('Kilitli') }}</span>
+                                    <span class="ml-auto text-[10px] bg-slate-100 px-1 rounded">{{ __('Kilitli') }}</span>
                                 </button>
                             @else
-                                <form method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}">
+                                <form id="sales-order-delete-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.destroy', $salesOrder) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50" onclick="return confirm('Silme işlemini onayla')">
+                                    <button type="submit" 
+                                        class="flex w-full items-center gap-2 px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50"
+                                        data-confirm
+                                        data-confirm-title="{{ __('Emin misiniz?') }}"
+                                        data-confirm-message="{{ __('Sipariş silinecek. Bu işlem geri alınamaz.') }}"
+                                        data-confirm-text="{{ __('Sil') }}"
+                                        data-confirm-cancel-text="{{ __('Vazgeç') }}"
+                                        data-confirm-submit="sales-order-delete-{{ $salesOrder->id }}">
                                         <x-icon.trash class="h-4 w-4" />
                                         {{ __('Sil') }}
                                     </button>
@@ -130,16 +144,16 @@
                         </x-slot>
                     </x-ui.dropdown>
     
-                    <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
+                    <x-ui.button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
                         {{ __('Listeye Dön') }}
-                    </x-button>
+                    </x-ui.button>
                 @endslot
             @endcomponent
         @endslot
 
         @slot('left')
             {{-- General Info --}}
-            <x-card class="rounded-2xl border border-slate-200 bg-white shadow-sm !p-5">
+            <x-ui.card class="rounded-2xl border border-slate-200 bg-white shadow-card !p-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <p class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Müşteri') }}</p>
@@ -186,95 +200,21 @@
                         </div>
                     @endif
                 </div>
-            </x-card>
+            </x-ui.card>
 
-            <x-card>
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 mb-6">
-                     <h3 class="font-semibold text-slate-900">{{ __('Kalemler') }}</h3>
-                     <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded">{{ count($salesOrder->items) }} {{ __('kalem') }}</span>
-                </div>
 
-                 <div class="space-y-6">
-                    <div class="hidden rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-500 lg:grid lg:grid-cols-12 lg:items-center">
-                        <div class="lg:col-span-4">{{ __('Hizmet/Ürün') }}</div>
-                        <div class="lg:col-span-1 text-right">{{ __('Miktar') }}</div>
-                        <div class="lg:col-span-1 border-l border-slate-200 pl-2">{{ __('Birim') }}</div>
-                        <div class="lg:col-span-2 text-right">{{ __('Br. Fiyat') }}</div>
-                        <div class="lg:col-span-1 text-right">{{ __('İndirim') }}</div>
-                        <div class="lg:col-span-1 text-right">{{ __('KDV') }}</div>
-                        <div class="lg:col-span-1 text-right">{{ __('Toplam') }}</div>
-                        <div class="lg:col-span-1 text-right">{{ __('') }}</div>
-                    </div>
 
-                    <div class="space-y-6">
-                         @forelse ($itemsBySection as $section => $items)
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between border-b border-slate-100 pb-1">
-                                    <h4 class="text-xs font-bold tracking-wider text-slate-900">{{ $section }}</h4>
-                                </div>
-                                <div class="space-y-3">
-                                    @foreach ($items as $item)
-                                        <div class="flex flex-col gap-2 rounded-lg border border-slate-100 p-3 text-sm sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50 transition-colors">
-                                            <div class="lg:col-span-4 flex-1">
-                                                <div class="flex items-center gap-2">
-                                                    @if ($item->is_optional)
-                                                        <span class="rounded bg-yellow-100 px-1.5 py-0.5 text-[10px] font-medium text-yellow-800">{{ __('Opsiyon') }}</span>
-                                                    @endif
-                                                    <span class="font-medium text-slate-900">{{ $item->description }}</span>
-                                                </div>
-                                                <div class="text-xs text-slate-500">
-                                                    {{ $item->item_type_label }}
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-4 text-slate-700 justify-end flex-wrap sm:flex-nowrap">
-                                                <div class="w-20 text-right">{{ $item->qty }} {{ $item->unit }}</div>
-                                                <div class="w-24 text-right">{{ $formatMoney($item->unit_price) }} {{ $currencySymbol }}</div>
-                                                <div class="w-24 text-right font-semibold">{{ $formatMoney($item->total_price) }} {{ $currencySymbol }}</div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @empty
-                             <div class="text-sm text-slate-500 text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                                <p>{{ __('Henüz kalem eklenmedi.') }}</p>
-                             </div>
-                        @endforelse
-                    </div>
+            @include('sales_orders.partials.post_stock')
+            
+            @include('sales_orders.partials.shipments')
 
-                    {{-- Totals --}}
-                    <div class="grid gap-8 md:grid-cols-12 md:items-start mt-8">
-                         <div class="md:col-span-7"></div>
-                        <div class="md:col-span-5 w-full">
-                            <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                                <h4 class="text-base font-semibold text-slate-900 mb-4">{{ __('Özet') }}</h4>
-                                <dl class="space-y-3 text-sm text-slate-600">
-                                    <div class="flex items-center justify-between">
-                                        <dt>{{ __('Ara Toplam') }}</dt>
-                                        <dd class="font-medium text-slate-900">{{ $currencySymbol }} {{ $formatMoney($salesOrder->subtotal) }}</dd>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <dt>{{ __('İndirim') }}</dt>
-                                        <dd class="font-medium text-red-600">- {{ $currencySymbol }} {{ $formatMoney($salesOrder->discount_total) }}</dd>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <dt>{{ __('Toplam KDV') }}</dt>
-                                        <dd class="font-medium text-slate-900">{{ $currencySymbol }} {{ $formatMoney($salesOrder->vat_total) }}</dd>
-                                    </div>
-                                    <div class="border-t border-slate-200 pt-3 mt-3">
-                                        <div class="flex items-center justify-between text-base">
-                                            <dt class="font-bold text-slate-900">{{ __('Genel Toplam') }}</dt>
-                                            <dd class="font-bold text-brand-600 text-lg">{{ $currencySymbol }} {{ $formatMoney($salesOrder->grand_total) }}</dd>
-                                        </div>
-                                    </div>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </x-card>
+            @include('sales_orders.partials.returns')
 
-            <x-card>
+            @include('sales_orders.partials.invoices')
+
+            @include('sales_orders.partials.items')
+
+            <x-ui.card>
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                     <h3 class="font-semibold text-slate-900">{{ __('Koşullar ve Notlar') }}</h3>
                 </div>
@@ -300,7 +240,7 @@
                         <p class="leading-relaxed">{{ $salesOrder->fx_note ?: '-' }}</p>
                     </div>
                 </div>
-            </x-card>
+            </x-ui.card>
         @endslot
 
         @slot('right')
@@ -316,14 +256,14 @@
 
             <x-partials.follow-up-card :context="$salesOrder" />
 
-             <x-card class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm !p-0">
+             <x-ui.card class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card !p-0">
                 <div class="border-b border-slate-100 bg-white px-4 py-3">
                     <h3 class="font-semibold text-slate-900">{{ __('Aktivite') }}</h3>
                 </div>
                 <div class="bg-slate-50/40 p-4">
                     <x-activity-timeline :logs="$timeline" :show-subject="true" />
                 </div>
-            </x-card>
+            </x-ui.card>
         @endslot
     @endcomponent
 </x-app-layout>

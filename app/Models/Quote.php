@@ -16,10 +16,12 @@ class Quote extends Model
         'customer_id',
         'vessel_id',
         'work_order_id',
+        'sales_order_id',
         'title',
         'status',
         'issued_at',
-        'contact_name',
+        'converted_at',
+        'contact_name', 
         'contact_phone',
         'location',
         'currency_id',
@@ -43,6 +45,7 @@ class Quote extends Model
     protected $casts = [
         'sent_at' => 'datetime',
         'accepted_at' => 'datetime',
+        'converted_at' => 'datetime',
         'issued_at' => 'date',
         'subtotal' => 'decimal:2',
         'discount_total' => 'decimal:2',
@@ -207,11 +210,6 @@ class Quote extends Model
 
     public function isLocked(): bool
     {
-        // Eğer tabloda 'locked' kolonu varsa ve true ise her zaman kilitli say
-        if (\Illuminate\Support\Facades\Schema::hasColumn($this->getTable(), 'locked') && (bool) $this->locked) {
-            return true;
-        }
-
         // Kilit yalnızca gerçekten bağlı SalesOrder varsa aktif olmalı
         if ($this->relationLoaded('salesOrder')) {
             return $this->salesOrder !== null;

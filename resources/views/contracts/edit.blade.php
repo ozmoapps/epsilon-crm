@@ -2,9 +2,9 @@
     <x-slot name="header">
         <x-page-header title="{{ __('Sözleşme Düzenle') }}" subtitle="{{ $contract->contract_no }}">
             <x-slot name="actions">
-                <x-button href="{{ route('contracts.show', $contract) }}" variant="secondary" size="sm">
+                <x-ui.button href="{{ route('contracts.show', $contract) }}" variant="secondary" size="sm">
                     {{ __('Detaya Dön') }}
-                </x-button>
+                </x-ui.button>
             </x-slot>
         </x-page-header>
     </x-slot>
@@ -12,7 +12,7 @@
     <div class="space-y-6">
         @include('contracts._sales_order_summary', ['salesOrder' => $salesOrder])
 
-        <x-card>
+        <x-ui.card>
             <x-slot name="header">{{ __('Sözleşme Detayları') }}</x-slot>
             <form id="contract-update-{{ $contract->id }}" method="POST" action="{{ route('contracts.update', $contract) }}" class="space-y-6">
                 @csrf
@@ -21,9 +21,9 @@
                 @include('contracts._form', ['contract' => $contract])
 
                 <div class="flex flex-wrap items-center justify-end gap-3">
-                    <x-button type="submit" name="apply_template" value="1" variant="secondary">
+                    <x-ui.button type="submit" name="apply_template" value="1" variant="secondary">
                         {{ __('Şablonu Uygula') }}
-                    </x-button>
+                    </x-ui.button>
                     <x-ui.confirm
                         title="{{ __('Değişiklikleri kaydet') }}"
                         message="{{ __('Yaptığınız değişiklikler kaydedilecek. Devam edilsin mi?') }}"
@@ -33,14 +33,14 @@
                         form-id="contract-update-{{ $contract->id }}"
                     >
                         <x-slot name="trigger">
-                            <x-button type="button">{{ __('Güncelle') }}</x-button>
+                            <x-ui.button type="button">{{ __('Güncelle') }}</x-ui.button>
                         </x-slot>
                     </x-ui.confirm>
                 </div>
             </form>
-        </x-card>
+        </x-ui.card>
 
-        <x-card>
+        <x-ui.card>
             <x-slot name="header">{{ __('Önizleme') }}</x-slot>
             @if ($contract->rendered_body)
                 <div class="prose max-w-none">
@@ -53,6 +53,6 @@
             @else
                 <p class="text-sm text-slate-500">{{ __('Henüz bir şablon uygulanmadı.') }}</p>
             @endif
-        </x-card>
+        </x-ui.card>
     </div>
 </x-app-layout>

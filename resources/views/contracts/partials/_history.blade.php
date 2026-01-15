@@ -1,4 +1,4 @@
-<x-card x-data="{ filter: 'all' }" x-show="tab === 'history' || isDesktop" x-cloak>
+<x-ui.card x-data="{ filter: 'all' }" x-show="tab === 'history' || isDesktop" x-cloak>
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -21,7 +21,7 @@
     <div class="space-y-3 text-sm">
         @forelse ($deliveriesSorted as $delivery)
             <div
-                class="rounded-lg border border-slate-100 p-3 space-y-3"
+                class="rounded-xl border border-slate-100 p-3 space-y-3"
                 x-show="filter === 'all' || filter === '{{ $delivery->status }}'"
                 x-cloak
             >
@@ -43,14 +43,29 @@
                     <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                         <span>{{ $delivery->sent_at?->format('d.m.Y H:i') ?? $delivery->created_at?->format('d.m.Y H:i') }}</span>
                         @if ($delivery->status !== 'sent')
-                            <form method="POST" action="{{ route('contracts.deliveries.mark_sent', [$contract, $delivery]) }}">
-                                @csrf
-                                @method('PATCH')
-                                <x-button type="submit" size="sm" onclick="return confirm('Gönderildi olarak işaretlensin mi?')">
-                                    {{ __('Gönderildi') }}
-                                </x-button>
-                            </form>
-                        @endif
+    <form
+        id="contract-delivery-mark-sent-{{ $contract->id }}-{{ $delivery->id }}"
+        method="POST"
+        action="{{ route('contracts.deliveries.mark_sent', [$contract, $delivery]) }}"
+    >
+        @csrf
+        @method('PATCH')
+
+        <x-ui.button
+            type="submit"
+            size="sm"
+            data-confirm
+            data-confirm-title="{{ __('Emin misiniz?') }}"
+            data-confirm-message="{{ __('Gönderim kaydı gönderildi olarak işaretlenecek. Bu işlem geri alınamaz.') }}"
+            data-confirm-text="{{ __('Onayla') }}"
+            data-confirm-cancel-text="{{ __('Vazgeç') }}"
+            data-confirm-submit="contract-delivery-mark-sent-{{ $contract->id }}-{{ $delivery->id }}"
+        >
+            {{ __('Gönderildi') }}
+        </x-ui.button>
+    </form>
+@endif
+
                     </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
@@ -59,7 +74,7 @@
                 </div>
                 @if ($delivery->message)
                     <div x-data="{ open: false }">
-                        <button type="button" class="text-xs font-semibold text-indigo-600" @click="open = !open" :aria-expanded="open.toString()">
+                        <button type="button" class="text-xs font-semibold text-brand-600" @click="open = !open" :aria-expanded="open.toString()">
                             {{ __('Mesajı Gör') }}
                         </button>
                         <div class="mt-2" x-show="open" x-cloak>
@@ -72,4 +87,4 @@
             <p class="text-sm text-slate-500">{{ __('Henüz gönderim kaydı yok.') }}</p>
         @endforelse
     </div>
-</x-card>
+</x-ui.card>

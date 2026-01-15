@@ -26,7 +26,7 @@ class SavedViewController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'scope' => 'required|in:quotes,sales_orders,contracts,work_orders',
+            'scope' => 'required|in:quotes,sales_orders,contracts,work_orders,customer_ledgers',
             'name' => 'required|string|max:60',
             'query' => 'required|json',
             'is_shared' => 'boolean',

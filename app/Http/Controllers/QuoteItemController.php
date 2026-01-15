@@ -73,6 +73,7 @@ class QuoteItemController extends Controller
 
         return [
             'section' => ['nullable', 'string', 'max:255'],
+            'product_id' => ['nullable', 'exists:products,id'],
             'item_type' => ['required', 'string', Rule::in($types)],
             'description' => ['required', 'string'],
             'qty' => ['required', 'numeric', 'min:0'],

@@ -28,6 +28,12 @@ class WorkOrder extends Model
         'planned_end_at',
     ];
 
+
+    public function items()
+    {
+        return $this->hasMany(WorkOrderItem::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -70,5 +76,15 @@ class WorkOrder extends Model
     public function openFollowUps()
     {
         return $this->followUps()->whereNull('completed_at')->orderBy('next_at');
+    }
+
+    public function stockPostedWarehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'stock_posted_warehouse_id');
+    }
+
+    public function stockPostedBy()
+    {
+        return $this->belongsTo(User::class, 'stock_posted_by');
     }
 }

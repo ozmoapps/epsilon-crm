@@ -11,6 +11,7 @@ class SalesOrderItem extends Model
 
     protected $fillable = [
         'sales_order_id',
+        'product_id',
         'section',
         'item_type',
         'description',
@@ -34,5 +35,15 @@ class SalesOrderItem extends Model
     public function salesOrder()
     {
         return $this->belongsTo(SalesOrder::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function shipmentLines()
+    {
+        return $this->hasMany(SalesOrderShipmentLine::class);
     }
 }

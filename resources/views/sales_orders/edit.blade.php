@@ -5,12 +5,12 @@
             subtitle="{{ $salesOrder->order_no }}"
         >
             <x-slot name="actions">
-                <x-button href="{{ route('sales-orders.show', $salesOrder) }}" variant="secondary" size="sm">
+                <x-ui.button href="{{ route('sales-orders.show', $salesOrder) }}" variant="secondary" size="sm">
                     {{ __('Detay') }}
-                </x-button>
-                <x-button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
+                </x-ui.button>
+                <x-ui.button href="{{ route('sales-orders.index') }}" variant="secondary" size="sm">
                     {{ __('Tüm satış siparişleri') }}
-                </x-button>
+                </x-ui.button>
             </x-slot>
         </x-page-header>
     </x-slot>
@@ -30,7 +30,7 @@
                 form-id="sales-order-update-{{ $salesOrder->id }}"
             >
                 <x-slot name="trigger">
-                    <x-button type="button">{{ __('Kaydet') }}</x-button>
+                    <x-ui.button type="button">{{ __('Kaydet') }}</x-ui.button>
                 </x-slot>
             </x-ui.confirm>
         </div>

@@ -1,4 +1,4 @@
-<x-card x-show="tab === 'attachments' || isDesktop" x-cloak>
+<x-ui.card x-show="tab === 'attachments' || isDesktop" x-cloak>
     <x-slot name="header">
         <div>
             <p class="text-base font-semibold text-slate-900">{{ __('Ek Dosyalar') }}</p>
@@ -40,16 +40,16 @@
                 </div>
             </div>
             <div class="flex justify-end">
-                <x-button type="submit" variant="secondary" x-bind:disabled="uploading">
+                <x-ui.button type="submit" variant="secondary" x-bind:disabled="uploading">
                     <span x-show="!uploading">{{ __('Dosya Yükle') }}</span>
                     <span x-cloak x-show="uploading">{{ __('Yükleniyor...') }}</span>
-                </x-button>
+                </x-ui.button>
             </div>
         </form>
 
         <div class="space-y-3 text-sm">
             @forelse ($contract->attachments as $attachment)
-                <div class="flex flex-col gap-3 rounded-lg border border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-3 rounded-xl border border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="space-y-1">
                         <div class="flex flex-wrap items-center gap-2">
                             <p class="font-semibold text-slate-900">{{ $attachment->title }}</p>
@@ -63,7 +63,7 @@
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <x-button
+                        <x-ui.button
                             href="{{ route('contracts.attachments.download', [$contract, $attachment]) }}"
                             variant="secondary"
                             size="sm"
@@ -71,7 +71,7 @@
                             rel="noopener"
                         >
                             {{ __('İndir') }}
-                        </x-button>
+                        </x-ui.button>
                         <form id="contract-attachment-delete-{{ $attachment->id }}" method="POST" action="{{ route('contracts.attachments.destroy', [$contract, $attachment]) }}" class="hidden">
                             @csrf
                             @method('DELETE')
@@ -85,19 +85,19 @@
                             form-id="contract-attachment-delete-{{ $attachment->id }}"
                         >
                             <x-slot name="trigger">
-                                <x-button type="button" variant="danger" size="sm">
+                                <x-ui.button type="button" variant="danger" size="sm">
                                     {{ __('Sil') }}
-                                </x-button>
+                                </x-ui.button>
                             </x-slot>
                         </x-ui.confirm>
                     </div>
                 </div>
             @empty
-                <div class="rounded-lg border border-dashed border-slate-200 p-6 text-center">
+                <div class="rounded-xl border border-dashed border-slate-200 p-6 text-center">
                     <p class="text-sm font-medium text-slate-700">{{ __('Henüz ek dosya yok') }}</p>
                     <p class="mt-1 text-xs text-slate-500">{{ __('İlk dosyayı yükleyerek paylaşım paketini zenginleştirin.') }}</p>
                 </div>
             @endforelse
         </div>
     </div>
-</x-card>
+</x-ui.card>

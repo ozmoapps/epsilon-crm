@@ -10,6 +10,8 @@ class QuotePolicy
 {
     public function view(User $user, Quote $quote): bool
     {
+        // CRM is a shared workspace, so allow all authenticated users (for now).
+        // If specific restrictions are needed later (e.g. teams), they should be added then.
         return true;
     }
 

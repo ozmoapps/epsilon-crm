@@ -1,1 +1,11 @@
-<textarea {{ $attributes->merge(['class' => 'block w-full rounded-xl border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-500 focus:ring-brand-500 ui-focus']) }}>{{ $slot }}</textarea>
+@props(['size' => 'md'])
+
+@php
+    $sizeClasses = [
+        'md' => 'py-2.5',
+        'sm' => 'py-2 text-sm',
+    ];
+    $sizeClass = $sizeClasses[$size] ?? $sizeClasses['md'];
+@endphp
+
+<textarea {{ $attributes->merge(['class' => "block {$sizeClass} ui-input"]) }}>{{ $slot }}</textarea>

@@ -1,20 +1,14 @@
 @props(['variant' => 'neutral'])
 
 @php
+    // Core Design System Variants (Strict Mode)
+    // Only 4 semantic variants are supported. All other inputs fallback to neutral.
+    // 'warning' is intentionally removed to enforce calm UI standards.
     $variants = [
-        'draft' => 'bg-slate-100 text-slate-700 ring-slate-200',
-        'confirmed' => 'bg-brand-50 text-brand-700 ring-brand-200',
-        'in_progress' => 'bg-amber-50 text-amber-800 ring-amber-200',
-        'completed' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-        'sent' => 'bg-brand-50 text-brand-700 ring-brand-200',
-        'signed' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-        'canceled' => 'bg-rose-50 text-rose-700 ring-rose-200',
-        'cancelled' => 'bg-rose-50 text-rose-700 ring-rose-200',
+        'neutral' => 'bg-slate-50 text-slate-700 ring-slate-200',
+        'info'    => 'bg-brand-50 text-brand-700 ring-brand-200',
         'success' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-        'warn' => 'bg-amber-50 text-amber-800 ring-amber-200',
-        'danger' => 'bg-rose-50 text-rose-700 ring-rose-200',
-        'info' => 'bg-brand-50 text-brand-700 ring-brand-200',
-        'neutral' => 'bg-slate-100 text-slate-700 ring-slate-200',
+        'danger'  => 'bg-rose-50 text-rose-700 ring-rose-200',
     ];
 
     $classes = $variants[$variant] ?? $variants['neutral'];

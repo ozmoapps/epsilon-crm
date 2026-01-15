@@ -11,12 +11,18 @@ use App\Models\WorkOrder;
 use App\Models\ActivityLog;
 use App\Services\ActivityLogger;
 use App\Services\ContractTemplateRenderer;
+use App\Services\ContractPdfService;
+use App\Services\ContractWorkflowService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ContractController extends Controller
 {
+    public function __construct(
+        protected ContractPdfService $pdfService,
+        protected ContractWorkflowService $workflowService
+    ) {}
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -27,7 +33,6 @@ class ContractController extends Controller
         $dateTo = $request->input('date_to');
 
         $contracts = Contract::query()
-            ->with(['salesOrder.customer', 'salesOrder.vessel'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -54,7 +59,7 @@ class ContractController extends Controller
 
         $statuses = Contract::statusOptions();
         $customers = \App\Models\Customer::orderBy('name')->get(['id', 'name']);
-        $vessels = \App\Models\Vessel::with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']);
+        $vessels = \App\Models\Vessel::orderBy('name')->get(['id', 'name', 'customer_id']);
 
         $savedViews = \App\Models\SavedView::allow('contracts')->visibleTo($request->user())->get();
 
@@ -191,7 +196,7 @@ class ContractController extends Controller
             'salesOrder' => $contract->salesOrder,
             'locales' => config('contracts.locales', []),
             'templates' => $this->availableTemplates($contract->locale),
-            'previewHtml' => $this->buildPreview($contract, ContractTemplate::defaultForLocale($contract->locale)),
+            'previewHtml' => $this->workflowService->renderPreview($contract, ContractTemplate::defaultForLocale($contract->locale)),
         ]);
     }
 
@@ -209,7 +214,7 @@ class ContractController extends Controller
         $contract->update($validated);
 
         if ($request->boolean('apply_template')) {
-            $this->applyTemplate($contract, false, true);
+            $this->workflowService->applyTemplate($contract, false, true);
 
             return redirect()->route('contracts.edit', $contract)
                 ->with('success', 'Şablon uygulandı ve önizleme güncellendi.');
@@ -271,20 +276,22 @@ class ContractController extends Controller
     {
         $this->authorize('update', $contract);
 
-        if (! $contract->rendered_body) {
-            $this->applyTemplate($contract, true);
-        } elseif (! $contract->rendered_at) {
-            $contract->update(['rendered_at' => now()]);
+        if (! $this->workflowService->markAsSent($contract)) {
+            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
         }
 
-        return $this->transitionStatus($contract, 'draft', 'sent', null, 'Sözleşme gönderildi olarak işaretlendi.');
+        return back()->with('success', 'Sözleşme gönderildi olarak işaretlendi.');
     }
 
     public function markSigned(Contract $contract)
     {
         $this->authorize('update', $contract);
 
-        return $this->transitionStatus($contract, 'sent', 'signed', now(), 'Sözleşme imzalandı olarak işaretlendi.');
+        if (! $this->workflowService->markAsSigned($contract, now())) {
+            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
+        }
+
+        return back()->with('success', 'Sözleşme imzalandı olarak işaretlendi.');
     }
 
     public function cancel(Contract $contract)
@@ -295,7 +302,7 @@ class ContractController extends Controller
             return back()->with('warning', 'Sözleşme zaten iptal edildi.');
         }
 
-        if (! $contract->transitionTo('cancelled', ['source' => 'cancel'])) {
+        if (! $this->workflowService->cancel($contract)) {
             return back()->with('warning', 'Bu işlem için uygun durumda değil.');
         }
 
@@ -306,13 +313,7 @@ class ContractController extends Controller
     {
         $this->authorize('view', $contract);
 
-        $contract->load(['salesOrder.customer', 'salesOrder.items']);
-
-        if (! $contract->rendered_body) {
-            $this->applyTemplate($contract, true);
-        } elseif (! $contract->rendered_at) {
-            $contract->update(['rendered_at' => now()]);
-        }
+        $contract = $this->pdfService->prepareForPdf($contract);
 
         return response()
             ->view('contracts.pdf', ['contract' => $contract])
@@ -323,118 +324,23 @@ class ContractController extends Controller
     {
         $this->authorize('view', $contract);
 
-        $contract->load(['salesOrder.customer', 'salesOrder.vessel', 'salesOrder.items']);
+        $data = $this->pdfService->prepareForPrint($contract);
 
-        if (! $contract->rendered_body) {
-            $this->applyTemplate($contract, true);
-        } elseif (! $contract->rendered_at) {
-            $contract->update(['rendered_at' => now()]);
-        }
-
-        $companyProfile = \App\Models\CompanyProfile::current();
-        $bankAccounts = \App\Models\BankAccount::query()->with('currency')->orderBy('bank_name')->get();
-
-        return view('contracts.print', compact('contract', 'companyProfile', 'bankAccounts'));
+        return view('contracts.print', $data);
     }
 
     public function revise(Request $request, Contract $contract)
     {
         $this->authorize('update', $contract);
 
-        if (! $contract->canCreateRevision()) {
+        $newContract = $this->workflowService->createRevision($contract, $request->user()->id);
+
+        if (! $newContract) {
             return back()->with('warning', 'Bu sözleşme için revizyon oluşturulamaz.');
         }
 
-        $contract->loadMissing('salesOrder');
-
-        $rootContract = $contract->root_contract_id
-            ? Contract::query()->findOrFail($contract->root_contract_id)
-            : $contract;
-
-        $baseContractNo = $rootContract->contract_no;
-        $latestRevision = Contract::query()
-            ->where('root_contract_id', $rootContract->id)
-            ->max('revision_no');
-        $latestRevision = max($latestRevision ?? 1, $rootContract->revision_no ?? 1);
-        $nextRevision = $latestRevision + 1;
-        $newContractNo = sprintf('%s-R%d', $baseContractNo, $nextRevision);
-
-        $newContract = DB::transaction(function () use ($contract, $request, $rootContract, $nextRevision, $newContractNo) {
-            $current = Contract::query()
-                ->where(function ($query) use ($rootContract) {
-                    $query->where('id', $rootContract->id)
-                        ->orWhere('root_contract_id', $rootContract->id);
-                })
-                ->where('is_current', true)
-                ->lockForUpdate()
-                ->first();
-
-            $newContract = Contract::create([
-                'sales_order_id' => $contract->sales_order_id,
-                'root_contract_id' => $rootContract->id,
-                'revision_no' => $nextRevision,
-                'contract_no' => $newContractNo,
-                'status' => 'draft',
-                'issued_at' => now()->toDateString(),
-                'locale' => $contract->locale,
-                'currency' => $contract->currency,
-                'customer_name' => $contract->customer_name,
-                'customer_company' => $contract->customer_company,
-                'customer_tax_no' => $contract->customer_tax_no,
-                'customer_address' => $contract->customer_address,
-                'customer_email' => $contract->customer_email,
-                'customer_phone' => $contract->customer_phone,
-                'subtotal' => $contract->subtotal,
-                'tax_total' => $contract->tax_total,
-                'grand_total' => $contract->grand_total,
-                'payment_terms' => $contract->payment_terms,
-                'warranty_terms' => $contract->warranty_terms,
-                'scope_text' => $contract->scope_text,
-                'exclusions_text' => $contract->exclusions_text,
-                'delivery_terms' => $contract->delivery_terms,
-                'contract_template_id' => $contract->contract_template_id,
-                'contract_template_version_id' => null,
-                'rendered_body' => null,
-                'rendered_at' => null,
-                'created_by' => $request->user()->id,
-                'is_current' => true,
-            ]);
-
-            if ($current) {
-                $current->forceFill([
-                    'is_current' => false,
-                    'superseded_by_id' => $newContract->id,
-                    'superseded_at' => now(),
-                ])->save();
-
-                $current->transitionTo('superseded', [
-                    'superseded_by_id' => $newContract->id,
-                    'superseded_contract_no' => $newContract->contract_no,
-                ]);
-            }
-
-            return $newContract;
-        });
-
         return redirect()->route('contracts.edit', $newContract)
             ->with('success', 'Revizyon oluşturuldu.');
-    }
-
-    private function transitionStatus(Contract $contract, string $from, string $to, $signedAt, string $message)
-    {
-        if ($contract->status !== $from) {
-            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
-        }
-
-        if (! $contract->transitionTo($to, ['source' => 'status_action'])) {
-            return back()->with('warning', 'Bu işlem için uygun durumda değil.');
-        }
-
-        $contract->forceFill([
-            'signed_at' => $signedAt,
-        ])->save();
-
-        return back()->with('success', $message);
     }
 
     private function rules(): array
@@ -502,58 +408,5 @@ class ContractController extends Controller
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
-    }
-
-    private function buildPreview(Contract $contract, ?ContractTemplate $defaultTemplate): ?string
-    {
-        $template = $contract->contractTemplate ?: $defaultTemplate;
-
-        if (! $template) {
-            return null;
-        }
-
-        $renderer = app(ContractTemplateRenderer::class);
-
-        $version = $this->resolveTemplateVersion($contract, $template);
-
-        return $renderer->render($contract, $version ?? $template);
-    }
-
-    private function applyTemplate(Contract $contract, bool $setRenderedAt = false, bool $forceCurrentVersion = false): void
-    {
-        $template = $contract->contractTemplate
-            ?: ContractTemplate::defaultForLocale($contract->locale);
-
-        $renderer = app(ContractTemplateRenderer::class);
-        $version = $this->resolveTemplateVersion($contract, $template, $forceCurrentVersion);
-
-        if (! $version) {
-            return;
-        }
-
-        $contract->forceFill([
-            'rendered_body' => $renderer->render($contract, $version),
-            'rendered_at' => $setRenderedAt ? now() : $contract->rendered_at,
-            'contract_template_version_id' => $version->id,
-        ])->save();
-    }
-
-    private function resolveTemplateVersion(
-        Contract $contract,
-        ?ContractTemplate $template,
-        bool $forceCurrentVersion = false
-    ): ?ContractTemplateVersion
-    {
-        if (! $forceCurrentVersion && $contract->contract_template_version_id) {
-            return ContractTemplateVersion::query()->find($contract->contract_template_version_id);
-        }
-
-        if (! $template) {
-            return null;
-        }
-
-        $template->loadMissing('currentVersion');
-
-        return $template->currentVersion ?: $template->latestVersion();
     }
 }

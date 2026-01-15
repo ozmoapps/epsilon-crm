@@ -1,3 +1,11 @@
-@props(['disabled' => false])
+@props(['disabled' => false, 'size' => 'md'])
 
-<input @disabled($disabled) {{ $attributes->merge(['class' => 'h-10 w-full rounded-xl border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 ui-focus disabled:cursor-not-allowed disabled:opacity-60']) }}>
+@php
+    $sizeClasses = [
+        'md' => 'h-10',
+        'sm' => 'h-9 text-sm',
+    ];
+    $sizeClass = $sizeClasses[$size] ?? $sizeClasses['md'];
+@endphp
+
+<input @disabled($disabled) {{ $attributes->merge(['class' => "block {$sizeClass} ui-input"]) }}>

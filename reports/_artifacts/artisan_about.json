@@ -1,0 +1,2 @@
+{"environment":{"application_name":"Laravel","laravel_version":"12.46.0","php_version":"8.5.1","composer_version":"2.9.3","environment":"local","debug_mode":true,"url":"localhost","maintenance_mode":false,"timezone":"UTC","locale":"en"},"cache":{"config":false,"events":false,"routes":false,"views":true},"drivers":{"broadcasting":"log","cache":"database","database":"sqlite","logs":["single"],"mail":"log","queue":"database","session":"database"},"storage":{"\/users\/vahapcansari\/desktop\/epsilon-crm\/public\/storage":false}}
+

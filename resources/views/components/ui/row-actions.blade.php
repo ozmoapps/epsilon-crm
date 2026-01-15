@@ -3,9 +3,9 @@
     'edit' => null,
     'delete' => null,
     'deleteFormId' => null,
-    'confirmTitle' => __('Silme işlemini onayla'),
-    'confirmMessage' => __('Bu işlem geri alınamaz. Devam etmek istiyor musunuz?'),
-    'confirmText' => __('Evet, sil'),
+    'confirmTitle' => __('Silinsin mi?'),
+    'confirmMessage' => __('Bu işlem geri alınamaz.'),
+    'confirmText' => __('Sil'),
     'cancelText' => __('Vazgeç'),
     'editDisabled' => false,
     'deleteDisabled' => false,
@@ -20,11 +20,11 @@
     @if ($show)
         <a
             href="{{ $show }}"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-sky-600 transition hover:bg-sky-50 hover:text-sky-700"
-            title="{{ $viewLabel }}"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100/70 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20"
             aria-label="{{ $viewLabel }}"
         >
             <x-icon.info class="h-4 w-4" />
+            <span class="sr-only">{{ $viewLabel }}</span>
         </a>
     @endif
 
@@ -32,21 +32,21 @@
         @if ($editDisabled)
             <button
                 type="button"
-                class="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg text-slate-300"
-                title="{{ $editDisabledTitle ?? $editLabel }}"
+                class="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-xl text-slate-300"
                 aria-label="{{ $editDisabledTitle ?? $editLabel }}"
                 aria-disabled="true"
             >
                 <x-icon.pencil class="h-4 w-4" />
+                <span class="sr-only">{{ $editDisabledTitle ?? $editLabel }}</span>
             </button>
         @else
             <a
                 href="{{ $edit }}"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-indigo-600 transition hover:bg-indigo-50 hover:text-indigo-700"
-                title="{{ $editLabel }}"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100/70 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20"
                 aria-label="{{ $editLabel }}"
             >
                 <x-icon.pencil class="h-4 w-4" />
+                <span class="sr-only">{{ $editLabel }}</span>
             </a>
         @endif
     @endif
@@ -55,33 +55,28 @@
         @if ($deleteDisabled)
             <button
                 type="button"
-                class="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-lg text-slate-300"
-                title="{{ $deleteDisabledTitle ?? $deleteLabel }}"
+                class="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-xl text-slate-300"
                 aria-label="{{ $deleteDisabledTitle ?? $deleteLabel }}"
                 aria-disabled="true"
             >
                 <x-icon.trash class="h-4 w-4" />
+                <span class="sr-only">{{ $deleteDisabledTitle ?? $deleteLabel }}</span>
             </button>
         @elseif ($deleteFormId)
-            <x-ui.confirm
-                title="{{ $confirmTitle }}"
-                message="{{ $confirmMessage }}"
-                confirm-text="{{ $confirmText }}"
-                cancel-text="{{ $cancelText }}"
-                variant="danger"
-                form-id="{{ $deleteFormId }}"
+            <button
+                type="button"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/20"
+                aria-label="{{ $deleteLabel }}"
+                data-confirm
+                data-confirm-title="{{ $confirmTitle }}"
+                data-confirm-message="{{ $confirmMessage }}"
+                data-confirm-text="{{ $confirmText }}"
+                data-confirm-cancel-text="{{ $cancelText }}"
+                data-confirm-submit="{{ $deleteFormId }}"
             >
-                <x-slot name="trigger">
-                    <button
-                        type="button"
-                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 transition hover:bg-rose-50 hover:text-rose-700"
-                        title="{{ $deleteLabel }}"
-                        aria-label="{{ $deleteLabel }}"
-                    >
-                        <x-icon.trash class="h-4 w-4" />
-                    </button>
-                </x-slot>
-            </x-ui.confirm>
+                <x-icon.trash class="h-4 w-4" />
+                <span class="sr-only">{{ $deleteLabel }}</span>
+            </button>
         @endif
     @endif
 

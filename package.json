@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "ui:check": "echo 'Checking UI contract...'; TARGET='resources/views/components/ui/combobox.blade.php'; if grep -Fq 'combobox:selected' $TARGET && grep -Fq 'combobox:search' $TARGET && grep -Fq 'combobox:set-options' $TARGET && grep -Fq 'combobox:set-value' $TARGET && grep -Fq 'detail: { name' $TARGET; then echo '✅ UI contract check passed'; else echo '⚠️ UI contract check WARNING: Missing event definitions or payload structure in '$TARGET; fi; if grep -R \"\\btext-gray-\\|\\bbg-gray-\\|\\bborder-gray-\\|\\bring-gray-\\|\\btext-indigo-\\|\\bbg-indigo-\\|\\bborder-indigo-\\|\\bring-indigo-\\|\\bshadow-sm\\|\\brounded-lg\" -n resources/views resources/views/components resources/views/components/ui; then echo '❌ UI violations found'; exit 1; else echo '✅ UI check passed'; fi",
+        "db:check": "php artisan vessels:audit-ownership"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",

@@ -1,6 +1,6 @@
 @props(['filters', 'actions' => null])
 
-<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+<div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-card mb-6">
     <div class="flex flex-col space-y-4">
         @if(isset($actions))
             <div class="flex items-center justify-between pb-4 border-b border-slate-100">

@@ -1,8 +1,8 @@
-<x-card>
+<x-ui.card>
     <x-slot name="header">{{ __('Revizyonlar') }}</x-slot>
     <div class="space-y-3 text-sm">
         @foreach ($revisions as $revision)
-            <div class="flex flex-col gap-3 rounded-lg border border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-col gap-3 rounded-xl border border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div class="space-y-1">
                     <p class="text-xs text-slate-500">{{ $revision->contract_no }}</p>
                     <p class="text-base font-semibold text-slate-900">{{ $revision->revision_label }}</p>
@@ -21,14 +21,14 @@
                             {{ __('Güncel') }}
                         </x-ui.badge>
                     @endif
-                    <x-button href="{{ route('contracts.show', $revision) }}" variant="secondary" size="sm">
+                    <x-ui.button href="{{ route('contracts.show', $revision) }}" variant="secondary" size="sm">
                         {{ __('Görüntüle') }}
-                    </x-button>
-                    <x-button href="{{ route('contracts.pdf', $revision) }}" variant="secondary" size="sm">
+                    </x-ui.button>
+                    <x-ui.button href="{{ route('contracts.pdf', $revision) }}" variant="secondary" size="sm">
                         {{ __('PDF') }}
-                    </x-button>
+                    </x-ui.button>
                 </div>
             </div>
         @endforeach
     </div>
-</x-card>
+</x-ui.card>

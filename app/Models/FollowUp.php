@@ -45,4 +45,20 @@ class FollowUp extends Model
     {
         return $query->whereNull('completed_at');
     }
+
+    public function getIsCompletedAttribute(): bool
+    {
+        return ! is_null($this->completed_at);
+    }
+
+    public function isOverdue(): bool
+    {
+        return ! $this->is_completed && $this->next_at && $this->next_at->isPast();
+    }
+
+    public function getTitleAttribute(): string
+    {
+        // Fallback to note or subject name or absolute fallback
+        return $this->note ?? $this->subject?->name ?? 'Takip #' . $this->id;
+    }
 }

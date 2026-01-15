@@ -6,22 +6,22 @@
         <title>Erişim Engellendi (403) - {{ config('app.name', 'Epsilon CRM') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="bg-gray-100 font-sans text-gray-900 antialiased">
+    <body class="bg-slate-100 font-sans text-slate-900 antialiased">
         <div class="flex min-h-screen flex-col items-center justify-center pt-6 sm:pt-0">
-            <div class="w-full max-w-md bg-white p-6 shadow-md overflow-hidden sm:rounded-lg text-center">
+            <div class="w-full max-w-md bg-white p-8 shadow-card overflow-hidden sm:rounded-2xl text-center border border-slate-200">
                 <div class="flex justify-center mb-6">
-                    <x-application-logo class="h-20 w-auto fill-current text-gray-500" />
+                    <x-application-logo class="h-20 w-auto fill-current text-slate-500" />
                 </div>
 
-                <div class="mb-4 text-4xl font-bold text-red-600">
+                <div class="mb-4 text-4xl font-bold text-rose-600">
                     403
                 </div>
 
-                <h2 class="mb-4 text-xl font-semibold text-gray-900">
+                <h2 class="mb-4 text-xl font-semibold text-slate-900">
                     Erişim İzniniz Yok
                 </h2>
 
-                <p class="mb-6 text-gray-600">
+                <p class="mb-6 text-slate-600">
                     Üzgünüz, bu sayfayı görüntülemek için gerekli yetkiye sahip değilsiniz.
                     Bu alan sadece yönetici (Admin) kullanıcılar içindir.
                 </p>
