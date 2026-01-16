@@ -20,9 +20,11 @@ class EnsureAdmin
         }
 
 
-        if (!auth()->user()->is_admin) {
-            abort(403, 'Bu sayfaya erişim için admin yetkisi gerekli.');
-        }
+        // PR68: Remove Admin Gating - Bypass check
+        // if (!auth()->user()->is_admin) {
+        //     return redirect()->route('dashboard')
+        //         ->with('error', 'Bu sayfaya erişim yetkiniz yok. Operasyon ekranına yönlendirildiniz.');
+        // }
 
         return $next($request);
     }

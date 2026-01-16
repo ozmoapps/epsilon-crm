@@ -13,7 +13,7 @@ class InvoiceController extends Controller
     public function index(Request $request)
     {
         $query = Invoice::query()
-            ->with(['salesOrder', 'salesOrder.customer'])
+            ->with(['salesOrder', 'customer'])
             ->orderByDesc('issue_date')
             ->orderByDesc('id');
 
@@ -59,6 +59,9 @@ class InvoiceController extends Controller
                          ->orWhereHas('customer', function ($cq) use ($term) {
                              $cq->where('name', 'like', '%' . $term . '%');
                          });
+                  })
+                  ->orWhereHas('customer', function ($cq) use ($term) {
+                      $cq->where('name', 'like', '%' . $term . '%');
                   });
             });
         }

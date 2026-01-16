@@ -6,7 +6,19 @@
                 'subtitle' => ($workOrder->customer?->name ?? '-') . ' • ' . ($workOrder->vessel?->name ?? '-') . ' • ' . ($workOrder->planned_start_at ? $workOrder->planned_start_at->format('d.m.Y') : '-') . ' - ' . ($workOrder->planned_end_at ? $workOrder->planned_end_at->format('d.m.Y') : '-'),
             ])
                 @slot('status')
-                     <x-badge variant="info">{{ $workOrder->status_label }}</x-badge>
+                    @php
+                        $statusVariants = [
+                            'draft' => 'neutral',
+                            'planned' => 'info',
+                            'started' => 'info',
+                            'in_progress' => 'info',
+                            'on_hold' => 'neutral',
+                            'completed' => 'success',
+                            'delivered' => 'success',
+                            'cancelled' => 'danger',
+                        ];
+                    @endphp
+                     <x-ui.badge :variant="$statusVariants[$workOrder->status] ?? 'neutral'">{{ $workOrder->status_label }}</x-ui.badge>
                 @endslot
 
                 @slot('actions')
@@ -99,10 +111,16 @@
             </x-ui.card>
             
             @include('work_orders.partials.items')
+            @include('work_orders.partials.photos')
+            @include('work_orders.partials.updates')
             @include('work_orders.partials.post_stock')
         @endslot
 
         @slot('right')
+            @include('work_orders.partials.progress', ['workOrder' => $workOrder])
+
+            @include('partials.operation-flow', ['flow' => $operationFlow])
+
             @include('partials.document-hub', [
                 'context' => 'work_order',
                 'quote' => $quote ?? null,
@@ -117,7 +135,7 @@
 
             <x-ui.card class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card !p-0">
                 <div class="border-b border-slate-100 bg-white px-4 py-3">
-                    <h3 class="font-semibold text-slate-900">{{ __('Aktivite') }}</h3>
+                    <h3 class="font-semibold text-slate-900">{{ __('Sistem Günlüğü') }}</h3>
                 </div>
                 <div class="bg-slate-50/40 p-4">
                     <x-activity-timeline :logs="$timeline" :show-subject="true" />

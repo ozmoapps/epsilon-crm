@@ -12,8 +12,11 @@ class WorkOrder extends Model
     public const STATUS_OPTIONS = [
         'draft' => 'Taslak',
         'planned' => 'Planlandı',
+        'started' => 'Başladı',
         'in_progress' => 'Devam Ediyor',
+        'on_hold' => 'Beklemede',
         'completed' => 'Tamamlandı',
+        'delivered' => 'Teslim Edildi',
         'cancelled' => 'İptal',
     ];
 
@@ -86,5 +89,20 @@ class WorkOrder extends Model
     public function stockPostedBy()
     {
         return $this->belongsTo(User::class, 'stock_posted_by');
+    }
+
+    public function photos()
+    {
+        return $this->hasMany(WorkOrderPhoto::class);
+    }
+
+    public function updates()
+    {
+        return $this->hasMany(WorkOrderUpdate::class)->latest('happened_at');
+    }
+
+    public function progress()
+    {
+        return $this->hasMany(WorkOrderProgress::class)->latest();
     }
 }

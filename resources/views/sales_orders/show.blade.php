@@ -47,6 +47,32 @@
                         </x-ui.confirm>
                     @endif
 
+                    @if ($salesOrder->work_order_id)
+                        <x-ui.button href="{{ route('work-orders.show', $salesOrder->work_order_id) }}" variant="secondary" size="sm">
+                            <x-icon.clipboard class="h-4 w-4 mr-2" />
+                            {{ __('İş Emrini Görüntüle') }}
+                        </x-ui.button>
+                     @elseif(auth()->user()->is_admin)
+                        <form id="sales-order-work-order-create-{{ $salesOrder->id }}" method="POST" action="{{ route('sales-orders.create-work-order', $salesOrder) }}" class="hidden">
+                            @csrf
+                        </form>
+                        <x-ui.confirm
+                            title="{{ __('İş Emri Oluşturmayı Onayla') }}"
+                            message="{{ __('Bu siparişten yeni bir iş emri oluşturulacak. Devam etmek istiyor musunuz?') }}"
+                            confirm-text="{{ __('İş Emri Oluştur') }}"
+                            cancel-text="{{ __('Vazgeç') }}"
+                            variant="primary"
+                            form-id="sales-order-work-order-create-{{ $salesOrder->id }}"
+                        >
+                            <x-slot name="trigger">
+                                <x-ui.button type="button" size="sm" variant="secondary">
+                                    <x-icon.clipboard class="h-4 w-4 mr-2" />
+                                    {{ __('İş Emri Oluştur') }}
+                                </x-ui.button>
+                            </x-slot>
+                        </x-ui.confirm>
+                    @endif
+
                     <x-ui.dropdown align="right" width="w-60">
                         <x-slot name="trigger">
                              <button class="inline-flex items-center px-3 py-2 border border-slate-200 shadow-card text-sm leading-4 font-medium rounded-xl text-slate-700 bg-white hover:bg-slate-50 focus:outline-none transition ease-in-out duration-150 gap-2">
@@ -248,6 +274,8 @@
         @endslot
 
         @slot('right')
+             @include('partials.operation-flow', ['flow' => $operationFlow])
+
              @include('partials.document-hub', [
                 'context' => 'sales_order',
                 'quote' => $quote ?? null,

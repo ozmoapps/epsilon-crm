@@ -16,14 +16,15 @@
     'deleteLabel' => __('Sil'),
 ])
 
-<div {{ $attributes->merge(['class' => 'flex items-center justify-end gap-2']) }}>
+<div {{ $attributes->merge(['class' => 'flex items-center justify-end gap-1.5']) }}>
     @if ($show)
         <a
             href="{{ $show }}"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100/70 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/80 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:bg-slate-100"
             aria-label="{{ $viewLabel }}"
+            title="{{ $viewLabel }}"
         >
-            <x-icon.info class="h-4 w-4" />
+            <x-icon.search class="h-4 w-4" />
             <span class="sr-only">{{ $viewLabel }}</span>
         </a>
     @endif
@@ -32,8 +33,9 @@
         @if ($editDisabled)
             <button
                 type="button"
-                class="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-xl text-slate-300"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/60 bg-white text-slate-300 opacity-40 cursor-not-allowed pointer-events-none"
                 aria-label="{{ $editDisabledTitle ?? $editLabel }}"
+                title="{{ $editDisabledTitle ?? $editLabel }}"
                 aria-disabled="true"
             >
                 <x-icon.pencil class="h-4 w-4" />
@@ -42,8 +44,9 @@
         @else
             <a
                 href="{{ $edit }}"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-600 transition hover:bg-slate-100/70 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/20"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/80 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:bg-slate-100"
                 aria-label="{{ $editLabel }}"
+                title="{{ $editLabel }}"
             >
                 <x-icon.pencil class="h-4 w-4" />
                 <span class="sr-only">{{ $editLabel }}</span>
@@ -55,8 +58,9 @@
         @if ($deleteDisabled)
             <button
                 type="button"
-                class="inline-flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-xl text-slate-300"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/60 bg-white text-slate-300 opacity-40 cursor-not-allowed pointer-events-none"
                 aria-label="{{ $deleteDisabledTitle ?? $deleteLabel }}"
+                title="{{ $deleteDisabledTitle ?? $deleteLabel }}"
                 aria-disabled="true"
             >
                 <x-icon.trash class="h-4 w-4" />
@@ -65,8 +69,9 @@
         @elseif ($deleteFormId)
             <button
                 type="button"
-                class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/20"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/80 bg-white text-slate-600 shadow-sm transition-colors hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:bg-rose-100/50"
                 aria-label="{{ $deleteLabel }}"
+                title="{{ $deleteLabel }}"
                 data-confirm
                 data-confirm-title="{{ $confirmTitle }}"
                 data-confirm-message="{{ $confirmMessage }}"

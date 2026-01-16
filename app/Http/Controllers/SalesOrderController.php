@@ -161,7 +161,63 @@ class SalesOrderController extends Controller
             ->limit(50)
             ->get();
 
-        return view('sales_orders.show', compact('salesOrder', 'quote', 'contract', 'workOrder', 'timeline'));
+        // Operation Flow Logic
+        $user = auth()->user();
+        $isAdmin = $user->is_admin;
+
+        // SalesOrder context: Quote -> SO -> Contract -> WO -> ...
+        $operationFlow = [
+            [
+                'label' => 'Teklif',
+                'completed' => $quote && in_array($quote->status, ['accepted', 'converted']),
+                'status_label' => $quote?->status_label ?? 'Yok',
+                'status_variant' => $quote ? ($quote->status === 'draft' ? 'neutral' : 'success') : 'neutral',
+                'href' => $quote && $isAdmin ? route('quotes.show', $quote) : null,
+                'locked' => $quote && !$isAdmin,
+            ],
+            [
+                'label' => 'Satış Siparişi',
+                'completed' => in_array($salesOrder->status, ['confirmed', 'in_progress', 'completed', 'contracted']),
+                'status_label' => $salesOrder->status_label,
+                'status_variant' => $salesOrder->status === 'draft' ? 'neutral' : 'success',
+                'href' => null, // Already here
+                'locked' => false,
+            ],
+            [
+                'label' => 'Sözleşme',
+                'completed' => (bool)$contract,
+                'status_label' => $contract ? 'Mevcut' : 'Yok',
+                'status_variant' => $contract ? 'success' : 'neutral',
+                'href' => $contract && $isAdmin ? route('contracts.show', $contract) : null,
+                'locked' => $contract && !$isAdmin,
+            ],
+            [
+                'label' => 'İş Emri',
+                'completed' => $workOrder && in_array($workOrder->status, ['completed', 'delivered']),
+                'status_label' => $workOrder?->status_label ?? 'Yok',
+                'status_variant' => $workOrder ? (in_array($workOrder->status, ['completed', 'delivered']) ? 'success' : 'info') : 'neutral',
+                'href' => $workOrder ? route('work-orders.show', $workOrder) : null, // Staff can view WO
+                'locked' => false, // WO is safe for staff
+            ],
+            [
+                'label' => 'Fotoğraflar',
+                'completed' => $workOrder && $workOrder->photos()->exists(),
+                'status_label' => ($workOrder && $workOrder->photos()->exists()) ? 'Yüklendi' : 'Eksik',
+                'status_variant' => ($workOrder && $workOrder->photos()->exists()) ? 'success' : 'warning',
+                'href' => null,
+                'locked' => false,
+            ],
+            [
+                'label' => 'Teslimat',
+                'completed' => $workOrder && in_array($workOrder->status, ['delivered']),
+                'status_label' => ($workOrder && $workOrder->status === 'delivered') ? 'Teslim Edildi' : 'Bekleniyor',
+                'status_variant' => ($workOrder && $workOrder->status === 'delivered') ? 'success' : 'neutral',
+                'href' => null,
+                'locked' => false,
+            ]
+        ];
+
+        return view('sales_orders.show', compact('salesOrder', 'quote', 'contract', 'workOrder', 'timeline', 'operationFlow'));
     }
 
     public function confirm(SalesOrder $salesOrder)
@@ -376,5 +432,54 @@ class SalesOrderController extends Controller
         });
 
         return redirect()->back()->with('success', 'Stok düşüşü gerçekleştirildi.');
+    }
+    public function createWorkOrder(SalesOrder $salesOrder)
+    {
+        // 1. Idempotency & Validation
+        if ($salesOrder->work_order_id) {
+            return redirect()->route('work-orders.show', $salesOrder->work_order_id)
+                ->with('info', 'Bu sipariş zaten bir iş emrine bağlı.');
+        }
+
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($salesOrder) {
+            // Lock SO
+            $salesOrder = SalesOrder::lockForUpdate()->find($salesOrder->id);
+            
+            if ($salesOrder->work_order_id) {
+                return redirect()->route('work-orders.show', $salesOrder->work_order_id);
+            }
+
+            // 2. Create Work Order
+            $workOrder = WorkOrder::create([
+                'customer_id' => $salesOrder->customer_id,
+                'vessel_id' => $salesOrder->vessel_id,
+                'title' => $salesOrder->title ?? 'Sipariş #' . $salesOrder->order_no,
+                // 'description' => $salesOrder->notes, // Optional: maybe too much noise? Prompt said "title/description requested if possible". Let's keep title mainly.
+                'status' => 'planned',
+                'created_by' => auth()->id(),
+            ]);
+
+            // 3. Copy Items (No financial data)
+            foreach ($salesOrder->items as $index => $soItem) {
+                // Skip section headers or just copy them? WorkOrderItems usually are flat or simple list. 
+                // WorkOrderItem model has: work_order_id, product_id, description, qty, unit, sort_order.
+                // Assuming "section" or "item_type" might not map directly if WO is simpler, 
+                // but let's try to map useful parts.
+                
+                $workOrder->items()->create([
+                    'product_id' => $soItem->product_id,
+                    'description' => $soItem->description, // Or section header if needed
+                    'qty' => $soItem->qty ?: 1, // Ensure at least 1 if it's a descriptive line? No, keep logic simple.
+                    'unit' => $soItem->unit,
+                    'sort_order' => $soItem->sort_order ?? $index,
+                ]);
+            }
+
+            // 4. Link & Save
+            $salesOrder->update(['work_order_id' => $workOrder->id]);
+
+            return redirect()->route('work-orders.show', $workOrder)
+                ->with('success', 'İş emri oluşturuldu.');
+        });
     }
 }

@@ -11,7 +11,7 @@
 
     <div class="space-y-6" x-data="{ 
         selected: [], 
-        allIds: @js($customers->pluck('id')),
+        allIds: @js($customers->pluck('id')->map(fn($id) => (string) $id)),
         toggleAll() {
             this.selected = this.selected.length === this.allIds.length ? [] : [...this.allIds];
         },
@@ -34,7 +34,7 @@
         </x-ui.card>
 
         {{-- Bulk Actions Bar --}}
-        <x-ui.bulk-bar x-show="selected.length > 0" x-transition x-cloak class="!top-24 !bottom-auto">
+        <x-ui.bulk-bar x-show="selected.length > 0" x-transition x-cloak>
              <x-slot name="count">
                 <span x-text="selected.length"></span>
              </x-slot>
@@ -70,8 +70,8 @@
                                 <div class="flex items-center">
                                     <x-checkbox 
                                            @click="toggleAll()" 
-                                           :checked="selected.length > 0 && selected.length === allIds.length"
-                                           :indeterminate="selected.length > 0 && selected.length < allIds.length"
+                                           x-bind:checked="selected.length > 0 && selected.length === allIds.length"
+                                           x-bind:indeterminate="selected.length > 0 && selected.length < allIds.length"
                                     />
                                 </div>
                             </th>
