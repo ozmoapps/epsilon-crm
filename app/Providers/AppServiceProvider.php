@@ -35,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // PR68: Remove Admin Gating - Allow everything for everyone
+        Gate::before(function ($user, $ability) {
+            return true;
+        });
+
         Gate::policy(Contract::class, ContractPolicy::class);
         Gate::policy(ContractTemplate::class, ContractTemplatePolicy::class);
         Gate::policy(Quote::class, QuotePolicy::class);

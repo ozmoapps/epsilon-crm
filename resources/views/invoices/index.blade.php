@@ -80,7 +80,7 @@
                                     default => 'neutral',
                                 };
 
-                                $customerName = $invoice->salesOrder?->customer?->name ?? '-';
+                                $customerName = $invoice->customer?->name ?? '-';
                                 $issueDate = $invoice->issue_date
                                     ? \Illuminate\Support\Carbon::parse($invoice->issue_date)->format('d.m.Y')
                                     : '—';

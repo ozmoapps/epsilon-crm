@@ -1,7 +1,28 @@
+{{-- resources/views/layouts/navigation.blade.php --}}
 @php
     $navItemBase = 'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ui-focus';
     $navItemActive = 'relative bg-slate-50 text-slate-900 before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-slate-900/70 [&>svg]:text-slate-700';
     $navItemInactive = 'text-slate-600 hover:bg-slate-50 hover:text-slate-900';
+
+    // Header label (dinamik)
+    $headerTitle = __('Kontrol Paneli');
+    $headerSubtitle = __('Epsilon CRM');
+
+    if (request()->routeIs('quotes.*')) { $headerTitle = __('Teklifler'); $headerSubtitle = __('Satış'); }
+    elseif (request()->routeIs('sales-orders.*')) { $headerTitle = __('Satış Siparişleri'); $headerSubtitle = __('Satış'); }
+    elseif (request()->routeIs('contracts.*')) { $headerTitle = __('Sözleşmeler'); $headerSubtitle = __('Satış'); }
+    elseif (request()->routeIs('work-orders.*')) { $headerTitle = __('İş Emirleri'); $headerSubtitle = __('Operasyon'); }
+    elseif (request()->routeIs('customer-ledgers.*') || request()->routeIs('customers.ledger*')) { $headerTitle = __('Cari Hesaplar'); $headerSubtitle = __('Finans'); }
+    elseif (request()->routeIs('invoices.*')) { $headerTitle = __('Faturalar'); $headerSubtitle = __('Finans'); }
+    elseif (request()->routeIs('payments.*')) { $headerTitle = __('Tahsilatlar'); $headerSubtitle = __('Finans'); }
+    elseif (request()->routeIs('bank-accounts.*')) { $headerTitle = __('Kasa & Bankalar'); $headerSubtitle = __('Finans'); }
+    elseif (request()->routeIs('stock.dashboard') || request()->routeIs('stock-operations.*') || request()->routeIs('stock-movements.*') || request()->routeIs('stock-transfers.*')) { $headerTitle = __('Stok & Depo'); $headerSubtitle = __('Operasyon'); }
+    elseif (request()->routeIs('products.*') || request()->routeIs('categories.*') || request()->routeIs('warehouses.*')) { $headerTitle = __('Stok & Depo'); $headerSubtitle = __('Ana Veriler'); }
+    elseif (request()->routeIs('customers.*')) { $headerTitle = __('Müşteriler'); $headerSubtitle = __('Ana Veriler'); }
+    elseif (request()->routeIs('vessels.*')) { $headerTitle = __('Tekneler'); $headerSubtitle = __('Ana Veriler'); }
+    elseif (request()->routeIs('saved-views.*')) { $headerTitle = __('Kaydedilmiş Görünümler'); $headerSubtitle = __('Kişisel'); }
+    elseif (request()->routeIs('profile.*')) { $headerTitle = __('Profil'); $headerSubtitle = __('Ayarlar'); }
+    elseif (request()->routeIs('admin.*')) { $headerTitle = __('Yönetim'); $headerSubtitle = __('Admin'); }
 @endphp
 
 <div class="relative">
@@ -17,7 +38,7 @@
         x-cloak
         class="fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-100 bg-white/95 shadow-soft backdrop-blur transition-transform duration-200 lg:translate-x-0"
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-        role="dialog"
+        role="navigation"
         aria-label="{{ __('Yan Menü') }}"
     >
         <div class="flex items-center justify-between px-6 py-5">
@@ -36,6 +57,38 @@
         </div>
 
         <div class="flex-1 space-y-8 overflow-y-auto px-4 pb-8">
+            {{-- Kısayollar --}}
+            <div class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+                <div class="flex items-center justify-between px-1">
+                    <p class="text-xs font-semibold tracking-wide text-slate-500">{{ __('Kısayollar') }}</p>
+                    <x-ui.badge variant="neutral">{{ __('Hızlı') }}</x-ui.badge>
+                </div>
+
+                <div class="mt-3 grid grid-cols-3 gap-2">
+                    @if (\Illuminate\Support\Facades\Route::has('quotes.create'))
+                        <x-ui.button href="{{ route('quotes.create') }}" variant="secondary" size="sm" class="justify-center">
+                            {{ __('Teklif') }}
+                        </x-ui.button>
+                    @endif
+
+                    @if (\Illuminate\Support\Facades\Route::has('customers.create'))
+                        <x-ui.button href="{{ route('customers.create') }}" variant="secondary" size="sm" class="justify-center">
+                            {{ __('Müşteri') }}
+                        </x-ui.button>
+                    @endif
+
+                    @if (\Illuminate\Support\Facades\Route::has('stock-operations.create'))
+                        <x-ui.button href="{{ route('stock-operations.create') }}" variant="secondary" size="sm" class="justify-center">
+                            {{ __('Stok') }}
+                        </x-ui.button>
+                    @endif
+                </div>
+
+                <div class="mt-2 px-1 text-xs text-slate-500">
+                    {{ __('Yeni kayıt açıp akışı başlatın.') }}
+                </div>
+            </div>
+
             <div>
                 <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Operasyonlar') }}</p>
                 <div class="mt-3 space-y-1">
@@ -47,6 +100,7 @@
                         <x-icon.home class="nav-icon" />
                         <span>{{ __('Kontrol Paneli') }}</span>
                     </a>
+
                     <a
                         href="{{ route('quotes.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('quotes.*') ? $navItemActive : $navItemInactive }}"
@@ -55,6 +109,7 @@
                         <x-icon.document class="nav-icon" />
                         <span>{{ __('Teklifler') }}</span>
                     </a>
+
                     <a
                         href="{{ route('sales-orders.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('sales-orders.*') ? $navItemActive : $navItemInactive }}"
@@ -63,6 +118,7 @@
                         <x-icon.clipboard class="nav-icon" />
                         <span>{{ __('Satış Siparişleri') }}</span>
                     </a>
+
                     <a
                         href="{{ route('contracts.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('contracts.*') ? $navItemActive : $navItemInactive }}"
@@ -93,7 +149,6 @@
                 @endphp
 
                 <div class="mt-3 space-y-1">
-                    {{-- Global Customer Ledger --}}
                     <a
                         href="{{ route('customer-ledgers.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('customer-ledgers.*') ? $navItemActive : $navItemInactive }}"
@@ -122,12 +177,7 @@
                             <span>{{ __('Tahsilatlar') }}</span>
                         </a>
                     @else
-                        <a
-                            href="#"
-                            onclick="return false;"
-                            title="Yakında"
-                            class="{{ $navItemBase }} {{ $lockedFinanceClass }}"
-                        >
+                        <a href="#" onclick="return false;" title="{{ __('Yakında') }}" class="{{ $navItemBase }} {{ $lockedFinanceClass }}">
                             <x-icon.bank class="nav-icon" />
                             <span>{{ __('Tahsilatlar') }}</span>
                             <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" />
@@ -144,12 +194,7 @@
                             <span>{{ __('Kasa & Bankalar') }}</span>
                         </a>
                     @else
-                        <a
-                            href="#"
-                            onclick="return false;"
-                            title="Yakında"
-                            class="{{ $navItemBase }} {{ $lockedFinanceClass }}"
-                        >
+                        <a href="#" onclick="return false;" title="{{ __('Yakında') }}" class="{{ $navItemBase }} {{ $lockedFinanceClass }}">
                             <x-icon.credit-card class="nav-icon" />
                             <span>{{ __('Kasa & Bankalar') }}</span>
                             <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" />
@@ -169,6 +214,7 @@
                         <x-icon.chart-bar class="nav-icon" />
                         <span>{{ __('Operasyon Paneli') }}</span>
                     </a>
+
                     <a
                         href="{{ route('stock-operations.create') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('stock-operations.create') ? $navItemActive : $navItemInactive }}"
@@ -177,6 +223,7 @@
                         <x-icon.lightning-bolt class="nav-icon" />
                         <span>{{ __('Hızlı Stok İşlemi') }}</span>
                     </a>
+
                     <a
                         href="{{ route('products.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('products.*') ? $navItemActive : $navItemInactive }}"
@@ -185,6 +232,7 @@
                         <x-icon.cube class="nav-icon" />
                         <span>{{ __('Ürünler') }}</span>
                     </a>
+
                     <a
                         href="{{ route('categories.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('categories.*') ? $navItemActive : $navItemInactive }}"
@@ -193,6 +241,7 @@
                         <x-icon.tag class="nav-icon" />
                         <span>{{ __('Kategoriler') }}</span>
                     </a>
+
                     <a
                         href="{{ route('warehouses.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('warehouses.*') ? $navItemActive : $navItemInactive }}"
@@ -201,6 +250,7 @@
                         <x-icon.office-building class="nav-icon" />
                         <span>{{ __('Depolar') }}</span>
                     </a>
+
                     <a
                         href="{{ route('stock-movements.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('stock-movements.*') ? $navItemActive : $navItemInactive }}"
@@ -209,6 +259,7 @@
                         <x-icon.switch-horizontal class="nav-icon" />
                         <span>{{ __('Stok Hareketleri') }}</span>
                     </a>
+
                     <a
                         href="{{ route('stock-transfers.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('stock-transfers.*') ? $navItemActive : $navItemInactive }}"
@@ -231,6 +282,7 @@
                         <x-icon.users class="nav-icon" />
                         <span>{{ __('Müşteriler') }}</span>
                     </a>
+
                     <a
                         href="{{ route('vessels.index') }}"
                         class="{{ $navItemBase }} {{ request()->routeIs('vessels.*') ? $navItemActive : $navItemInactive }}"
@@ -243,82 +295,109 @@
             </div>
 
             <div class="border-t border-slate-100/80 pt-6">
-                <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Ayarlar') }}</p>
-                @php
-                    $isAdmin = auth()->check() && auth()->user()->is_admin;
-                    $lockedClass = 'opacity-50 cursor-not-allowed';
+                <p class="px-3 text-xs font-semibold tracking-wide text-slate-500 mb-3">{{ __('Ayarlar') }}</p>
+                
+                <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-2 space-y-4">
+                    {{-- Kişisel --}}
+                    <div>
+                        <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Kişisel') }}</p>
+                        <div class="space-y-0.5">
+                            <a
+                                href="{{ route('saved-views.index') }}"
+                                class="{{ $navItemBase }} {{ request()->routeIs('saved-views.*') ? $navItemActive : $navItemInactive }}"
+                                @if (request()->routeIs('saved-views.*')) aria-current="page" @endif
+                            >
+                                <x-icon.bookmark class="nav-icon" />
+                                <span>{{ __('Görünümler') }}</span>
+                            </a>
 
-                    $itemClass = function($routePattern) use ($navItemBase, $navItemActive, $navItemInactive, $isAdmin, $lockedClass) {
-                        $base = $navItemBase;
-                        if (!$isAdmin) {
-                            $base = str_replace('hover:bg-slate-50 hover:text-slate-900', '', $navItemInactive) . ' text-slate-400';
-                            return $navItemBase . ' ' . $base . ' ' . $lockedClass;
-                        }
-                        return $navItemBase . ' ' . (request()->routeIs($routePattern) ? $navItemActive : $navItemInactive);
-                    };
+                            <a
+                                href="{{ route('profile.edit') }}"
+                                class="{{ $navItemBase }} {{ request()->routeIs('profile.*') ? $navItemActive : $navItemInactive }}"
+                                @if (request()->routeIs('profile.*')) aria-current="page" @endif
+                            >
+                                <x-icon.user class="nav-icon" />
+                                <span>{{ __('Profil') }}</span>
+                            </a>
+                        </div>
+                    </div>
 
-                    $getHref = fn($route) => $isAdmin ? route($route) : '#';
-                    $getAttrs = fn() => $isAdmin ? '' : 'onclick="return false;" title="Sadece Admin"';
-                @endphp
+                    {{-- Yönetim --}}
+                    <div>
+                        <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Yönetim') }}</p>
+                        <div class="space-y-0.5">
+                            @php
+                                $isAdmin = true; // PR68: Remove Gating - All users are admins for now
+                                $adminLinkBase = 'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ui-focus';
+                                $adminActive = 'bg-slate-200 text-slate-900';
+                                $adminInactive = 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900';
+                                $adminLocked = 'text-slate-400 cursor-not-allowed opacity-60';
+                                
+                                // Admin olmayanlar için badge
+                                $adminBadge = !$isAdmin ? '<x-ui.badge variant="neutral" size="xs" class="ml-auto">Admin</x-ui.badge>' : '';
+                            @endphp
 
-                <div class="mt-3 space-y-1">
-                    <a
-                        href="{{ route('saved-views.index') }}"
-                        class="{{ $navItemBase }} {{ request()->routeIs('saved-views.*') ? $navItemActive : $navItemInactive }}"
-                        @if (request()->routeIs('saved-views.*')) aria-current="page" @endif
-                    >
-                        <x-icon.bookmark class="nav-icon" />
-                        <span>{{ __('Kaydedilmiş Görünümler') }}</span>
-                    </a>
+                            {{-- Kullanıcılar --}}
+                            <a
+                                href="{{ $isAdmin ? route('admin.users.index') : '#' }}"
+                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.users.*') ? $adminActive : $adminInactive) : $adminLocked }}"
+                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
+                            >
+                                <x-icon.user-group class="nav-icon" />
+                                <span>{{ __('Kullanıcılar') }}</span>
+                                {!! $adminBadge !!}
+                            </a>
 
-                    <a
-                        href="{{ route('profile.edit') }}"
-                        class="{{ $navItemBase }} {{ request()->routeIs('profile.*') ? $navItemActive : $navItemInactive }}"
-                        @if (request()->routeIs('profile.*')) aria-current="page" @endif
-                    >
-                        <x-icon.user class="nav-icon" />
-                        <span>{{ __('Profil') }}</span>
-                    </a>
+                            {{-- Şirket Profili --}}
+                            <a
+                                href="{{ $isAdmin ? route('admin.company-profiles.index') : '#' }}"
+                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.company-profiles.*') ? $adminActive : $adminInactive) : $adminLocked }}"
+                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
+                            >
+                                <x-icon.building class="nav-icon" />
+                                <span>{{ __('Şirket Profili') }}</span>
+                                {!! $adminBadge !!}
+                            </a>
 
-                    <a
-                        href="{{ $getHref('admin.users.index') }}"
-                        class="{{ $itemClass('admin.users.*') }}"
-                        {!! $getAttrs() !!}
-                    >
-                        <x-icon.user-group class="nav-icon" />
-                        <span>{{ __('Kullanıcılar') }}</span>
-                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
-                    </a>
+                            {{-- Para Birimleri --}}
+                            <a
+                                href="{{ $isAdmin ? route('admin.currencies.index') : '#' }}"
+                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.currencies.*') ? $adminActive : $adminInactive) : $adminLocked }}"
+                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
+                            >
+                                <x-icon.currency class="nav-icon" />
+                                <span>{{ __('Para Birimleri') }}</span>
+                                {!! $adminBadge !!}
+                            </a>
 
-                    <a
-                        href="{{ $getHref('admin.company-profiles.index') }}"
-                        class="{{ $itemClass('admin.company-profiles.*') }}"
-                        {!! $getAttrs() !!}
-                    >
-                        <x-icon.building class="nav-icon" />
-                        <span>{{ __('Şirket Profili') }}</span>
-                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
-                    </a>
+                            {{-- Sözleşme Şablonları --}}
+                            <a
+                                href="{{ $isAdmin ? route('admin.contract-templates.index') : '#' }}"
+                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.contract-templates.*') ? $adminActive : $adminInactive) : $adminLocked }}"
+                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
+                            >
+                                <x-icon.template class="nav-icon" />
+                                <span>{{ __('Sözleşmeler') }}</span>
+                                {!! $adminBadge !!}
+                            </a>
+                        </div>
+                    </div>
 
-                    <a
-                        href="{{ $getHref('admin.currencies.index') }}"
-                        class="{{ $itemClass('admin.currencies.*') }}"
-                        {!! $getAttrs() !!}
-                    >
-                        <x-icon.currency class="nav-icon" />
-                        <span>{{ __('Para Birimleri') }}</span>
-                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
-                    </a>
-
-                    <a
-                        href="{{ $getHref('admin.contract-templates.index') }}"
-                        class="{{ $itemClass('admin.contract-templates.*') }}"
-                        {!! $getAttrs() !!}
-                    >
-                        <x-icon.template class="nav-icon" />
-                        <span>{{ __('Sözleşme Şablonları') }}</span>
-                        @if(!$isAdmin) <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" /> @endif
-                    </a>
+                    {{-- Geliştirici (Sadece Local) --}}
+                    @if (app()->environment('local') && \Illuminate\Support\Facades\Route::has('ui.index'))
+                        <div>
+                            <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Geliştirici') }}</p>
+                            <a
+                                href="{{ route('ui.index') }}"
+                                class="{{ $navItemBase }} {{ request()->routeIs('ui.*') ? $navItemActive : $navItemInactive }}"
+                                @if (request()->routeIs('ui.*')) aria-current="page" @endif
+                            >
+                                <x-icon.template class="nav-icon" />
+                                <span>{{ __('UI Demo') }}</span>
+                                <x-ui.badge variant="info" size="xs" class="ml-auto">LOCAL</x-ui.badge>
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -335,9 +414,10 @@
                 >
                     <x-icon.menu />
                 </button>
+
                 <div class="hidden items-center gap-2 lg:flex">
-                    <span class="text-sm font-semibold text-slate-700">{{ __('Kontrol Paneli') }}</span>
-                    <span class="text-xs text-slate-500">{{ __('Epsilon CRM') }}</span>
+                    <span class="text-sm font-semibold text-slate-700">{{ $headerTitle }}</span>
+                    <span class="text-xs text-slate-500">{{ $headerSubtitle }}</span>
                 </div>
             </div>
 

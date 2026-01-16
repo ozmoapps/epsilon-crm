@@ -145,8 +145,11 @@
                 $statusVariants = [
                     'draft' => 'neutral',
                     'planned' => 'info',
+                    'started' => 'info',
                     'in_progress' => 'info',
+                    'on_hold' => 'neutral',
                     'completed' => 'success',
+                    'delivered' => 'success',
                     'cancelled' => 'danger',
                 ];
             @endphp

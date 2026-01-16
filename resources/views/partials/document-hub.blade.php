@@ -40,9 +40,13 @@
             </div>
             <div class="flex items-center justify-end gap-2 sm:col-span-2">
                 @if($quote)
-                    <x-ui.button href="{{ route('quotes.show', $quote) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
-                        <x-icon.eye class="h-4 w-4" />
-                    </x-ui.button>
+                    @if(auth()->user()->is_admin)
+                        <x-ui.button href="{{ route('quotes.show', $quote) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
+                            <x-icon.eye class="h-4 w-4" />
+                        </x-ui.button>
+                    @else
+                        <span class="text-slate-300" title="{{ __('Yetki Gerekli') }}"><x-icon.lock class="h-4 w-4" /></span>
+                    @endif
                 @else
                     <span class="text-xs text-slate-300">—</span>
                 @endif
@@ -75,16 +79,22 @@
             </div>
             <div class="flex items-center justify-end gap-2 sm:col-span-2">
                 @if($salesOrder)
-                    <x-ui.button href="{{ route('sales-orders.show', $salesOrder) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
-                        <x-icon.eye class="h-4 w-4" />
-                    </x-ui.button>
-                @elseif($context === 'quote' && $quote && $quote->status === 'accepted')
-                     <form action="{{ route('quotes.convert_to_sales_order', $quote) }}" method="POST">
-                        @csrf
-                        <x-ui.button type="submit" size="xs" variant="secondary" class="!py-1 px-3">
-                            {{ __('Satışa Çevir') }}
+                    @if(auth()->user()->is_admin)
+                        <x-ui.button href="{{ route('sales-orders.show', $salesOrder) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
+                            <x-icon.eye class="h-4 w-4" />
                         </x-ui.button>
-                    </form>
+                    @else
+                        <span class="text-slate-300" title="{{ __('Yetki Gerekli') }}"><x-icon.lock class="h-4 w-4" /></span>
+                    @endif
+                @elseif($context === 'quote' && $quote && $quote->status === 'accepted')
+                     @if(auth()->user()->is_admin)
+                         <form action="{{ route('quotes.convert_to_sales_order', $quote) }}" method="POST">
+                            @csrf
+                            <x-ui.button type="submit" size="xs" variant="secondary" class="!py-1 px-3">
+                                {{ __('Satışa Çevir') }}
+                            </x-ui.button>
+                        </form>
+                    @endif
                 @else
                     <span class="text-xs text-slate-300">—</span>
                 @endif
@@ -120,9 +130,13 @@
             <div class="flex items-center justify-end gap-2 sm:col-span-2">
                 @if($salesOrder && $salesOrder->invoices->isNotEmpty())
                     @php $latestInvoice = $salesOrder->invoices->last(); @endphp
-                    <x-ui.button href="{{ route('invoices.show', $latestInvoice) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
-                        <x-icon.eye class="h-4 w-4" />
-                    </x-ui.button>
+                    @if(auth()->user()->is_admin)
+                        <x-ui.button href="{{ route('invoices.show', $latestInvoice) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
+                            <x-icon.eye class="h-4 w-4" />
+                        </x-ui.button>
+                     @else
+                        <span class="text-slate-300" title="{{ __('Yetki Gerekli') }}"><x-icon.lock class="h-4 w-4" /></span>
+                     @endif
                 @else
                      <span class="text-xs text-slate-300">—</span>
                 @endif
@@ -155,13 +169,19 @@
             </div>
             <div class="flex items-center justify-end gap-2 sm:col-span-2">
                 @if($contract)
-                    <x-ui.button href="{{ route('contracts.show', $contract) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
-                        <x-icon.eye class="h-4 w-4" />
-                    </x-ui.button>
+                    @if(auth()->user()->is_admin)
+                        <x-ui.button href="{{ route('contracts.show', $contract) }}" variant="ghost" size="sm" class="!px-2 !py-1 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-xl" title="{{ __('Görüntüle') }}">
+                            <x-icon.eye class="h-4 w-4" />
+                        </x-ui.button>
+                    @else
+                        <span class="text-slate-300" title="{{ __('Yetki Gerekli') }}"><x-icon.lock class="h-4 w-4" /></span>
+                    @endif
                 @elseif($salesOrder)
-                     <x-ui.button href="{{ route('sales-orders.contracts.create', $salesOrder) }}" variant="secondary" size="xs" class="!py-1 px-3">
-                        {{ __('Oluştur') }}
-                     </x-ui.button>
+                     @if(auth()->user()->is_admin)
+                         <x-ui.button href="{{ route('sales-orders.contracts.create', $salesOrder) }}" variant="secondary" size="xs" class="!py-1 px-3">
+                            {{ __('Oluştur') }}
+                         </x-ui.button>
+                    @endif
                 @else
                     <span class="text-xs text-slate-300">—</span>
                 @endif

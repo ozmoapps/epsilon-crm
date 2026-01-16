@@ -79,11 +79,11 @@
             <h3 class="mb-4 text-lg font-medium text-slate-800">Badges</h3>
             <x-ui.card>
                 <div class="flex flex-wrap gap-4">
-                    <x-ui.badge color="slate">Default</x-ui.badge>
-                    <x-ui.badge color="brand">Brand</x-ui.badge>
-                    <x-ui.badge color="emerald">Success</x-ui.badge>
-                    <x-ui.badge color="amber">Warning</x-ui.badge>
-                    <x-ui.badge color="rose">Error</x-ui.badge>
+                    <x-ui.badge variant="neutral">Default</x-ui.badge>
+                    <x-ui.badge variant="info">Brand</x-ui.badge>
+                    <x-ui.badge variant="success">Success</x-ui.badge>
+                    <x-ui.badge variant="info">Warning</x-ui.badge>
+                    <x-ui.badge variant="danger">Error</x-ui.badge>
                 </div>
             </x-ui.card>
         </section>
@@ -179,7 +179,7 @@
                         <tr class="hover:bg-slate-50/60">
                             <td class="whitespace-nowrap border-b border-slate-100 py-4 pl-6 pr-3 text-sm font-medium text-slate-900">John Doe</td>
                             <td class="whitespace-nowrap border-b border-slate-100 px-3 py-4 text-sm text-slate-500">
-                                <x-ui.badge color="emerald">Active</x-ui.badge>
+                                <x-ui.badge variant="success">Active</x-ui.badge>
                             </td>
                             <td class="whitespace-nowrap border-b border-slate-100 px-3 py-4 text-sm text-slate-500">Admin</td>
                             <td class="whitespace-nowrap border-b border-slate-100 py-4 pl-3 pr-6 text-right text-sm font-medium">
@@ -189,7 +189,7 @@
                         <tr class="hover:bg-slate-50/60">
                             <td class="whitespace-nowrap border-b border-slate-100 py-4 pl-6 pr-3 text-sm font-medium text-slate-900">Jane Smith</td>
                             <td class="whitespace-nowrap border-b border-slate-100 px-3 py-4 text-sm text-slate-500">
-                                <x-ui.badge color="amber">Pending</x-ui.badge>
+                                <x-ui.badge variant="info">Pending</x-ui.badge>
                             </td>
                             <td class="whitespace-nowrap border-b border-slate-100 px-3 py-4 text-sm text-slate-500">User</td>
                             <td class="whitespace-nowrap border-b border-slate-100 py-4 pl-3 pr-6 text-right text-sm font-medium">

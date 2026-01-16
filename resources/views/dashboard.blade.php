@@ -2,18 +2,20 @@
     <x-slot name="header">
         <x-ui.page-header title="{{ __('Dashboard') }}" subtitle="{{ __('Genel durum ve hızlı işlemler.') }}">
             <x-slot name="actions">
-                <x-ui.button href="{{ route('quotes.create') }}" size="sm">
-                    <x-icon.plus class="h-4 w-4 mr-1"/>
-                    {{ __('Yeni Teklif') }}
-                </x-ui.button>
-                <x-ui.button href="{{ route('invoices.create') }}" size="sm">
-                    <x-icon.plus class="h-4 w-4 mr-1"/>
-                    {{ __('Yeni Fatura') }}
-                </x-ui.button>
-                <x-ui.button href="{{ route('payments.create') }}" size="sm">
-                    <x-icon.plus class="h-4 w-4 mr-1"/>
-                    {{ __('Tahsilat Ekle') }}
-                </x-ui.button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-ui.button href="{{ route('quotes.create') }}" variant="secondary" size="sm">
+                        <x-icon.plus class="h-4 w-4 mr-2" />
+                        {{ __('Yeni Teklif') }}
+                    </x-ui.button>
+                    <x-ui.button href="{{ route('invoices.create') }}" variant="secondary" size="sm">
+                        <x-icon.plus class="h-4 w-4 mr-2" />
+                        {{ __('Yeni Fatura') }}
+                    </x-ui.button>
+                     <x-ui.button href="{{ route('payments.create') }}" variant="secondary" size="sm">
+                        <x-icon.plus class="h-4 w-4 mr-2" />
+                        {{ __('Tahsilat Ekle') }}
+                    </x-ui.button>
+                </div>
                 <x-ui.button href="{{ route('work-orders.create') }}" variant="secondary" size="sm">
                     {{ __('Yeni İş Emri') }}
                 </x-ui.button>
@@ -173,7 +175,101 @@
             </a>
         </div>
 
-        {{-- Main Content Grid --}}
+
+        {{-- Operations Dashboard --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {{-- Today --}}
+            <x-ui.card>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                        {{ __('Bugün Başlayanlar') }}
+                    </h3>
+                     <x-ui.button href="{{ route('work-orders.index', ['status' => 'planned']) }}" variant="ghost" size="sm" class="text-xs">
+                        {{ __('Tümü') }}
+                    </x-ui.button>
+                </div>
+                <div class="space-y-3">
+                    @forelse($todaysWorkOrders as $wo)
+                        <a href="{{ route('work-orders.show', $wo) }}" class="block p-3 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-slate-50 transition-all group">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{{ $wo->title }}</span>
+                                <x-ui.badge :status="$wo->status" class="!px-1.5 !py-0.5 text-[10px]">{{ $wo->status_label }}</x-ui.badge>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                {{ $wo->customer?->name }} • {{ $wo->vessel?->name }}
+                            </div>
+                        </a>
+                    @empty
+                         <p class="text-xs text-slate-400 italic text-center py-4">{{ __('Bugün için planlanan iş yok.') }}</p>
+                    @endforelse
+                </div>
+            </x-ui.card>
+
+             {{-- Overdue --}}
+            <x-ui.card>
+                 <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                        {{ __('Geciken İşler') }}
+                    </h3>
+                     {{-- Ideally link to filter overdue, currently manual query param or status filter --}}
+                     <x-ui.button href="{{ route('work-orders.index', ['status' => 'in_progress']) }}" variant="ghost" size="sm" class="text-xs">
+                        {{ __('Tümü') }}
+                    </x-ui.button>
+                </div>
+                <div class="space-y-3">
+                    @forelse($overdueWorkOrders as $wo)
+                        <a href="{{ route('work-orders.show', $wo) }}" class="block p-3 rounded-xl border border-slate-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all group">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-sm font-semibold text-slate-900 group-hover:text-rose-600 transition-colors">{{ $wo->title }}</span>
+                                <span class="text-[10px] font-medium text-rose-500">
+                                    {{ $wo->planned_end_at ? $wo->planned_end_at->format('d/m') : '-' }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-slate-500 mb-1">
+                                {{ $wo->customer?->name }} • {{ $wo->vessel?->name }}
+                            </div>
+                             <div class="flex items-center gap-1">
+                                <x-ui.badge :status="$wo->status" class="!px-1.5 !py-0.5 text-[10px]">{{ $wo->status_label }}</x-ui.badge>
+                            </div>
+                        </a>
+                    @empty
+                         <p class="text-xs text-slate-400 italic text-center py-4">{{ __('Geciken iş yok.') }}</p>
+                    @endforelse
+                </div>
+            </x-ui.card>
+
+             {{-- On Hold --}}
+            <x-ui.card>
+                 <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                         <div class="w-2 h-2 rounded-full bg-slate-400"></div>
+                        {{ __('Beklemedeki İşler') }}
+                    </h3>
+                     <x-ui.button href="{{ route('work-orders.index', ['status' => 'on_hold']) }}" variant="ghost" size="sm" class="text-xs">
+                        {{ __('Tümü') }}
+                    </x-ui.button>
+                </div>
+                 <div class="space-y-3">
+                    @forelse($onHoldWorkOrders as $wo)
+                        <a href="{{ route('work-orders.show', $wo) }}" class="block p-3 rounded-xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all group">
+                             <div class="flex justify-between items-start mb-1">
+                                <span class="text-sm font-semibold text-slate-900">{{ $wo->title }}</span>
+                                <x-ui.badge variant="neutral" class="!px-1.5 !py-0.5 text-[10px]">{{ $wo->status_label }}</x-ui.badge>
+                            </div>
+                            <div class="text-xs text-slate-500">
+                                {{ $wo->customer?->name }} • {{ $wo->vessel?->name }}
+                            </div>
+                        </a>
+                    @empty
+                         <p class="text-xs text-slate-400 italic text-center py-4">{{ __('Beklemede iş yok.') }}</p>
+                    @endforelse
+                </div>
+            </x-ui.card>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {{-- Left Column (Operasyon Paneli) --}}
@@ -220,6 +316,7 @@
                     </div>
                 </x-ui.card>
 
+
                 {{-- Workload --}}
                  <x-ui.card>
                     <div class="flex items-center justify-between mb-4">
@@ -230,16 +327,16 @@
                     </div>
                      <div class="grid grid-cols-3 gap-4">
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                            <div class="text-2xl font-bold text-slate-700">{{ $workOrderStats->open }}</div>
-                            <div class="text-xs text-slate-500 mt-1">{{ __('Açık İş Emri') }}</div>
+                            <div class="text-2xl font-bold text-slate-700">{{ $workOrderStats->planned }}</div>
+                            <div class="text-xs text-slate-500 mt-1">{{ __('Planlanan') }}</div>
                         </div>
                         <div class="p-3 bg-amber-50 rounded-xl border border-amber-100 text-center">
                             <div class="text-2xl font-bold text-amber-700">{{ $workOrderStats->in_progress }}</div>
                             <div class="text-xs text-amber-600 mt-1">{{ __('Devam Eden') }}</div>
                         </div>
                          <div class="p-3 bg-purple-50 rounded-xl border border-purple-100 text-center">
-                            <div class="text-2xl font-bold text-purple-700">{{ $workOrderStats->planned }}</div>
-                            <div class="text-xs text-purple-600 mt-1">{{ __('Planlanan') }}</div>
+                            <div class="text-2xl font-bold text-purple-700">{{ $workOrderStats->completed }}</div>
+                            <div class="text-xs text-purple-600 mt-1">{{ __('Tamamlanan') }}</div>
                         </div>
                     </div>
                  </x-ui.card>
@@ -267,35 +364,37 @@
                     </div>
                  </x-ui.card>
 
+
             </div>
 
              {{-- Right Sidebar --}}
              <div class="space-y-6">
                 
-                {{-- Critical Alerts --}}
-                @if($criticalOverdueInvoices->isNotEmpty())
-                    <x-ui.card class="border-rose-100 bg-rose-50/30">
-                        <h3 class="text-sm font-bold text-rose-700 mb-3 flex items-center">
-                            <x-icon.exclamation-circle class="w-4 h-4 mr-2"/>
-                            {{ __('Acil: Vadesi Geçmiş') }}
-                        </h3>
-                        <div class="space-y-3">
-                            @foreach($criticalOverdueInvoices as $inv)
-                                <a href="{{ route('invoices.show', $inv) }}" class="block p-2 bg-white rounded-lg border border-rose-100 shadow-sm hover:border-rose-300 transition-colors">
-                                    <div class="flex justify-between items-start">
-                                        <div class="text-xs font-bold text-slate-700 truncate max-w-[120px]">{{ $inv->customer->name }}</div>
-                                        <div class="text-xs font-bold text-rose-600">
-                                            {{ \App\Support\MoneyMath::formatTR($inv->total) }} {{ $inv->currency }}
+                    {{-- Critical Alerts --}}
+                    @if($criticalOverdueInvoices->isNotEmpty())
+                        <x-ui.card class="border-rose-100 bg-rose-50/30">
+                            <h3 class="text-sm font-bold text-rose-700 mb-3 flex items-center">
+                                <x-icon.exclamation-circle class="w-4 h-4 mr-2"/>
+                                {{ __('Acil: Vadesi Geçmiş') }}
+                            </h3>
+                            <div class="space-y-3">
+                                @foreach($criticalOverdueInvoices as $inv)
+                                    <a href="{{ route('invoices.show', $inv) }}" class="block p-2 bg-white rounded-lg border border-rose-100 shadow-sm hover:border-rose-300 transition-colors">
+                                        <div class="flex justify-between items-start">
+                                            <div class="text-xs font-bold text-slate-700 truncate max-w-[120px]">{{ $inv->customer->name }}</div>
+                                            <div class="text-xs font-bold text-rose-600">
+                                                {{ \App\Support\MoneyMath::formatTR($inv->total) }} {{ $inv->currency }}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="text-[10px] text-rose-400 mt-1">
-                                        {{ $inv->due_date->diffForHumans() }}
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    </x-ui.card>
-                @endif
+                                        <div class="text-[10px] text-rose-400 mt-1">
+                                            {{ $inv->due_date->diffForHumans() }}
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </x-ui.card>
+                    @endif
+
 
                  {{-- Follow Ups --}}
                  <x-ui.card>

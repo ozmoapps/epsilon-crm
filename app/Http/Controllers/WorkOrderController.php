@@ -96,7 +96,62 @@ class WorkOrderController extends Controller
 
         $products = Product::select('id', 'name', 'type', 'sku')->orderBy('name')->get();
 
-        return view('work_orders.show', compact('workOrder', 'timeline', 'products'));
+        // Operation Flow Logic
+        $user = auth()->user();
+        $isAdmin = $user->is_admin;
+
+        $operationFlow = [
+            [
+                'label' => 'Teklif',
+                'completed' => $quote && in_array($quote->status, ['accepted', 'converted']),
+                'status_label' => $quote?->status_label ?? 'Yok',
+                'status_variant' => $quote ? ($quote->status === 'draft' ? 'neutral' : 'success') : 'neutral',
+                'href' => $quote && $isAdmin ? route('quotes.show', $quote) : null,
+                'locked' => $quote && !$isAdmin,
+            ],
+            [
+                'label' => 'Satış Siparişi',
+                'completed' => $salesOrder && in_array($salesOrder->status, ['confirmed', 'in_progress', 'completed', 'contracted']),
+                'status_label' => $salesOrder?->status_label ?? 'Yok',
+                'status_variant' => $salesOrder ? ($salesOrder->status === 'draft' ? 'neutral' : 'success') : 'neutral',
+                'href' => $salesOrder && $isAdmin ? route('sales-orders.show', $salesOrder) : null,
+                'locked' => $salesOrder && !$isAdmin,
+            ],
+            [
+                'label' => 'Sözleşme',
+                'completed' => (bool)$contract,
+                'status_label' => $contract ? 'Mevcut' : 'Yok',
+                'status_variant' => $contract ? 'success' : 'neutral',
+                'href' => $contract && $isAdmin ? route('contracts.show', $contract) : null,
+                'locked' => $contract && !$isAdmin,
+            ],
+            [
+                'label' => 'İş Emri',
+                'completed' => in_array($workOrder->status, ['completed', 'delivered']),
+                'status_label' => $workOrder->status_label,
+                'status_variant' => in_array($workOrder->status, ['completed', 'delivered']) ? 'success' : 'info',
+                'href' => null, // Already here
+                'locked' => false,
+            ],
+            [
+                'label' => 'Fotoğraflar',
+                'completed' => $workOrder->photos()->exists(), // We could optimize this count if eager loaded count
+                'status_label' => $workOrder->photos()->exists() ? 'Yüklendi' : 'Eksik',
+                'status_variant' => $workOrder->photos()->exists() ? 'success' : 'warning',
+                'href' => null,
+                'locked' => false,
+            ],
+            [
+                'label' => 'Teslimat',
+                'completed' => in_array($workOrder->status, ['delivered']),
+                'status_label' => $workOrder->status === 'delivered' ? 'Teslim Edildi' : 'Bekleniyor',
+                'status_variant' => $workOrder->status === 'delivered' ? 'success' : 'neutral',
+                'href' => null,
+                'locked' => false,
+            ]
+        ];
+
+        return view('work_orders.show', compact('workOrder', 'timeline', 'products', 'operationFlow', 'salesOrder', 'quote', 'contract'));
     }
 
     public function printView(WorkOrder $workOrder)
