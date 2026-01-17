@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AuditLog;
+use App\Services\AuditLogger;
 use App\Services\EntitlementsService;
 use Illuminate\Http\Request;
 
@@ -151,6 +152,113 @@ class AccountAdminController extends Controller
 
 
         return back()->with('success', 'Hesap güncellendi.');
+    }
+    public function updateRole(Request $request, Account $account, AuditLogger $logger)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|in:billing_admin,member',
+        ]);
+
+        $userId = $validated['user_id'];
+        $newRole = $validated['role'];
+
+        // Guard: Check if user belongs to account
+        // We can check the pivot table directly or via relationship
+        $pivotEntry = \Illuminate\Support\Facades\DB::table('account_users')
+            ->where('account_id', $account->id)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (! $pivotEntry) {
+            return back()->with('error', 'Kullanıcı bu hesaba ait değil.');
+        }
+
+        // Guard: Prevent changing owner's role via this endpoint
+        if ($userId == $account->owner_user_id) {
+             return back()->with('error', 'Hesap sahibinin rolü bu alandan değiştirilemez. Lütfen "Sahiplik Devri" özelliğini kullanın.');
+        }
+
+        // Action: Update Pivot Role
+        \Illuminate\Support\Facades\DB::table('account_users')
+            ->where('account_id', $account->id)
+            ->where('user_id', $userId)
+            ->update(['role' => $newRole, 'updated_at' => now()]);
+
+        // Audit
+        $logger->log('account.role.changed', [
+            'account_id' => $account->id,
+            'user_id' => $userId,
+            'old_role' => $pivotEntry->role,
+            'new_role' => $newRole,
+        ], 'info');
+
+        return back()->with('success', 'Kullanıcı rolü güncellendi.');
+    }
+
+    public function transferOwner(Request $request, Account $account, AuditLogger $logger)
+    {
+        $validated = $request->validate([
+            'new_owner_user_id' => 'required|exists:users,id',
+        ]);
+
+        $newOwnerId = $validated['new_owner_user_id'];
+        $oldOwnerId = $account->owner_user_id;
+
+        // Guard: Same user check
+        if ($newOwnerId == $oldOwnerId) {
+            return back()->with('info', 'Seçilen kullanıcı zaten hesap sahibi.');
+        }
+
+        // Guard: Check if new owner belongs to account
+        $isInAccount = \Illuminate\Support\Facades\DB::table('account_users')
+            ->where('account_id', $account->id)
+            ->where('user_id', $newOwnerId)
+            ->exists();
+
+        if (! $isInAccount) {
+            return back()->with('error', 'Yeni sahip olacak kullanıcı bu hesaba üye olmalıdır.');
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function() use ($account, $oldOwnerId, $newOwnerId, $logger) {
+            // 1. Update Account Owner
+            $account->update(['owner_user_id' => $newOwnerId]);
+
+            // 2. Update New Owner Pivot -> 'owner'
+            \Illuminate\Support\Facades\DB::table('account_users')
+                ->where('account_id', $account->id)
+                ->where('user_id', $newOwnerId)
+                ->update(['role' => 'owner', 'updated_at' => now()]);
+
+            // 3. Update Old Owner Pivot -> 'member' (if they were 'owner')
+            // If they were 'billing_admin' but somehow owner column matched, maybe keep it?
+            // Requirement says: "eski owner role'ünü 'member' yap (veya billing_admin ise koru)"
+            // But usually logic is: Owner user SHOULD have 'owner' role in pivot.
+            // Let's degrade them to 'member' to be safe standard.
+            // Or check current role?
+            // "eski owner role sadece 'owner' ise 'member' yap; değilse dokunma" -> this is safer.
+            
+            $oldPivot = \Illuminate\Support\Facades\DB::table('account_users')
+                ->where('account_id', $account->id)
+                ->where('user_id', $oldOwnerId)
+                ->first();
+
+            if ($oldPivot && $oldPivot->role === 'owner') {
+                 \Illuminate\Support\Facades\DB::table('account_users')
+                    ->where('account_id', $account->id)
+                    ->where('user_id', $oldOwnerId)
+                    ->update(['role' => 'member', 'updated_at' => now()]);
+            }
+
+            // Audit
+            $logger->log('account.owner.changed', [
+                'account_id' => $account->id,
+                'old_owner_user_id' => $oldOwnerId,
+                'new_owner_user_id' => $newOwnerId,
+            ], 'warning'); // Critical change, maybe warning severity? User said: "severity stringleri (info/warn/warning) kabul ediyor mu?" -> yes.
+        });
+
+        return back()->with('success', 'Hesap sahipliği başarıyla devredildi.');
     }
 }
 

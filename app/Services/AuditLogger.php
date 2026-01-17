@@ -12,7 +12,10 @@ class AuditLogger
     protected $allowedMetadataKeys = [
         'ttl_minutes', 'expires_at', 'limit', 'usage', 'type', 'reason', 
         'new_status', 'tenant_id', 'support_session_id', 'candidate_tenant_id',
-        'path', 'pending_invites_counted'
+        'path', 'pending_invites_counted',
+        // PR4 Account Roles & Updates
+        'account_id', 'user_id', 'old_role', 'new_role', 
+        'old_owner_user_id', 'new_owner_user_id', 'old', 'new'
     ];
 
     /**

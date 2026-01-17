@@ -1,0 +1,70 @@
+🚀 Starting Verification: Account Users & Roles (PR4 v4d6)
+Creating Test Data...
+✅ Setup Complete. Account ID: 67
+   Owner: 67, UserA: 68, UserB: 69
+
+🧪 Test 1: Update Role (UserA -> Billing Admin)
+No log found for account 67
+All Logs: 2
+Array
+(
+    [0] => Array
+        (
+            [id] => 76
+            [event_key] => account.role.changed
+            [severity] => info
+            [actor_user_id] => 66
+            [actor_type] => platform_admin
+            [tenant_id] => 
+            [account_id] => 66
+            [support_session_id] => 
+            [route] => admin.accounts.roles.update
+            [method] => PATCH
+            [ip_trunc] => 127.0.0.0
+            [user_agent_trunc] => Symfony
+            [metadata] => Array
+                (
+                )
+
+            [occurred_at] => 2026-01-17T18:53:41.000000Z
+            [created_at] => 2026-01-17T18:53:41.000000Z
+            [updated_at] => 2026-01-17T18:53:41.000000Z
+        )
+
+    [1] => Array
+        (
+            [id] => 77
+            [event_key] => account.role.changed
+            [severity] => info
+            [actor_user_id] => 66
+            [actor_type] => platform_admin
+            [tenant_id] => 
+            [account_id] => 67
+            [support_session_id] => 
+            [route] => admin.accounts.roles.update
+            [method] => PATCH
+            [ip_trunc] => 127.0.0.0
+            [user_agent_trunc] => Symfony
+            [metadata] => Array
+                (
+                )
+
+            [occurred_at] => 2026-01-17T18:55:58.000000Z
+            [created_at] => 2026-01-17T18:55:58.000000Z
+            [updated_at] => 2026-01-17T18:55:58.000000Z
+        )
+
+)
+❌ Test 1 Failed: Audit Log Verification Failed
+Response Content (Head): 
+
+    
+        
+        
+
+        Redirecting to http://localhost/admin/accounts/1
+    
+    
+        Redirecting to http://localhost/admin/accounts/1.
+    
+

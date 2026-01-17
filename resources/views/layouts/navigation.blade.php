@@ -165,7 +165,7 @@
                 </div>
             </div>
 
-            </div>
+
             @endif
 
             @if($showTenantMenu)
@@ -233,7 +233,7 @@
                 </div>
             </div>
 
-            </div>
+
             @endif
 
             @if($showTenantMenu)
@@ -305,7 +305,7 @@
                 </div>
             </div>
 
-            </div>
+
             @endif
 
             @if($showTenantMenu)
@@ -332,7 +332,7 @@
                 </div>
             </div>
 
-            </div>
+
             @endif
 
             <div class="border-t border-slate-100/80 pt-6">
@@ -379,6 +379,15 @@
                                     <span>{{ __('Kullanıcılar') }}</span>
                                 </a>
 
+                                {{-- Davetler --}}
+                                <a
+                                    href="{{ route('admin.invitations.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.invitations.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.mail class="nav-icon" />
+                                    <span>{{ __('Davetler') }}</span>
+                                </a>
+
                                 {{-- Genel Bakış --}}
                                 <a
                                     href="{{ route('admin.dashboard') }}"
@@ -388,7 +397,15 @@
                                     <span>{{ __('Genel Bakış') }}</span>
                                 </a>
 
-                                @if(!$isPlatformOnly)
+                                {{-- Denetim Günlüğü --}}
+                                <a
+                                    href="{{ route('admin.audit.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.audit.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.clipboard-list class="nav-icon" />
+                                    <span>{{ __('Denetim Günlüğü') }}</span>
+                                </a>
+
                                 {{-- Şirket Profili --}}
                                 <a
                                     href="{{ route('admin.company-profiles.index') }}"
@@ -433,7 +450,6 @@
                                     <x-icon.template class="nav-icon" />
                                     <span>{{ __('Sözleşmeler') }}</span>
                                 </a>
-                                @endif
                             </div>
                         </div>
                     @endif
