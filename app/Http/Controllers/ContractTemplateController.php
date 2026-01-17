@@ -195,32 +195,52 @@ class ContractTemplateController extends Controller
 
     private function buildPreview(ContractTemplateRenderer $renderer, ContractTemplate|ContractTemplateVersion $template): ?string
     {
-        $contract = Contract::query()
-            ->with(['salesOrder.items', 'salesOrder.customer'])
-            ->latest('id')
-            ->first();
-
+        // Privacy: Never fetch real tenant data for Admin Previews.
+        // Always render with DUMMY/Sample data.
+        
         $locale = $template instanceof ContractTemplate
             ? ($template->locale ?: 'tr')
             : ($template->template?->locale ?: 'tr');
 
-        if (! $contract) {
-            $contract = new Contract([
-                'contract_no' => 'CT-2026-0001',
-                'issued_at' => now(),
-                'locale' => $locale,
-                'currency' => 'EUR',
-                'customer_name' => 'Örnek Müşteri',
-                'customer_company' => 'Örnek Şirket',
-                'customer_tax_no' => '1234567890',
-                'customer_address' => 'Örnek Mah. Örnek Sk. No: 1',
-                'customer_email' => 'ornek@example.com',
-                'customer_phone' => '+90 555 555 55 55',
-                'subtotal' => 1000,
-                'tax_total' => 180,
-                'grand_total' => 1180,
-            ]);
-        }
+        $customer = new \App\Models\Customer([
+            'name' => 'Örnek Müşteri',
+            'company' => 'Örnek Şirket',
+            'tax_no' => '1234567890',
+            'email' => 'ornek@example.com',
+            'phone' => '+90 555 555 55 55',
+            'address' => 'Örnek Mah. Örnek Sk. No: 1',
+        ]);
+
+        $vessel = new \App\Models\Vessel([
+            'name' => 'Örnek Tekne',
+            'flag' => 'TR',
+            'imo_number' => '1234567',
+        ]);
+
+        $salesOrder = new \App\Models\SalesOrder([
+            'id' => 9999,
+            'status' => 'approved',
+        ]);
+        
+        $salesOrder->setRelation('customer', $customer);
+        $salesOrder->setRelation('vessel', $vessel);
+        $salesOrder->setRelation('items', collect([])); // Empty items collection
+
+        $contract = new Contract([
+            'contract_no' => 'CT-2026-0001',
+            'issued_at' => now(),
+            'locale' => $locale,
+            'currency' => 'EUR',
+            'subtotal' => 1000,
+            'tax_total' => 180,
+            'grand_total' => 1180,
+            // Legacy fields for backward compatibility in templates
+            'customer_name' => 'Örnek Müşteri',
+        ]);
+
+        $contract->setRelation('salesOrder', $salesOrder);
+        // Ensure direct relation is also set if renderer uses it
+        $contract->setRelation('customer', $customer);
 
         return $renderer->render($contract, $template);
     }

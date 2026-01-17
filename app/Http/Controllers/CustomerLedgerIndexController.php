@@ -57,7 +57,7 @@ class CustomerLedgerIndexController extends Controller
             $onlyOverdue = true;
         }
 
-        $query = Customer::query();
+        $query = Customer::query()->where('tenant_id', app(\App\Services\TenantContext::class)->id());
 
         if ($search) {
             $query->where(function ($q) use ($search) {

@@ -20,7 +20,12 @@ class ApiLookupController extends Controller
         // Authorization check if needed, though often internal lookups are open to auth'd users
         // $this->authorize('view', $customer); 
 
+        if ($customer->tenant_id !== app(\App\Services\TenantContext::class)->id()) {
+            abort(404);
+        }
+
         $vessels = $customer->vessels()
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->select('id', 'name')
             ->orderBy('name')
             ->get()
@@ -41,6 +46,10 @@ class ApiLookupController extends Controller
     public function vesselDetail(Vessel $vessel)
     {
         // $this->authorize('view', $vessel);
+
+        if ($vessel->tenant_id !== app(\App\Services\TenantContext::class)->id()) {
+            abort(404);
+        }
 
         $vessel->load('customer:id,name');
 
@@ -63,6 +72,7 @@ class ApiLookupController extends Controller
         $query = $request->input('query');
         
         $vessels = Vessel::query()
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->with('customer:id,name')
             ->when($query, function ($q, $search) {
                 return $q->where('name', 'like', "%{$search}%");

@@ -14,8 +14,12 @@ use App\Models\ActivityLog;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
+use App\Support\TenantGuard;
+
 class WorkOrderController extends Controller
 {
+    use TenantGuard;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -27,6 +31,7 @@ class WorkOrderController extends Controller
 
         $workOrders = WorkOrder::query()
             ->with(['customer', 'vessel'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->when($search, fn ($query) => $query->where('title', 'like', "%{$search}%"))
             ->when($status, fn ($query) => $query->where('status', $status))
             ->when($customerId, fn ($q) => $q->where('customer_id', $customerId))
@@ -68,6 +73,7 @@ class WorkOrderController extends Controller
         $validated = $request->validated();
 
         $validated['created_by'] = $request->user()->id;
+        // Tenant ID handled by model hook
         WorkOrder::create($validated);
 
         return redirect()->route('work-orders.index')
@@ -76,6 +82,8 @@ class WorkOrderController extends Controller
 
     public function show(WorkOrder $workOrder)
     {
+        $this->checkTenant($workOrder);
+
         $this->authorize('view', $workOrder);
         $workOrder->load(['customer', 'vessel', 'openFollowUps.creator']);
 
@@ -156,6 +164,8 @@ class WorkOrderController extends Controller
 
     public function printView(WorkOrder $workOrder)
     {
+        $this->checkTenant($workOrder);
+
         $this->authorize('view', $workOrder);
         $workOrder->load(['customer', 'vessel']);
         $companyProfile = CompanyProfile::current();
@@ -166,6 +176,8 @@ class WorkOrderController extends Controller
 
     public function edit(WorkOrder $workOrder)
     {
+        $this->checkTenant($workOrder);
+
         $this->authorize('update', $workOrder);
         return view('work_orders.edit', [
             'workOrder' => $workOrder,
@@ -177,6 +189,8 @@ class WorkOrderController extends Controller
 
     public function update(\App\Http\Requests\WorkOrderUpdateRequest $request, WorkOrder $workOrder)
     {
+        $this->checkTenant($workOrder);
+
         $this->authorize('update', $workOrder);
         $validated = $request->validated();
 
@@ -188,6 +202,8 @@ class WorkOrderController extends Controller
 
     public function destroy(WorkOrder $workOrder)
     {
+        $this->checkTenant($workOrder);
+
         $this->authorize('delete', $workOrder);
         $workOrder->delete();
 
@@ -197,6 +213,8 @@ class WorkOrderController extends Controller
 
     public function postStock(Request $request, WorkOrder $workOrder, \App\Services\StockService $stockService)
     {
+        $this->checkTenant($workOrder);
+
         // Simple authorization
         // $this->authorize('update', $workOrder); 
 

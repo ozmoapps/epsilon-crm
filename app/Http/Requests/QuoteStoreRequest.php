@@ -53,8 +53,26 @@ class QuoteStoreRequest extends FormRequest
         $statuses = array_keys(Quote::statusOptions());
 
         return [
-            'customer_id' => ['required', 'exists:customers,id'],
-            'vessel_id' => ['required', 'exists:vessels,id'],
+            'customer_id' => [
+                'required',
+                Rule::exists('customers', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
+            'vessel_id' => [
+                'required',
+                Rule::exists('vessels', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'work_order_id' => ['nullable', 'exists:work_orders,id'],
             'title' => ['required', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in($statuses)],
@@ -71,7 +89,15 @@ class QuoteStoreRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'fx_note' => ['nullable', 'string'],
             'items' => ['nullable', 'array'],
-            'items.*.id' => ['nullable', 'integer', 'exists:quote_items,id'],
+            'items.*.id' => [
+                'nullable', 
+                'integer', 
+                Rule::exists('quote_items', 'id')->where(function ($query) {
+                     if (app(\App\Services\TenantContext::class)->id()) {
+                         $query->where('tenant_id', app(\App\Services\TenantContext::class)->id());
+                    }
+                })
+            ],
             'items.*.title' => ['required', 'string', 'max:255'],
             'items.*.description' => ['required', 'string'],
             'items.*.amount' => ['required', 'numeric', 'min:0'],

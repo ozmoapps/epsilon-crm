@@ -20,11 +20,16 @@ class EnsureAdmin
         }
 
 
-        // PR68: Remove Admin Gating - Bypass check
-        // if (!auth()->user()->is_admin) {
-        //     return redirect()->route('dashboard')
-        //         ->with('error', 'Bu sayfaya erişim yetkiniz yok. Operasyon ekranına yönlendirildiniz.');
-        // }
+        if (! auth()->user()->is_admin) {
+            abort(403, 'Bu sayfaya erişim yetkiniz yok.');
+        }
+
+        // PR3C6A: Admin Surface Lockdown
+        // Platform admin access uses the ROOT domain.
+        // If we are on a tenant domain, block access to /admin routes.
+        if ($request->attributes->get('is_tenant_domain')) {
+             abort(403, 'Platform yönetimine sadece ana domain üzerinden erişilebilir.');
+        }
 
         return $next($request);
     }

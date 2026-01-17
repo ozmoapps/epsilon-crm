@@ -17,8 +17,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use App\Support\TenantGuard;
+
 class ContractController extends Controller
 {
+    use TenantGuard;
+
     public function __construct(
         protected ContractPdfService $pdfService,
         protected ContractWorkflowService $workflowService
@@ -33,6 +37,7 @@ class ContractController extends Controller
         $dateTo = $request->input('date_to');
 
         $contracts = Contract::query()
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Global scope via TenantGuard usually better but explicit here matches pattern
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -58,8 +63,13 @@ class ContractController extends Controller
             ->withQueryString();
 
         $statuses = Contract::statusOptions();
-        $customers = \App\Models\Customer::orderBy('name')->get(['id', 'name']);
-        $vessels = \App\Models\Vessel::orderBy('name')->get(['id', 'name', 'customer_id']);
+        $customers = \App\Models\Customer::orderBy('name')
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->get(['id', 'name']);
+        
+        $vessels = \App\Models\Vessel::orderBy('name')
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->get(['id', 'name', 'customer_id']);
 
         $savedViews = \App\Models\SavedView::allow('contracts')->visibleTo($request->user())->get();
 
@@ -72,6 +82,8 @@ class ContractController extends Controller
 
     public function create(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         if ($salesOrder->contract) {
             return redirect()->route('contracts.show', $salesOrder->contract)
                 ->with('warning', 'Bu satış siparişi için sözleşme zaten oluşturuldu.');
@@ -91,6 +103,8 @@ class ContractController extends Controller
 
     public function store(Request $request, SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         if ($salesOrder->contract) {
             return redirect()->route('contracts.show', $salesOrder->contract)
                 ->with('warning', 'Bu satış siparişi için sözleşme zaten oluşturuldu.');
@@ -108,6 +122,7 @@ class ContractController extends Controller
         $data = array_merge($this->prefillFromSalesOrder($salesOrder), $validated, [
             'sales_order_id' => $salesOrder->id,
             'created_by' => $request->user()->id,
+            'tenant_id' => $salesOrder->tenant_id, // Explicit copy
         ]);
 
         $contract = Contract::create($data);
@@ -133,6 +148,8 @@ class ContractController extends Controller
 
     public function show(Contract $contract)
     {
+        $this->checkTenant($contract);
+
         $this->authorize('view', $contract);
 
         $contract->load([
@@ -183,6 +200,7 @@ class ContractController extends Controller
 
     public function edit(Contract $contract)
     {
+        $this->checkTenant($contract);
         $this->authorize('update', $contract);
 
         if (! $contract->isEditable()) {
@@ -202,6 +220,7 @@ class ContractController extends Controller
 
     public function update(Request $request, Contract $contract)
     {
+        $this->checkTenant($contract);
         $this->authorize('update', $contract);
 
         if (! $contract->isEditable()) {
@@ -226,6 +245,7 @@ class ContractController extends Controller
 
     public function destroy(Contract $contract)
     {
+        $this->checkTenant($contract);
         $this->authorize('update', $contract);
 
         if ($contract->isLocked()) {

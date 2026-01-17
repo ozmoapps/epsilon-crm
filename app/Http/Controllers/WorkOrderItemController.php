@@ -7,10 +7,16 @@ use App\Models\WorkOrderItem;
 use App\Http\Requests\WorkOrderItemStoreRequest;
 use Illuminate\Http\Request;
 
+use App\Support\TenantGuard;
+
 class WorkOrderItemController extends Controller
 {
+    use TenantGuard;
+
     public function store(WorkOrderItemStoreRequest $request, WorkOrder $workOrder)
     {
+        $this->checkTenant($workOrder);
+
         // Basic authorization check (can be improved with Policies later)
         if ($workOrder->status === 'cancelled' || $workOrder->status === 'completed') {
              // Depending on business logic, maybe allow adding items to completed orders? 
@@ -31,6 +37,8 @@ class WorkOrderItemController extends Controller
 
     public function update(WorkOrderItemStoreRequest $request, WorkOrder $workOrder, WorkOrderItem $item)
     {
+        $this->checkTenant($workOrder);
+
         if($item->work_order_id !== $workOrder->id) {
             abort(404);
         }
@@ -42,6 +50,8 @@ class WorkOrderItemController extends Controller
 
     public function destroy(WorkOrder $workOrder, WorkOrderItem $item)
     {
+        $this->checkTenant($workOrder);
+
         if($item->work_order_id !== $workOrder->id) {
             abort(404);
         }

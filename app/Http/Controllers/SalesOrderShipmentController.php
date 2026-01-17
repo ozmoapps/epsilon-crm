@@ -13,6 +13,11 @@ class SalesOrderShipmentController extends Controller
 {
     public function create(SalesOrder $salesOrder)
     {
+        // Guard: Tenant
+        if ($salesOrder->tenant_id !== app(\App\Services\TenantContext::class)->id()) {
+            abort(404);
+        }
+
         // Guard: Legacy stuck posted?
         if ($salesOrder->stock_posted_at) {
             return redirect()->route('sales-orders.show', $salesOrder)
@@ -45,19 +50,31 @@ class SalesOrderShipmentController extends Controller
             ];
         })->filter(fn($i) => $i['remaining_qty'] > 0);
 
-        $warehouses = Warehouse::orderBy('name')->get();
+        $warehouses = Warehouse::where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->orderBy('name')
+            ->get();
 
         return view('sales_orders.shipments.create', compact('salesOrder', 'warehouses', 'pickList'));
     }
 
     public function store(Request $request, SalesOrder $salesOrder)
     {
+        // Guard: Tenant
+        if ($salesOrder->tenant_id !== app(\App\Services\TenantContext::class)->id()) {
+            abort(404);
+        }
+
         if ($salesOrder->stock_posted_at) {
             return back()->with('error', 'Stok zaten düşülmüş.');
         }
 
         $validated = $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
+            'warehouse_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('warehouses', 'id')->where(function ($query) {
+                    return $query->where('tenant_id', app(\App\Services\TenantContext::class)->id());
+                }),
+            ],
             'note' => 'nullable|string',
             'lines' => 'required|array|min:1',
             'lines.*.item_id' => 'nullable|exists:sales_order_items,id', // Allow free lines if check unticked? Enforce picking for now.

@@ -9,8 +9,18 @@ class Warehouse extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (! $model->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $model->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+        });
+    }
+
     protected $fillable = [
         'name',
+        'tenant_id',
         'is_default',
         'is_active',
         'notes',

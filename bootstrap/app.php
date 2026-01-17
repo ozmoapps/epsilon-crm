@@ -13,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
+            'tenant.admin' => \App\Http\Middleware\EnsureTenantAdmin::class,
+            'admin.support' => \App\Http\Middleware\EnsureSupportSession::class,
+        ]);
+        
+        $middleware->web(append: [
+            \App\Http\Middleware\SetTenant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

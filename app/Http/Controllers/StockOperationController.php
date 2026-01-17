@@ -12,9 +12,14 @@ class StockOperationController extends Controller
 {
     public function create()
     {
-        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+        $warehouses = Warehouse::where('is_active', true)
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->orderBy('name')->get();
+
         // Maybe improve performance later with AJAX for products
-        $products = Product::where('track_stock', true)->orderBy('name')->get(['id', 'name', 'sku']);
+        $products = Product::where('track_stock', true)
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->orderBy('name')->get(['id', 'name', 'sku']);
 
         return view('stock_operations.create', compact('warehouses', 'products'));
     }
@@ -23,8 +28,18 @@ class StockOperationController extends Controller
     {
         $validated = $request->validate([
             'operation_type' => 'required|in:manual_in,manual_out,adjust',
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'product_id' => 'required|exists:products,id',
+            'warehouse_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('warehouses', 'id')->where(function ($query) {
+                    return $query->where('tenant_id', app(\App\Services\TenantContext::class)->id());
+                }),
+            ],
+            'product_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('products', 'id')->where(function ($query) {
+                    return $query->where('tenant_id', app(\App\Services\TenantContext::class)->id());
+                }),
+            ],
             'qty' => 'required_if:operation_type,manual_in,manual_out|numeric|min:0.01|nullable',
             'counted_qty' => 'required_if:operation_type,adjust|numeric|min:0|nullable',
             'note' => 'nullable|string',

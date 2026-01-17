@@ -8,12 +8,17 @@ use App\Models\SalesOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Support\TenantGuard;
+
 class InvoiceController extends Controller
 {
+    use TenantGuard;
+
     public function index(Request $request)
     {
         $query = Invoice::query()
             ->with(['salesOrder', 'customer'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->orderByDesc('issue_date')
             ->orderByDesc('id');
 
@@ -79,7 +84,11 @@ class InvoiceController extends Controller
             'shipments.lines',
             'shipments.lines.returnLines' => fn($q) => $q->whereHas('return', fn($sq) => $sq->where('status', 'posted')),
             'invoices.lines'
-        ])->findOrFail($request->get('sales_order_id'));
+        ])
+        ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Ensure tenant scope
+        ->findOrFail($request->get('sales_order_id'));
+
+        $this->checkTenant($salesOrder); // Double check just in case
 
         $limits = $this->getInvoiceableLimits($salesOrder);
 
@@ -123,7 +132,16 @@ class InvoiceController extends Controller
         }
 
         $request->validate([
-            'sales_order_id' => 'required|exists:sales_orders,id',
+            'sales_order_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('sales_orders', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'issue_date' => 'nullable|date',
             'due_date' => 'nullable|date',
             'items' => 'required|array',
@@ -137,7 +155,11 @@ class InvoiceController extends Controller
             'shipments.lines',
             'shipments.lines.returnLines' => fn($q) => $q->whereHas('return', fn($sq) => $sq->where('status', 'posted')),
             'invoices.lines'
-        ])->findOrFail($request->sales_order_id);
+        ])
+        ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+        ->findOrFail($request->sales_order_id);
+    
+        $this->checkTenant($salesOrder);
 
         $limits = $this->getInvoiceableLimits($salesOrder);
 
@@ -173,6 +195,7 @@ class InvoiceController extends Controller
                 'due_date' => $request->due_date,
                 'currency' => $salesOrder->currency,
                 'created_by' => auth()->id(),
+                'tenant_id' => $salesOrder->tenant_id, // Explicit copy
             ]);
 
             $subtotal = 0;
@@ -215,6 +238,8 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice)
     {
+        $this->checkTenant($invoice);
+
         if ($invoice->status === 'issued') {
             return back()->with('error', 'Resmileşmiş (Kesildi) durumundaki faturalar silinemez. İptal etmeyi deneyiniz.');
         }
@@ -229,21 +254,26 @@ class InvoiceController extends Controller
     }
 
     public function show(Invoice $invoice)
-{
-    $invoice->load(['lines.salesOrderItem.product', 'payments', 'salesOrder']);
+    {
+        $this->checkTenant($invoice);
 
-    $bankAccounts = \App\Models\BankAccount::with('currency')
-        ->where('is_active', true)
-        ->orderBy('type')
-        ->orderBy('name')
-        ->get();
+        $invoice->load(['lines.salesOrderItem.product', 'payments', 'salesOrder']);
 
-    return view('invoices.show', compact('invoice', 'bankAccounts'));
-}
+        $bankAccounts = \App\Models\BankAccount::with('currency')
+            ->where('is_active', true)
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Scope bank accounts
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get();
+
+        return view('invoices.show', compact('invoice', 'bankAccounts'));
+    }
 
 
     public function issue(Invoice $invoice, \App\Services\LedgerService $ledgerService)
     {
+        $this->checkTenant($invoice);
+
         if (app()->environment('local', 'testing') || config('app.debug')) {
             \Illuminate\Support\Facades\Log::info('UI ISSUE HIT', ['invoice_id' => $invoice->id, 'user_id' => auth()->id()]);
         }
@@ -304,7 +334,9 @@ class InvoiceController extends Controller
                     $year = now()->year;
                     $prefix = 'INV-' . $year . '-';
 
-                    $lastInvoiceNo = Invoice::where('invoice_no', 'like', $prefix . '%')
+                    // Tenant Scoped Last Invoice No
+                    $lastInvoiceNo = Invoice::where('tenant_id', $invoice->tenant_id)
+                        ->where('invoice_no', 'like', $prefix . '%')
                         ->orderByDesc('invoice_no')
                         ->value('invoice_no');
 
@@ -319,11 +351,14 @@ class InvoiceController extends Controller
 
                     $candidateNo = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
 
-                    if (Invoice::where('invoice_no', $candidateNo)->exists()) {
+                    // Tenant Scoped Exists Check
+                    if (Invoice::where('tenant_id', $invoice->tenant_id)->where('invoice_no', $candidateNo)->exists()) {
                         continue;
                     }
 
+                    // Tenant Scoped Update
                     $updated = Invoice::where('id', $invoice->id)
+                        ->where('tenant_id', $invoice->tenant_id)
                         ->where('status', 'draft')
                         ->update([
                             'status' => 'issued',

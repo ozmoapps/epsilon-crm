@@ -5,13 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 
+use App\Support\TenantGuard;
+
 class CustomerController extends Controller
 {
+    use TenantGuard;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
 
         $customers = Customer::query()
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Explicit scope
             ->withCount('vessels')
             ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
@@ -35,6 +40,7 @@ class CustomerController extends Controller
         $validated = $request->validate($this->rules(), $this->messages());
 
         $validated['created_by'] = $request->user()->id;
+        $validated['tenant_id'] = app(\App\Services\TenantContext::class)->id(); // Explicit set (model hook also handles this)
         $customer = Customer::create($validated);
 
         if ($request->wantsJson()) {
@@ -54,6 +60,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer, Request $request)
     {
+        $this->checkTenant($customer);
         $this->authorize('view', $customer);
         $customer->load(['vessels', 'workOrders.vessel']);
 
@@ -97,12 +104,14 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        $this->checkTenant($customer);
         $this->authorize('update', $customer);
         return view('customers.edit', compact('customer'));
     }
 
     public function update(Request $request, Customer $customer)
     {
+        $this->checkTenant($customer);
         $this->authorize('update', $customer);
         $validated = $request->validate($this->rules(), $this->messages());
 
@@ -114,6 +123,7 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        $this->checkTenant($customer);
         $this->authorize('delete', $customer);
 
         if ($customer->vessels()->exists()) {
@@ -136,9 +146,13 @@ class CustomerController extends Controller
         ]);
 
         $count = 0;
-        foreach ($ids as $id) {
-            $customer = Customer::find($id);
-            if ($customer && $request->user()->can('delete', $customer)) {
+        // Efficient bulk scope check
+        $customers = Customer::whereIn('id', $ids)
+                     ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+                     ->get();
+
+        foreach ($customers as $customer) {
+            if ($request->user()->can('delete', $customer)) {
                 $customer->delete();
                 $count++;
             }

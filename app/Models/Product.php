@@ -9,8 +9,18 @@ class Product extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (! $model->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $model->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+        });
+    }
+
     protected $fillable = [
         'type',
+        'tenant_id',
         'name',
         'sku',
         'barcode',

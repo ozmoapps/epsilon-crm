@@ -129,6 +129,7 @@ class DashboardController extends Controller
 
         // Recent Activity
         $recentActivity = ActivityLog::with(['actor', 'subject'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->latest('created_at')
             ->limit(8)
             ->get();

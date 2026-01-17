@@ -13,6 +13,8 @@ class Quote extends Model
     use HasFactory;
 
     protected $fillable = [
+        'created_by',
+        'tenant_id',
         'customer_id',
         'vessel_id',
         'work_order_id',
@@ -60,6 +62,10 @@ class Quote extends Model
     protected static function booted(): void
     {
         static::creating(function (Quote $quote) {
+            if (! $quote->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $quote->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+
             if (! $quote->currency_id) {
                 $quote->currency_id = self::resolveDefaultCurrencyId();
             }
@@ -79,10 +85,16 @@ class Quote extends Model
             $padding = config('quotes.padding');
 
             DB::transaction(function () use ($quote, $year, $prefix, $padding) {
-                $sequence = QuoteSequence::lockForUpdate()->find($year);
+                $tenantId = $quote->tenant_id;
+                // Lock specifically for this tenant's year sequence
+                $sequence = QuoteSequence::lockForUpdate()
+                    ->where('tenant_id', $tenantId)
+                    ->where('year', $year)
+                    ->first();
 
                 if (! $sequence) {
                     $sequence = QuoteSequence::create([
+                        'tenant_id' => $tenantId,
                         'year' => $year,
                         'last_number' => 0,
                     ]);

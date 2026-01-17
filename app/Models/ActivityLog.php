@@ -13,7 +13,17 @@ class ActivityLog extends Model
         'action',
         'meta',
         'created_at',
+        'tenant_id',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (!$model->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $model->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+        });
+    }
 
     protected $casts = [
         'meta' => 'array',

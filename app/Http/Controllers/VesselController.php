@@ -6,13 +6,18 @@ use App\Models\Customer;
 use App\Models\Vessel;
 use Illuminate\Http\Request;
 
+use App\Support\TenantGuard;
+
 class VesselController extends Controller
 {
+    use TenantGuard;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
 
         $vessels = Vessel::query()
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Explicit scope
             ->with('customer')
             ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
@@ -25,7 +30,9 @@ class VesselController extends Controller
     public function create()
     {
         $this->authorize('create', Vessel::class);
-        $customers = Customer::orderBy('name')->get();
+        $customers = Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->orderBy('name')
+            ->get();
 
         return view('vessels.create', [
             'customers' => $customers,
@@ -39,6 +46,7 @@ class VesselController extends Controller
         $validated = $request->validate($this->rules(), $this->messages());
 
         $validated['created_by'] = $request->user()->id;
+        // Tenant ID handled by model hook
         Vessel::create($validated);
 
         return redirect()->route('vessels.index')
@@ -47,6 +55,7 @@ class VesselController extends Controller
 
     public function show(Vessel $vessel)
     {
+        $this->checkTenant($vessel);
         $this->authorize('view', $vessel);
         $vessel->load([
             'customer',
@@ -67,14 +76,18 @@ class VesselController extends Controller
 
     public function edit(Vessel $vessel)
     {
+        $this->checkTenant($vessel);
         $this->authorize('update', $vessel);
-        $customers = Customer::orderBy('name')->get();
+        $customers = Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->orderBy('name')
+            ->get();
 
         return view('vessels.edit', compact('vessel', 'customers'));
     }
 
     public function update(Request $request, Vessel $vessel)
     {
+        $this->checkTenant($vessel);
         $this->authorize('update', $vessel);
         $validated = $request->validate($this->rules(), $this->messages());
 
@@ -86,6 +99,7 @@ class VesselController extends Controller
 
     public function destroy(Vessel $vessel)
     {
+        $this->checkTenant($vessel);
         $this->authorize('delete', $vessel);
         $vessel->delete();
 
@@ -96,7 +110,16 @@ class VesselController extends Controller
     private function rules(): array
     {
         return [
-            'customer_id' => ['required', 'exists:customers,id'],
+            'customer_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('customers', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'type' => ['nullable', 'string', 'max:255'],
             'registration_number' => ['nullable', 'string', 'max:255'],

@@ -17,8 +17,18 @@ class ProductUpdateRequest extends FormRequest
         return [
             'type' => ['required', Rule::in(['product', 'service'])],
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['nullable', 'string', 'max:50', Rule::unique('products')->ignore($this->product)],
-            'barcode' => ['nullable', 'string', 'max:50', Rule::unique('products')->ignore($this->product)],
+            'sku' => [
+                'nullable', 
+                'string', 
+                'max:50', 
+                Rule::unique('products')->ignore($this->product)->where(fn ($query) => $query->where('tenant_id', app(\App\Services\TenantContext::class)->id()))
+            ],
+            'barcode' => [
+                'nullable', 
+                'string', 
+                'max:50', 
+                Rule::unique('products')->ignore($this->product)->where(fn ($query) => $query->where('tenant_id', app(\App\Services\TenantContext::class)->id()))
+            ],
             'category_id' => ['nullable', 'exists:categories,id'],
             'track_stock' => ['boolean'],
             'critical_stock_level' => ['nullable', 'integer', 'min:0'],

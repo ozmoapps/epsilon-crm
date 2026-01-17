@@ -9,8 +9,12 @@ use App\Http\Requests\ProductStoreRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use Illuminate\Http\Request;
 
+use App\Support\TenantGuard;
+
 class ProductController extends Controller
 {
+    use TenantGuard;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -20,6 +24,7 @@ class ProductController extends Controller
 
         $products = Product::query()
             ->with(['category', 'tags'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -34,7 +39,7 @@ class ProductController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $categories = Category::orderBy('name')->get();
+        $categories = Category::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get();
 
         return view('products.index', compact('products', 'categories', 'search', 'type', 'categoryId', 'trackStock'));
     }
@@ -43,8 +48,8 @@ class ProductController extends Controller
     {
         return view('products.create', [
             'product' => new Product(),
-            'categories' => Category::orderBy('name')->get(),
-            'tags' => Tag::orderBy('name')->get(),
+            'categories' => Category::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'tags' => Tag::orderBy('name')->get(), // Tags assumed global or shared for now
         ]);
     }
 
@@ -55,6 +60,7 @@ class ProductController extends Controller
         $tags = $validated['tags'] ?? [];
         unset($validated['tags']);
 
+        // Model hook handles tenant_id
         $product = Product::create($validated);
         
         if (!empty($tags)) {
@@ -67,21 +73,27 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
+        $this->checkTenant($product);
+
         $product->load(['category', 'tags', 'inventoryBalances.warehouse']);
         return view('products.show', compact('product'));
     }
 
     public function edit(Product $product)
     {
+        $this->checkTenant($product);
+
         return view('products.edit', [
             'product' => $product,
-            'categories' => Category::orderBy('name')->get(),
+            'categories' => Category::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
             'tags' => Tag::orderBy('name')->get(),
         ]);
     }
 
     public function update(ProductUpdateRequest $request, Product $product)
     {
+        $this->checkTenant($product);
+
         $validated = $request->validated();
         
         $tags = $validated['tags'] ?? [];
@@ -89,10 +101,7 @@ class ProductController extends Controller
 
         $product->update($validated);
         
-        if (isset($request->tags)) { // Only sync if tags are present in request, otherwise might clear? UI sends empty array?
-             // Standard HTML forms don't send array if empty checks. 
-             // But usually hidden input or array handling. 
-             // Let's assume if 'tags' key exists (even null/empty) we sync.
+        if (isset($request->tags)) {
              $product->tags()->sync($tags);
         }
 
@@ -102,6 +111,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $this->checkTenant($product);
+
         if ($product->stockMovements()->exists()) {
             return redirect()->back()->with('error', 'Bu ürünün stok hareketleri mevcut, silinemez. Pasife alabilirsiniz.');
         }

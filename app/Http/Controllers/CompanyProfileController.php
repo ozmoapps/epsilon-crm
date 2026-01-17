@@ -18,6 +18,7 @@ class CompanyProfileController extends Controller
         $search = $request->input('search');
 
         $companyProfiles = CompanyProfile::query()
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
             ->paginate(10)
@@ -28,12 +29,12 @@ class CompanyProfileController extends Controller
 
     public function create()
     {
-        $existing = CompanyProfile::query()->first();
+        $existing = CompanyProfile::current();
 
         if ($existing) {
             return redirect()
                 ->route('admin.company-profiles.edit', $existing)
-                ->with('info', 'Şirket profili zaten mevcut.');
+                ->with('info', 'Şirket profili zaten mevcut (Tenant Bazlı).');
         }
 
         $this->authorize('create', CompanyProfile::class);
@@ -45,16 +46,17 @@ class CompanyProfileController extends Controller
 
     public function store(Request $request)
     {
-        $existing = CompanyProfile::query()->first();
+        $existing = CompanyProfile::current();
 
         if ($existing) {
             return redirect()
                 ->route('admin.company-profiles.edit', $existing)
-                ->with('info', 'Şirket profili zaten mevcut.');
+                ->with('info', 'Şirket profili zaten mevcut (Tenant Bazlı).');
         }
 
         $this->authorize('create', CompanyProfile::class);
 
+        // Validation rules are shared but tenant_id is auto-assigned by model hook
         $validated = $request->validate($this->rules(), $this->messages());
 
         $companyProfile = CompanyProfile::create($validated);
