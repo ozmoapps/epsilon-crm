@@ -13,6 +13,11 @@ class CustomerLedgerController extends Controller
      */
     public function index(Customer $customer, Request $request)
     {
+        // Tenant Guard
+        if ($customer->tenant_id !== app(\App\Services\TenantContext::class)->id()) {
+            abort(404);
+        }
+
         // Optional: validate filters (minimum)
         $request->validate([
             'start_date' => ['nullable', 'date'],
@@ -90,6 +95,7 @@ class CustomerLedgerController extends Controller
             ->pluck('type');
 
         $vessels = \App\Models\Vessel::where('customer_id', $customer->id)
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Ensure validation
             ->orderBy('name')
             ->get(['id', 'name']);
 

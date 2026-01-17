@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(CompanyProfileSeeder::class);
+        $this->call(PlanSeeder::class);
         $this->call(ContractTemplateSeeder::class);
     }
 }

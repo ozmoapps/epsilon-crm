@@ -7,15 +7,20 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Support\TenantGuard;
+
 class PaymentController extends Controller
 {
+    use TenantGuard;
+
     /**
      * Payments index (placeholder/list for Sprint 2.1)
      */
     public function index(Request $request)
     {
         $query = Payment::query()
-            ->with(['invoice', 'customer', 'allocations']); // Eager load allocations & customer
+            ->with(['invoice', 'customer', 'allocations'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()); // Eager load allocations & customer
 
         // Filters
         if ($request->filled('customer_id')) {
@@ -68,7 +73,9 @@ class PaymentController extends Controller
             ->appends($request->query());
 
         // View Data
-        $customers = \App\Models\Customer::orderBy('name')->get(['id', 'name']);
+        $customers = \App\Models\Customer::orderBy('name')
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Scope pickers
+            ->get(['id', 'name']);
 
         // Active currencies (fallback to list if table empty or not implies)
         // Guard: Check if currencies table exists AND has is_active column
@@ -99,9 +106,14 @@ class PaymentController extends Controller
         // Simple View for Advance Payment
         return view('payments.create', [
             // V2: avoid N+1 in view (acc->currency)
-            'bankAccounts' => \App\Models\BankAccount::with('currency')->where('is_active', true)->get(),
-            'customers' => \App\Models\Customer::orderBy('name')->get(['id', 'name']),
-            'vessels' => \App\Models\Vessel::orderBy('name')->get(['id', 'name', 'customer_id']),
+            'bankAccounts' => \App\Models\BankAccount::with('currency')
+                ->where('is_active', true)
+                ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Scope bank accounts
+                ->get(),
+            
+            // Scope pickers
+            'customers' => \App\Models\Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(['id', 'name']),
+            'vessels' => \App\Models\Vessel::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(['id', 'name', 'customer_id']),
         ]);
     }
 
@@ -154,11 +166,38 @@ class PaymentController extends Controller
 
         try {
             $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'vessel_id' => 'nullable|exists:vessels,id',
+            'customer_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('customers', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
+            'vessel_id' => [
+                'nullable',
+                \Illuminate\Validation\Rule::exists('vessels', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'amount' => 'required|numeric|min:0.01',
             'payment_date' => 'required|date',
-            'bank_account_id' => 'required|exists:bank_accounts,id',
+            'bank_account_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('bank_accounts', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'payment_method' => 'nullable|string|max:50',
             'reference_number' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:2000',
@@ -231,6 +270,9 @@ class PaymentController extends Controller
      */
     public function allocate(Payment $payment)
     {
+        // Tenant Guard
+        $this->checkTenant($payment);
+
         // HOTFIX: Optimize N+1
         $payment->load(['allocations.invoice', 'customer', 'invoice']);
 
@@ -239,6 +281,7 @@ class PaymentController extends Controller
         $currency = $payment->effective_currency;
 
         $invoices = Invoice::where('customer_id', $customerId)
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id()) // Scope invoices
             ->where('currency', $currency)
             ->where('payment_status', '!=', 'paid') // Only unpaid/partial
             ->orderBy('issue_date')
@@ -254,6 +297,9 @@ class PaymentController extends Controller
      */
     public function store(Request $request, Invoice $invoice, \App\Services\LedgerService $ledgerService)
     {
+        // Tenant Guard
+        $this->checkTenant($invoice);
+
         // Normalize TR number formats (e.g. 2.393.449,73 -> 2393449.73 / 50,30 -> 50.30)
         $request->merge([
             'amount' => $this->normalizeDecimalInput($request->input('amount')),
@@ -264,7 +310,16 @@ class PaymentController extends Controller
             'amount' => 'required|numeric|min:0.01', // original_amount
             'payment_date' => 'required|date',
             'payment_method' => 'nullable|string|max:50',
-            'bank_account_id' => 'required|exists:bank_accounts,id',
+            'bank_account_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('bank_accounts', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'reference_number' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:2000',
             'fx_rate' => 'nullable|numeric|min:0.00000001',

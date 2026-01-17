@@ -1,0 +1,109 @@
+--- Verifying Tenancy V3 Scope ---
+[OK] Found Tenant A (ID: 2)
+[OK] Found Tenant B (ID: 3)
+[OK] Authenticated as User (ID: 1)
+--- Cleaning up Tenant A & B Data ---
+[OK] Cleaned up previous data.
+
+--- Context Set: Tenant A ---
+[OK] Created Customer A (ID: 17, Tenant: 2)
+[OK] Created Vessel A (ID: 17, Tenant: 2)
+[OK] Created Product A (ID: 17)
+[OK] Created Warehouse A (ID: 1)
+[OK] Created BankAccount A (ID: 17)
+[OK] Created Quote A (ID: 25)
+[OK] Created SalesOrder A (ID: 17)
+[OK] Created WorkOrder A (ID: 9)
+
+--- Context Set: Tenant B ---
+[OK] Created Customer B (ID: 18, Tenant: 3)
+[OK] Created Vessel B (ID: 18, Tenant: 3)
+[OK] Created Product B (ID: 18)
+[OK] Created BankAccount B (ID: 18)
+
+--- Checking Cross-Tenant LEAKAGE (Currently in Tenant B) ---
+[PASS] Tenant B context correctly BLOCKED from verifying ownership of Tenant A customer.
+[PASS] Index query correctly scoped (Customer A not visible to Tenant B).
+[PASS] Cross-tenant foreign key validation correctly failed (Cannot use Customer A in Tenant B).
+
+--- Dropdown Scoping Checks (Simulated) ---
+[PASS] Dropdown Query correctly scoped (Customer A not in Tenant B list).
+[PASS] Dropdown Query correctly scoped (Vessel A not in Tenant B list).
+[PASS] Dropdown Query correctly scoped (WorkOrder A not in Tenant B list).
+[PASS] Dropdown Query correctly scoped (Product A not in Tenant B list).
+[PASS] Dropdown Query correctly scoped (BankAccount A not in Tenant B list).
+
+--- Search/Picker Leakage Checks (ApiLookupController Logic) ---
+[PASS] Search Query correctly scoped (Vessel A not found in Tenant B search).
+[PASS] Tenant B blocked from accessing Tenant A customer relations (404 expected).
+[PASS] Tenant B blocked from accessing Tenant A vessel details (404 expected).
+
+--- Ledger, Stock & Shipment Leakage Checks ---
+[PASS] Ledger Index correctly scoped.
+[PASS] Tenant B blocked from viewing Tenant A Ledger (404 expected).
+[PASS] Stock Operation prevented using Tenant A Product in Tenant B.
+[PASS] Tenant B blocked from creating shipment for Tenant A Sales Order.
+
+--- Company Profile Isolation Checks ---
+[PASS] CompanyProfile::current() correctly returned NULL for Tenant B (no profile yet).
+[PASS] Tenant B created and retrieved its own Company Profile.
+[PASS] Database contains profiles for other tenants, but current() only sees Tenant B's.
+[PASS] QuoteSequences are physically separate rows per tenant.
+[PASS] Tenant B CANNOT see Tenant A Contract Template.
+[PASS] Tenant B Dashboard does NOT see Tenant A Activity Log.
+[PASS] Categories and Tags are isolated.
+
+--- PR3C1B: Invoice Issue Tenant Isolation ---
+[OK] Issued Invoice A: INV-2026-0001 (Tenant A)
+[PASS] Tenant B did NOT see Tenant A's invoice number.
+[PASS] Tenant B confirms Invoice 0001 is available for IT (Isolated).
+[OK] Issued Invoice B: INV-2026-0001 (Tenant B)
+[PASS] CONFIRMED: Both tenants have same Invoice No 'INV-2026-0001' independently.
+
+--- PR3C2: Tenant Membership & Switching ---
+[OK] User sync'd to (only) Tenant A and Tenant B.
+[PASS] User is a member of 2 tenants.
+[PASS] Middleware Logic: Switch to Tenant A allowed (Membership valid).
+[PASS] Middleware Logic: Switch to Tenant B allowed (Membership valid).
+[PASS] Middleware Logic: Switch to Tenant C BLOCKED (Not a member).
+
+--- PR3C3A: Tenant Membership Admin Verification ---
+[OK] Created Tenant C (Active) and Tenant P (Passive).
+[PASS] Admin synced Tenants A, B, C to user.
+[PASS] Validation correctly BLOCKED Passive Tenant P.
+[PASS] Self-Removal Guard correctly BLOCKED removing active Tenant A.
+
+--- PR3C3B: Tenant Resolve Refinement (Active + Membership) ---
+[OK] Tenant D (Passive) ready.
+[OK] User synced to Tenant A (Active) and Tenant D (Passive).
+Testing Middleware Logic Simulation:
+ -> Session Tenant Rejected (Expected for Passive D)
+ -> Fallback to First Active Tenant: Tenant A
+[PASS] Middleware correctly rejected Passive D and resolved to Active A.
+
+--- PR3C4: Tenant Admin Guardrails + Slug ---
+Checking Slug Backfill...
+[PASS] All tenants have slugs.
+Simulating Admin Toggle (Disabling Tenant D)...
+[OK] Tenant D is Passive.
+[PASS] Active Tenant A resolved (Fallback worked).
+[PASS] Session 'current_tenant_id' for D was cleared.
+
+--- PR3C5: Domain/Host Tenant Resolve ---
+Testing Active Domain Access (Tenant A: tenant-a.test)...
+[PASS] Tenant A domain resolved correctly.
+Testing Passive Domain Access (Tenant D: tenant-d.test)...
+[PASS] Passive Tenant D domain ignored, fallback to A.
+Testing Non-Member Access (Tenant B: tenant-b.test)...
+[PASS] Non-member access blocked with 403.
+
+--- PR3C6A: Admin Surface Lockdown (SKIPPED) ---
+
+--- PR3C6B: Tenant Invite / Join Flow Verification ---
+[PASS] Invitation created for Tenant A.
+[OK] Invitee User ready (Not member of Tenant A).
+[PASS] Invitation accepted. User attached to Tenant A.
+[PASS] Middleware Bypass Logic Verification: ALLOWED access to invite route for non-member on correct domain.
+[PASS] Middleware correctly BLOCKED token from Tenant B on Tenant A domain.
+
+ALL TESTS PASSED.

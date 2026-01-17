@@ -87,8 +87,8 @@ Route::middleware('auth')->group(function () {
             ->whereNumber('vessel');
     });
     
-    // Financial & Sensitive Routes (Admin Only)
-    Route::middleware(['admin'])->group(function () {
+    // Financial & Sensitive Routes (Tenant Admin Only)
+    Route::middleware(['tenant.admin'])->group(function () {
 
         // Ledger Routes
         Route::get('customers/{customer}/ledger', [\App\Http\Controllers\CustomerLedgerController::class, 'index'])->name('customers.ledger');
@@ -177,23 +177,23 @@ Route::middleware('auth')->group(function () {
     // Route::delete('payments/{payment}/allocations/{allocation}', [App\Http\Controllers\PaymentAllocationController::class, 'destroy'])->name('payments.allocations.destroy');
 
     // Admin Routes
-    Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
         // Settings
-        Route::resource('company-profiles', CompanyProfileController::class);
-
-        // Route::resource('bank-accounts', BankAccountController::class); // Moved to main group
-        Route::resource('currencies', CurrencyController::class);
-
-        Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy'])
-            ->parameters(['contract-templates' => 'template']);
-        Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])
-            ->name('contract-templates.preview');
-        Route::post('contract-templates/{template}/versions/{version}/restore', [ContractTemplateController::class, 'restore'])
-            ->name('contract-templates.versions.restore');
-        Route::post('contract-templates/{template}/make-default', [ContractTemplateController::class, 'makeDefault'])
-            ->name('contract-templates.make_default');
-        Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])
-            ->name('contract-templates.toggle_active');
+        // Settings
+        Route::middleware(['admin.support'])->group(function () {
+            Route::resource('company-profiles', CompanyProfileController::class);
+            Route::resource('currencies', CurrencyController::class);
+            Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy'])
+                ->parameters(['contract-templates' => 'template']);
+            Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])
+                ->name('contract-templates.preview');
+            Route::post('contract-templates/{template}/versions/{version}/restore', [ContractTemplateController::class, 'restore'])
+                ->name('contract-templates.versions.restore');
+            Route::post('contract-templates/{template}/make-default', [ContractTemplateController::class, 'makeDefault'])
+                ->name('contract-templates.make_default');
+            Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])
+                ->name('contract-templates.toggle_active');
+        });
 
         // User Management
         Route::get('users', [\App\Http\Controllers\Admin\UserAdminController::class, 'index'])->name('users.index');
@@ -201,14 +201,115 @@ Route::middleware('auth')->group(function () {
         Route::patch('users/{user}', [\App\Http\Controllers\Admin\UserAdminController::class, 'update'])->name('users.update');
         Route::patch('users/{user}/password', [\App\Http\Controllers\Admin\UserAdminController::class, 'password'])->name('users.password');
         Route::delete('users/{user}', [\App\Http\Controllers\Admin\UserAdminController::class, 'destroy'])->name('users.destroy');
+
+        // Tenant Management
+        Route::resource('tenants', \App\Http\Controllers\Admin\TenantAdminController::class)->except(['show', 'destroy']);
+        Route::patch('tenants/{tenant}/toggle-active', [\App\Http\Controllers\Admin\TenantAdminController::class, 'toggleActive'])->name('tenants.toggle-active');
+
+        // Account Management (PR4D3)
+        Route::resource('accounts', \App\Http\Controllers\Admin\AccountAdminController::class)->only(['index', 'show', 'update']);
+        
+        // Dashboard (Platform Overview)
+        Route::get('dashboard', \App\Http\Controllers\Admin\DashboardController::class)->name('dashboard');
+
+        // Audit Logs (Global)
+        Route::get('audit', [App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit.index');
     });
 });
 
-// Local-only UI demo page (no auth required)
+// Local-only UI demo page & debug routes
 if (app()->environment('local')) {
     Route::get('/ui', function () {
         return view('dev.ui');
     })->name('ui.index');
+
+    Route::post('/debug/switch-tenant/{tenantId}', function ($tenantId) {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
+        $tenant = \App\Models\Tenant::findOrFail($tenantId);
+        
+        // Local Debug: Membership + Active Check like Prod
+        if (! auth()->user()->tenants()->where('tenants.id', $tenantId)->exists()) {
+             return redirect()->back()->with('error', 'Üye değilsiniz.');
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('tenants', 'is_active') && !$tenant->is_active) {
+            return redirect()->back()->with('error', 'Firma pasif durumda.');
+        }
+
+        session(['current_tenant_id' => $tenant->id]);
+
+        return redirect()->back()->with('success', 'Tenant switched to ' . $tenant->name);
+    })->name('debug.switch-tenant');
 }
+
+// PR3C2: Prod Switch Route
+Route::middleware(['auth'])->post('/tenants/switch', function (\Illuminate\Http\Request $request) {
+    $request->validate(['tenant_id' => 'required|exists:tenants,id']);
+    
+    $tenantId = $request->input('tenant_id');
+    
+    // Membership Check
+    if (! auth()->user()->tenants()->where('tenants.id', $tenantId)->exists()) {
+        abort(403, 'Bu firmaya erişim yetkiniz yok.');
+    }
+
+    // Active Check
+    $tenant = \App\Models\Tenant::find($tenantId);
+    if ($tenant && \Illuminate\Support\Facades\Schema::hasColumn('tenants', 'is_active')) {
+        if (! $tenant->is_active) {
+            return back()->with('error', 'Bu firma pasif durumda.');
+        }
+    }
+
+    session(['current_tenant_id' => $tenantId]);
+
+    // Domain Redirect Logic
+    if (config('tenancy.resolve_by_domain') && $tenant->domain && $tenant->domain !== request()->getHost()) {
+        $scheme = request()->getScheme();
+        return redirect()->away($scheme . '://' . $tenant->domain . '/dashboard')
+            ->with('success', 'Firma değiştirildi.');
+    }
+
+    return back()->with('success', 'Firma değiştirildi.');
+})->name('tenants.switch');
+
+// PR3C6B: Tenant Invitation Flow
+Route::get('/invite/{token}', [App\Http\Controllers\TenantInvitationController::class, 'show'])->name('invitations.show');
+Route::middleware(['auth'])->post('/invite/{token}/accept', [App\Http\Controllers\TenantInvitationController::class, 'accept'])->name('invitations.accept');
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/invitations/store', [App\Http\Controllers\Admin\UserAdminController::class, 'storeInvitation'])->name('invitations.store'); // Keep existing store
+    Route::resource('invitations', App\Http\Controllers\Admin\InvitationController::class)->only(['index', 'destroy']);
+    Route::patch('invitations/{invitation}/regenerate', [App\Http\Controllers\Admin\InvitationController::class, 'regenerate'])->name('invitations.regenerate');
+});
+
+// PR3C8B: Tenant Admin Self-Service
+Route::middleware(['auth', 'tenant.admin'])->prefix('manage')->name('manage.')->group(function () {
+    // Members
+    Route::get('members', [App\Http\Controllers\Manage\TenantMemberController::class, 'index'])->name('members.index');
+    Route::delete('members/{user}', [App\Http\Controllers\Manage\TenantMemberController::class, 'destroy'])->name('members.destroy');
+    
+    // Invitations (Tenant Scoped)
+    Route::get('invitations', [App\Http\Controllers\Manage\TenantInvitationAdminController::class, 'index'])->name('invitations.index');
+    Route::post('invitations', [App\Http\Controllers\Manage\TenantInvitationAdminController::class, 'store'])->name('invitations.store');
+    Route::patch('invitations/{invitation}/regenerate', [App\Http\Controllers\Manage\TenantInvitationAdminController::class, 'regenerate'])->name('invitations.regenerate');
+    Route::delete('invitations/{invitation}', [App\Http\Controllers\Manage\TenantInvitationAdminController::class, 'destroy'])->name('invitations.destroy');
+    
+    // PR4C3: Support Access (Break-Glass)
+    Route::post('support-access', [App\Http\Controllers\Manage\SupportAccessController::class, 'store'])->name('support-access.store');
+    Route::delete('support-access/{session}', [App\Http\Controllers\Manage\SupportAccessController::class, 'destroy'])->name('support-access.destroy');
+    
+    // Audit Logs (Tenant Scoped)
+    Route::get('audit', [App\Http\Controllers\Manage\AuditLogController::class, 'index'])->name('audit.index');
+
+    // Billing (Owner Only) - PR4D4
+    Route::get('billing', [App\Http\Controllers\Manage\BillingController::class, 'index'])->name('billing.index');
+});
+
+// PR4C3: Platform Support Entry
+Route::middleware(['auth'])->get('/support/access/{token}', App\Http\Controllers\Admin\PlatformSupportController::class)->name('support.access');
+
 
 require __DIR__ . '/auth.php';

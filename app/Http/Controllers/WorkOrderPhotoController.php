@@ -7,10 +7,16 @@ use App\Models\WorkOrderPhoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+use App\Support\TenantGuard;
+
 class WorkOrderPhotoController extends Controller
 {
+    use TenantGuard;
+
     public function store(Request $request, WorkOrder $workOrder)
     {
+        $this->checkTenant($workOrder);
+
         // Simple auth check similar to other controllers
         if ($request->user()->cannot('update', $workOrder)) {
             abort(403);
@@ -38,6 +44,8 @@ class WorkOrderPhotoController extends Controller
     {
         $workOrder = $photo->workOrder;
         
+        $this->checkTenant($workOrder); // Indirectly checks both
+
         if (request()->user()->cannot('update', $workOrder)) {
             abort(403);
         }

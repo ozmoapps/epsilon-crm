@@ -14,8 +14,13 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 
 
+use App\Support\TenantGuard;
+
+
 class SalesOrderController extends Controller
 {
+    use TenantGuard;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -31,6 +36,7 @@ class SalesOrderController extends Controller
 
         $salesOrders = SalesOrder::query()
             ->with(['customer', 'vessel', 'contract'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -64,8 +70,8 @@ class SalesOrderController extends Controller
             ->withQueryString();
 
         $statuses = SalesOrder::statusOptions();
-        $customers = Customer::orderBy('name')->get(['id', 'name']);
-        $vessels = Vessel::with('customer')->orderBy('name')->get(['id', 'name', 'customer_id']);
+        $customers = Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(['id', 'name']);
+        $vessels = Vessel::with('customer')->where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(['id', 'name', 'customer_id']);
         // SalesOrder model uses string currency code, but we can list active currencies from DB
         $currencies = \App\Models\Currency::where('is_active', true)->orderBy('code')->get(['code', 'name']);
         
@@ -87,9 +93,9 @@ class SalesOrderController extends Controller
                 'currency' => 'EUR',
                 'order_date' => now()->toDateString(),
             ]),
-            'customers' => Customer::orderBy('name')->get(),
-            'vessels' => Vessel::with('customer')->orderBy('name')->get(),
-            'workOrders' => WorkOrder::orderByDesc('id')->get(),
+            'customers' => Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'vessels' => Vessel::with('customer')->where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'workOrders' => WorkOrder::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderByDesc('id')->get(),
             'statuses' => SalesOrder::statusOptions(),
         ]);
     }
@@ -99,7 +105,7 @@ class SalesOrderController extends Controller
         $validated = $request->validated();
 
         $validated['created_by'] = $request->user()->id;
-
+        // Tenant ID handled by model hook
         $salesOrder = SalesOrder::create($validated);
 
         return redirect()->route('sales-orders.show', $salesOrder)
@@ -108,6 +114,8 @@ class SalesOrderController extends Controller
 
     public function show(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         $this->authorize('view', $salesOrder);
 
         $salesOrder->load(['customer', 'vessel', 'workOrder', 'creator', 'quote', 'contract', 'openFollowUps.creator']);
@@ -203,7 +211,7 @@ class SalesOrderController extends Controller
                 'label' => 'Fotoğraflar',
                 'completed' => $workOrder && $workOrder->photos()->exists(),
                 'status_label' => ($workOrder && $workOrder->photos()->exists()) ? 'Yüklendi' : 'Eksik',
-                'status_variant' => ($workOrder && $workOrder->photos()->exists()) ? 'success' : 'warning',
+                'status_variant' => ($workOrder && $workOrder->photos()->exists()) ? 'success' : 'neutral',
                 'href' => null,
                 'locked' => false,
             ],
@@ -222,21 +230,29 @@ class SalesOrderController extends Controller
 
     public function confirm(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         return $this->transitionStatus($salesOrder, 'draft', 'confirmed', 'Satış siparişi onaylandı.');
     }
 
     public function start(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         return $this->transitionStatus($salesOrder, 'confirmed', 'in_progress', 'Satış siparişi devam ediyor.');
     }
 
     public function complete(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         return $this->transitionStatus($salesOrder, 'in_progress', 'completed', 'Satış siparişi tamamlandı.');
     }
 
     public function cancel(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         if ($response = $this->authorizeSalesOrder('update', $salesOrder)) {
             return $response;
         }
@@ -254,6 +270,8 @@ class SalesOrderController extends Controller
 
     public function edit(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         if ($salesOrder->isLocked()) {
             return redirect()->route('sales-orders.show', $salesOrder)
                 ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
@@ -265,15 +283,17 @@ class SalesOrderController extends Controller
 
         return view('sales_orders.edit', [
             'salesOrder' => $salesOrder,
-            'customers' => Customer::orderBy('name')->get(),
-            'vessels' => Vessel::with('customer')->orderBy('name')->get(),
-            'workOrders' => WorkOrder::orderByDesc('id')->get(),
+            'customers' => Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'vessels' => Vessel::with('customer')->where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'workOrders' => WorkOrder::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderByDesc('id')->get(),
             'statuses' => SalesOrder::statusOptions(),
         ]);
     }
 
     public function update(\App\Http\Requests\SalesOrderUpdateRequest $request, SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         if ($salesOrder->isLocked()) {
             return redirect()->route('sales-orders.show', $salesOrder)
                 ->with('error', 'Bu sipariş sözleşmeye dönüştürüldüğü için düzenlenemez.');
@@ -306,6 +326,8 @@ class SalesOrderController extends Controller
 
     public function destroy(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         if ($salesOrder->isLocked()) {
             app(ActivityLogger::class)->log($salesOrder, 'delete_blocked', [
                 'reason' => 'locked',
@@ -383,6 +405,8 @@ class SalesOrderController extends Controller
     }
     public function postStock(\Illuminate\Http\Request $request, SalesOrder $salesOrder, \App\Services\StockService $stockService)
     {
+        $this->checkTenant($salesOrder);
+
         if ($salesOrder->stock_posted_at) {
             return redirect()->back()->with('info', 'Stok zaten düşüldü.');
         }
@@ -435,6 +459,8 @@ class SalesOrderController extends Controller
     }
     public function createWorkOrder(SalesOrder $salesOrder)
     {
+        $this->checkTenant($salesOrder);
+
         // 1. Idempotency & Validation
         if ($salesOrder->work_order_id) {
             return redirect()->route('work-orders.show', $salesOrder->work_order_id)
@@ -457,6 +483,7 @@ class SalesOrderController extends Controller
                 // 'description' => $salesOrder->notes, // Optional: maybe too much noise? Prompt said "title/description requested if possible". Let's keep title mainly.
                 'status' => 'planned',
                 'created_by' => auth()->id(),
+                'tenant_id' => $salesOrder->tenant_id, // Explicitly copy tenant context
             ]);
 
             // 3. Copy Items (No financial data)

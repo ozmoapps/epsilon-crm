@@ -24,7 +24,7 @@
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <x-ui.button
-                                href="{{ route('admin.contract-templates.show', ['contract_template' => $template, 'version' => $version->id]) }}"
+                                href="{{ route('admin.contract-templates.show', [$template, 'version' => $version->id]) }}"
                                 variant="secondary"
                                 size="xs"
                             >

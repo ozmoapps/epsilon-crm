@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'tenant_id',
     ];
 
     /**
@@ -45,6 +46,31 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'tenant_id' => 'integer',
         ];
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function tenants()
+    {
+        return $this->belongsToMany(Tenant::class)
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    public function accounts()
+    {
+        return $this->belongsToMany(Account::class, 'account_users')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    public function ownedAccounts()
+    {
+        return $this->hasMany(Account::class, 'owner_user_id');
     }
 }

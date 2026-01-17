@@ -7,8 +7,12 @@ use App\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use App\Support\TenantGuard;
+
 class BankAccountController extends Controller
 {
+    use TenantGuard;
+
     /**
      * Display a listing of the resource.
      */
@@ -16,6 +20,7 @@ class BankAccountController extends Controller
     {
         $query = BankAccount::query()
             ->with(['currency'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->orderBy('is_active', 'desc')
             ->orderBy('type')
             ->orderBy('name');
@@ -43,6 +48,7 @@ class BankAccountController extends Controller
      */
     public function store(Request $request)
     {
+        // ... Validation ...
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'type' => ['required', Rule::in(['bank', 'cash'])],
@@ -69,7 +75,7 @@ class BankAccountController extends Controller
             $data['iban'] = null;
         }
 
-        BankAccount::create($data);
+        BankAccount::create($data); // Model hook sets tenant_id
 
         return redirect()->route('bank-accounts.index')->with('success', 'Hesap başarıyla oluşturuldu.');
     }
@@ -79,6 +85,8 @@ class BankAccountController extends Controller
      */
     public function show(BankAccount $bankAccount, Request $request)
     {
+        $this->checkTenant($bankAccount);
+
         $pQuery = $bankAccount->payments()->with(['invoice.customer']);
 
         if ($bankAccount->opening_balance_date) {
@@ -97,6 +105,8 @@ class BankAccountController extends Controller
      */
     public function edit(BankAccount $bankAccount)
     {
+        $this->checkTenant($bankAccount);
+
         $currencies = Currency::where('is_active', true)->orderBy('code')->get();
         return view('bank-accounts.edit', compact('bankAccount', 'currencies'));
     }
@@ -106,6 +116,8 @@ class BankAccountController extends Controller
      */
     public function update(Request $request, BankAccount $bankAccount)
     {
+        $this->checkTenant($bankAccount);
+
         $hasTx = $bankAccount->payments()->exists();
 
         $data = $request->validate([
@@ -152,6 +164,8 @@ class BankAccountController extends Controller
      */
     public function destroy(BankAccount $bankAccount)
     {
+        $this->checkTenant($bankAccount);
+
         if ($bankAccount->payments()->exists()) {
             return back()->with('error', 'Bu hesaba ait işlem hareketleri var, silinemez.');
         }

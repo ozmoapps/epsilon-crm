@@ -23,6 +23,29 @@
     elseif (request()->routeIs('saved-views.*')) { $headerTitle = __('Kaydedilmiş Görünümler'); $headerSubtitle = __('Kişisel'); }
     elseif (request()->routeIs('profile.*')) { $headerTitle = __('Profil'); $headerSubtitle = __('Ayarlar'); }
     elseif (request()->routeIs('admin.*')) { $headerTitle = __('Yönetim'); $headerSubtitle = __('Admin'); }
+
+    // Define isAdmin based on authenticated user
+    $isAdmin = auth()->check() && auth()->user()->is_admin;
+
+    // Admin link styles (reuse main styles)
+    $adminLinkBase = $navItemBase;
+    $adminActive = $navItemActive;
+    $adminInactive = $navItemInactive;
+
+    // Sidebar Logic: Platform Admin Isolation
+    // Show tenant menus ONLY if:
+    // 1. User is NOT a platform admin (Normal Tenant User)
+    // 2. OR User IS a platform admin BUT has an active Support Session (Break-Glass)
+    $hasSupportSession = session('support_session_id');
+    // Show tenant menus ONLY if:
+    // 1. User is NOT a platform admin (Normal Tenant User)
+    // 2. OR User IS a platform admin BUT has an active Support Session (Break-Glass)
+    $hasSupportSession = session('support_session_id');
+    $showTenantMenu = !$isAdmin || ($isAdmin && $hasSupportSession);
+    
+    // Platform Only (Normal Mode)
+    // Items that should be hidden in normal platform admin mode but visible in support/break-glass
+    $isPlatformOnly = $isAdmin && !$hasSupportSession;
 @endphp
 
 <div class="relative">
@@ -42,7 +65,7 @@
         aria-label="{{ __('Yan Menü') }}"
     >
         <div class="flex items-center justify-between px-6 py-5">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+            <a href="{{ ($isAdmin && !$hasSupportSession) ? route('admin.dashboard') : route('dashboard') }}" class="flex items-center gap-3">
                 <x-application-logo class="h-9 w-auto fill-current text-slate-800" />
                 <span class="text-sm font-semibold text-slate-800">{{ config('app.name', 'Epsilon CRM') }}</span>
             </a>
@@ -58,6 +81,7 @@
 
         <div class="flex-1 space-y-8 overflow-y-auto px-4 pb-8">
             {{-- Kısayollar --}}
+            @if($showTenantMenu)
             <div class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
                 <div class="flex items-center justify-between px-1">
                     <p class="text-xs font-semibold tracking-wide text-slate-500">{{ __('Kısayollar') }}</p>
@@ -88,7 +112,9 @@
                     {{ __('Yeni kayıt açıp akışı başlatın.') }}
                 </div>
             </div>
+            @endif
 
+            @if($showTenantMenu)
             <div>
                 <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Operasyonlar') }}</p>
                 <div class="mt-3 space-y-1">
@@ -139,6 +165,10 @@
                 </div>
             </div>
 
+            </div>
+            @endif
+
+            @if($showTenantMenu)
             <div class="border-t border-slate-100/80 pt-6">
                 <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Finans') }}</p>
 
@@ -203,6 +233,10 @@
                 </div>
             </div>
 
+            </div>
+            @endif
+
+            @if($showTenantMenu)
             <div class="border-t border-slate-100/80 pt-6">
                 <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Stok & Depo') }}</p>
                 <div class="mt-3 space-y-1">
@@ -271,6 +305,10 @@
                 </div>
             </div>
 
+            </div>
+            @endif
+
+            @if($showTenantMenu)
             <div class="border-t border-slate-100/80 pt-6">
                 <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Ana Veriler') }}</p>
                 <div class="mt-3 space-y-1">
@@ -294,11 +332,15 @@
                 </div>
             </div>
 
+            </div>
+            @endif
+
             <div class="border-t border-slate-100/80 pt-6">
                 <p class="px-3 text-xs font-semibold tracking-wide text-slate-500 mb-3">{{ __('Ayarlar') }}</p>
                 
                 <div class="rounded-2xl border border-slate-100 bg-slate-50/60 p-2 space-y-4">
                     {{-- Kişisel --}}
+                    @if($showTenantMenu)
                     <div>
                         <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Kişisel') }}</p>
                         <div class="space-y-0.5">
@@ -321,70 +363,158 @@
                             </a>
                         </div>
                     </div>
+                    @endif
 
-                    {{-- Yönetim --}}
-                    <div>
-                        <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Yönetim') }}</p>
-                        <div class="space-y-0.5">
-                            @php
-                                $isAdmin = true; // PR68: Remove Gating - All users are admins for now
-                                $adminLinkBase = 'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ui-focus';
-                                $adminActive = 'bg-slate-200 text-slate-900';
-                                $adminInactive = 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900';
-                                $adminLocked = 'text-slate-400 cursor-not-allowed opacity-60';
-                                
-                                // Admin olmayanlar için badge
-                                $adminBadge = !$isAdmin ? '<x-ui.badge variant="neutral" size="xs" class="ml-auto">Admin</x-ui.badge>' : '';
-                            @endphp
+                    {{-- Global Yönetim (Platform Admin) --}}
+                    @if($isAdmin)
+                        <div>
+                            <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Platform') }}</p>
+                            <div class="space-y-0.5">
+                                {{-- Kullanıcılar --}}
+                                <a
+                                    href="{{ route('admin.users.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.users.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.user-group class="nav-icon" />
+                                    <span>{{ __('Kullanıcılar') }}</span>
+                                </a>
 
-                            {{-- Kullanıcılar --}}
-                            <a
-                                href="{{ $isAdmin ? route('admin.users.index') : '#' }}"
-                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.users.*') ? $adminActive : $adminInactive) : $adminLocked }}"
-                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
-                            >
-                                <x-icon.user-group class="nav-icon" />
-                                <span>{{ __('Kullanıcılar') }}</span>
-                                {!! $adminBadge !!}
-                            </a>
+                                {{-- Genel Bakış --}}
+                                <a
+                                    href="{{ route('admin.dashboard') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.dashboard') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.chart-bar class="nav-icon" />
+                                    <span>{{ __('Genel Bakış') }}</span>
+                                </a>
 
-                            {{-- Şirket Profili --}}
-                            <a
-                                href="{{ $isAdmin ? route('admin.company-profiles.index') : '#' }}"
-                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.company-profiles.*') ? $adminActive : $adminInactive) : $adminLocked }}"
-                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
-                            >
-                                <x-icon.building class="nav-icon" />
-                                <span>{{ __('Şirket Profili') }}</span>
-                                {!! $adminBadge !!}
-                            </a>
+                                @if(!$isPlatformOnly)
+                                {{-- Şirket Profili --}}
+                                <a
+                                    href="{{ route('admin.company-profiles.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.company-profiles.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.building class="nav-icon" />
+                                    <span>{{ __('Şirket Profili') }}</span>
+                                </a>
 
-                            {{-- Para Birimleri --}}
-                            <a
-                                href="{{ $isAdmin ? route('admin.currencies.index') : '#' }}"
-                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.currencies.*') ? $adminActive : $adminInactive) : $adminLocked }}"
-                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
-                            >
-                                <x-icon.currency class="nav-icon" />
-                                <span>{{ __('Para Birimleri') }}</span>
-                                {!! $adminBadge !!}
-                            </a>
+                                {{-- Hesaplar (v4d3) --}}
+                                <a
+                                    href="{{ route('admin.accounts.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.accounts.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.credit-card class="nav-icon" />
+                                    <span>{{ __('Hesaplar') }}</span>
+                                </a>
 
-                            {{-- Sözleşme Şablonları --}}
-                            <a
-                                href="{{ $isAdmin ? route('admin.contract-templates.index') : '#' }}"
-                                class="{{ $adminLinkBase }} {{ $isAdmin ? (request()->routeIs('admin.contract-templates.*') ? $adminActive : $adminInactive) : $adminLocked }}"
-                                @if(!$isAdmin) onclick="return false;" title="{{ __('Admin Yetkisi Gerekir') }}" @endif
-                            >
-                                <x-icon.template class="nav-icon" />
-                                <span>{{ __('Sözleşmeler') }}</span>
-                                {!! $adminBadge !!}
-                            </a>
+                                {{-- Firmalar --}}
+                                <a
+                                    href="{{ route('admin.tenants.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.tenants.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.office-building class="nav-icon" />
+                                    <span>{{ __('Firmalar') }}</span>
+                                </a>
+
+                                {{-- Para Birimleri --}}
+                                <a
+                                    href="{{ route('admin.currencies.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.currencies.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.currency class="nav-icon" />
+                                    <span>{{ __('Para Birimleri') }}</span>
+                                </a>
+
+                                {{-- Sözleşme Şablonları --}}
+                                <a
+                                    href="{{ route('admin.contract-templates.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.contract-templates.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.template class="nav-icon" />
+                                    <span>{{ __('Sözleşmeler') }}</span>
+                                </a>
+                                @endif
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
-                    {{-- Geliştirici (Sadece Local) --}}
-                    @if (app()->environment('local') && \Illuminate\Support\Facades\Route::has('ui.index'))
+                    {{-- Firma Yönetimi (Tenant Admin) --}}
+                    @php
+                        // Check if user is tenant admin for CURRENT tenant
+                        $isTenantAdmin = false;
+                        if(auth()->check() && session('current_tenant_id')) {
+                             $isTenantAdmin = auth()->user()->tenants()
+                                ->where('tenants.id', session('current_tenant_id'))
+                                ->wherePivot('role', 'admin')
+                                ->exists();
+                        }
+                    @endphp
+
+                    @if($showTenantMenu && $isTenantAdmin && \Illuminate\Support\Facades\Route::has('manage.members.index'))
+                        <div class="mt-2">
+                             <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Firma Yönetimi') }}</p>
+                             <div class="space-y-0.5">
+                                <a
+                                    href="{{ route('manage.members.index') }}"
+                                    class="{{ $navItemBase }} {{ request()->routeIs('manage.members.*') ? $navItemActive : $navItemInactive }}"
+                                >
+                                    <x-icon.users class="nav-icon" />
+                                    <span>{{ __('Üyeler') }}</span>
+                                </a>
+                                <a
+                                    href="{{ route('manage.invitations.index') }}"
+                                    class="{{ $navItemBase }} {{ request()->routeIs('manage.invitations.*') ? $navItemActive : $navItemInactive }}"
+                                >
+                                    <x-icon.document class="nav-icon" />
+                                    <span>{{ __('Davetler') }}</span>
+                                </a>
+                                    <span>{{ __('Davetler') }}</span>
+                                </a>
+                                @php
+                                    // Check if user is Account Owner or Billing Admin
+                                    $isAccountOwner = false;
+                                    if(auth()->check() && session('current_tenant_id')) {
+                                         // Get current tenant's account
+                                         // Optimisation: We could cache this or share via view composer, but for nav simplicity:
+                                         // We need to resolve it safely.
+                                         // However, Blade is rendered AFTER middleware, but accessing DB in loop might be heavy?
+                                         // Not really, it's one query.
+                                         // Let's rely on DB query for correct visibility.
+                                         // We can't easily access Account model here without query.
+                                         
+                                         // Using DB facade to be lightweight
+                                         $accId = \Illuminate\Support\Facades\DB::table('tenants')->where('id', session('current_tenant_id'))->value('account_id');
+                                         if($accId) {
+                                             $role = \Illuminate\Support\Facades\DB::table('account_users')
+                                                ->where('account_id', $accId)
+                                                ->where('user_id', auth()->id())
+                                                ->value('role');
+                                             $isAccountOwner = in_array($role, ['owner', 'billing_admin']);
+                                             
+                                             // Fallback owner check
+                                             if(!$isAccountOwner) {
+                                                 $ownerId = \Illuminate\Support\Facades\DB::table('accounts')->where('id', $accId)->value('owner_user_id');
+                                                 $isAccountOwner = ($ownerId === auth()->id());
+                                             }
+                                         }
+                                    }
+                                @endphp
+                                
+                                @if($isAccountOwner && \Illuminate\Support\Facades\Route::has('manage.billing.index'))
+                                    <a
+                                        href="{{ route('manage.billing.index') }}"
+                                        class="{{ $navItemBase }} {{ request()->routeIs('manage.billing.*') ? $navItemActive : $navItemInactive }}"
+                                    >
+                                        <x-icon.credit-card class="nav-icon" />
+                                        <span>{{ __('Paket & Kullanım') }}</span>
+                                    </a>
+                                @endif
+                             </div>
+                        </div>
+                    @endif
+
+                    {{-- Geliştirici (Sadece Local ve NON-ADMIN) --}}
+                    @if (app()->environment('local') && !$isAdmin && \Illuminate\Support\Facades\Route::has('ui.index'))
                         <div>
                             <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Geliştirici') }}</p>
                             <a
@@ -422,6 +552,55 @@
             </div>
 
             @auth
+                <!-- Tenant Display (SaaS Phase 1) -->
+                @if(isset($currentTenant) && $showTenantMenu)
+                    <x-ui.dropdown align="right" width="w-48">
+                        <x-slot name="trigger">
+                            <button class="hidden items-center gap-2 border-r border-slate-100 pr-4 mr-4 lg:flex group ui-focus rounded-lg py-1 transition-colors hover:bg-slate-50">
+                                <span class="text-xs text-slate-500">{{ __('Firma:') }}</span>
+                                <x-ui.badge variant="neutral" size="sm" class="group-hover:bg-white group-hover:shadow-sm transition-all">
+                                    {{ $currentTenant->name }}
+                                </x-ui.badge>
+                                <x-icon.chevron-down-small class="text-slate-400 group-hover:text-slate-600 transition-colors" />
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content">
+                            <div class="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                {{ __('Firma Değiştir') }}
+                            </div>
+                            
+                            @foreach(Auth::user()->tenants as $tenant)
+                                <form method="POST" action="{{ route('tenants.switch') }}">
+                                    @csrf
+                                    <input type="hidden" name="tenant_id" value="{{ $tenant->id }}">
+                                    @php
+                                        $isActive = $tenant->is_active ?? true;
+                                        $isCurrent = $currentTenant->id === $tenant->id;
+                                        $isDisabled = !$isActive || $isCurrent;
+                                    @endphp
+                                    <button 
+                                        type="submit" 
+                                        class="flex w-full items-center justify-between px-4 py-2 text-sm text-left transition disabled:cursor-not-allowed
+                                        {{ $isCurrent ? 'font-semibold text-slate-900 bg-slate-50/50' : ($isActive ? 'text-slate-600 hover:bg-slate-50' : 'text-slate-400 opacity-75') }}"
+                                        {{ $isDisabled ? 'disabled' : '' }}
+                                    >
+                                        <span>{{ $tenant->name }}</span>
+                                        <div class="flex items-center gap-2">
+                                            @if(!$isActive)
+                                                <x-ui.badge variant="danger" size="sm" class="text-[10px]">{{ __('Pasif') }}</x-ui.badge>
+                                            @endif
+                                            @if($isCurrent)
+                                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                            @endif
+                                        </div>
+                                    </button>
+                                </form>
+                            @endforeach
+                        </x-slot>
+                    </x-ui.dropdown>
+                @endif
+
                 <x-ui.dropdown align="right" width="w-56">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center gap-3 rounded-full border border-transparent bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 ui-focus" aria-label="{{ __('Kullanıcı menüsü') }}">

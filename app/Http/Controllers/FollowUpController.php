@@ -10,8 +10,12 @@ use App\Models\WorkOrder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
+use App\Support\TenantGuard;
+
 class FollowUpController extends Controller
 {
+    use TenantGuard;
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -29,6 +33,18 @@ class FollowUpController extends Controller
             'note' => 'nullable|string|max:800',
         ]);
 
+        // Tenant Security Check: Ensure subject belongs to tenant
+        $subjectClass = $validated['subject_type'];
+        $exists = $subjectClass::where('id', $validated['subject_id'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->exists();
+
+        if (!$exists) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'subject_id' => __('Seçilen kayıt bulunamadı veya erişim yetkiniz yok.'),
+            ]);
+        }
+
         FollowUp::create([
             'subject_type' => $validated['subject_type'],
             'subject_id' => $validated['subject_id'],
@@ -42,6 +58,8 @@ class FollowUpController extends Controller
 
     public function complete(FollowUp $followUp)
     {
+        $this->checkTenant($followUp);
+
         if ($followUp->completed_at) {
             return back();
         }
@@ -56,6 +74,8 @@ class FollowUpController extends Controller
 
     public function destroy(FollowUp $followUp)
     {
+        $this->checkTenant($followUp);
+
         if ($followUp->created_by !== auth()->id()) {
             abort(403, 'Sadece oluşturan silebilir.');
         }

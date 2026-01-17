@@ -15,8 +15,26 @@ class WorkOrderUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['required', 'exists:customers,id'],
-            'vessel_id' => ['required', 'exists:vessels,id'],
+            'customer_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('customers', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
+            'vessel_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('vessels', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', 'string', 'max:50'],

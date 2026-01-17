@@ -9,7 +9,18 @@ class Tag extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'color'];
+    use \App\Support\TenantGuard;
+
+    protected $fillable = ['name', 'color', 'tenant_id'];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (!$model->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $model->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+        });
+    }
 
     public function products()
     {

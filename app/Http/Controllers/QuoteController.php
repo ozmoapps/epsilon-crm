@@ -19,8 +19,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 
+use App\Support\TenantGuard;
+
 class QuoteController extends Controller
 {
+    use TenantGuard;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -35,6 +39,7 @@ class QuoteController extends Controller
 
         $quotes = Quote::query()
             ->with(['customer', 'vessel', 'salesOrder', 'currencyRelation'])
+            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery
@@ -61,8 +66,8 @@ class QuoteController extends Controller
             ->withQueryString();
 
         $statuses = Quote::statusOptions();
-        $customers = Customer::orderBy('name')->get(['id', 'name']);
-        $vessels = Vessel::orderBy('name')->get(['id', 'name', 'customer_id']);
+        $customers = Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(['id', 'name']);
+        $vessels = Vessel::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(['id', 'name', 'customer_id']);
         $currencies = Currency::where('is_active', true)->orderBy('code')->get(['code', 'name']);
         
         $savedViews = \App\Models\SavedView::allow('quotes')->visibleTo($request->user())->get();
@@ -90,9 +95,9 @@ class QuoteController extends Controller
                 'validity_days' => config('quotes.default_validity_days'),
                 'payment_terms' => config('quotes.default_payment_terms'),
             ]),
-            'customers' => Customer::orderBy('name')->get(),
-            'vessels' => Vessel::with('customer')->orderBy('name')->get(),
-            'workOrders' => WorkOrder::orderByDesc('id')->get(),
+            'customers' => Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'vessels' => Vessel::with('customer')->where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'workOrders' => WorkOrder::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderByDesc('id')->get(),
             'statuses' => Quote::statusOptions(),
             'currencies' => $this->activeCurrencies(),
         ]);
@@ -100,13 +105,15 @@ class QuoteController extends Controller
 
     public function edit(Quote $quote)
     {
+        $this->checkTenant($quote);
+
         $this->authorize('update', $quote);
 
         return view('quotes.edit', [
             'quote' => $quote,
-            'customers' => Customer::orderBy('name')->get(),
-            'vessels' => Vessel::with('customer')->orderBy('name')->get(),
-            'workOrders' => WorkOrder::orderByDesc('id')->get(),
+            'customers' => Customer::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'vessels' => Vessel::with('customer')->where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderBy('name')->get(),
+            'workOrders' => WorkOrder::where('tenant_id', app(\App\Services\TenantContext::class)->id())->orderByDesc('id')->get(),
             'statuses' => Quote::statusOptions(),
             'currencies' => $this->activeCurrencies(),
         ]);
@@ -114,6 +121,8 @@ class QuoteController extends Controller
 
     public function show(Quote $quote)
     {
+        $this->checkTenant($quote);
+
         $this->authorize('view', $quote);
         $quote->load(['customer', 'vessel', 'items', 'salesOrder', 'workOrder', 'currencyRelation']);
 
@@ -124,7 +133,8 @@ class QuoteController extends Controller
             ->latest()
             ->get();
             
-        $products = \App\Models\Product::orderBy('name')
+        $products = \App\Models\Product::where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->orderBy('name')
             ->get(['id', 'name', 'sku', 'default_sell_price', 'currency_code']);
 
         return view('quotes.show', compact('quote', 'timeline', 'products'));
@@ -132,6 +142,8 @@ class QuoteController extends Controller
 
     public function pdf(Quote $quote)
     {
+        $this->checkTenant($quote);
+
         $this->authorize('view', $quote);
         // Fallback to print view for now
         return $this->printView($quote);
@@ -139,21 +151,21 @@ class QuoteController extends Controller
 
     public function preview(Quote $quote)
     {
+        $this->checkTenant($quote);
+
         $this->authorize('view', $quote);
         return $this->printView($quote);
     }
 
     public function printView(Quote $quote)
     {
+        $this->checkTenant($quote);
+
         $this->authorize('view', $quote);
         $quote->load(['customer', 'vessel', 'items', 'currencyRelation']);
         
-        // For MVP, if print view doesn't exist, use show or a simplified print view
-        // We assume quotes.print exists based on scanner failing with 500 (meaning route exists, view might fail or controller failed)
-        // Since scanner said "Method does not exist", the View might be fine.
-        
-        $companyProfile = \App\Models\CompanyProfile::first();
-        $bankAccounts = \App\Models\BankAccount::where('is_active', true)->get();
+        $companyProfile = \App\Models\CompanyProfile::current();
+        $bankAccounts = \App\Models\BankAccount::where('tenant_id', app(\App\Services\TenantContext::class)->id())->where('is_active', true)->get();
         return view('quotes.print', compact('quote', 'companyProfile', 'bankAccounts'));
     }
 
@@ -168,6 +180,7 @@ class QuoteController extends Controller
         $items = $validated['items'] ?? null;
         unset($validated['items']);
 
+        // Model hook handles tenant_id
         $quote = Quote::create($validated);
 
         if ($items !== null) {
@@ -180,6 +193,8 @@ class QuoteController extends Controller
 
     public function convertToSalesOrder(Quote $quote)
     {
+        $this->checkTenant($quote);
+
         $this->authorize('update', $quote);
 
         // 1. Idempotency Check
@@ -219,6 +234,7 @@ class QuoteController extends Controller
                 'notes' => $quote->notes,
                 'fx_note' => $quote->fx_note,
                 'created_by' => auth()->id(),
+                'tenant_id' => $quote->tenant_id, // Explicit copy
             ]);
 
             // 4. Create Items
@@ -254,6 +270,8 @@ class QuoteController extends Controller
 
     public function update(\App\Http\Requests\QuoteUpdateRequest $request, Quote $quote)
     {
+        $this->checkTenant($quote);
+
         $this->authorize('update', $quote);
 
         $validated = $request->validated();
@@ -273,6 +291,47 @@ class QuoteController extends Controller
 
         return redirect()->route('quotes.show', $quote)
             ->with('success', 'Teklif güncellendi.');
+    }
+    
+    public function destroy(Quote $quote)
+    {
+         $this->checkTenant($quote);
+         $this->authorize('delete', $quote);
+         $quote->delete();
+         
+         return redirect()->route('quotes.index')
+            ->with('success', 'Teklif silindi.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['exists:quotes,id'],
+        ]);
+
+        $count = 0;
+        // Efficient bulk scope check
+        $quotes = Quote::whereIn('id', $ids)
+                     ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+                     ->get();
+
+        foreach ($quotes as $quote) {
+            if ($request->user()->can('delete', $quote)) {
+                $quote->delete();
+                $count++;
+            }
+        }
+        
+        if ($count === 0) {
+            return redirect()->route('quotes.index')
+                ->with('error', 'Seçilen kayıtlar silinemedi veya yetkiniz yok.');
+        }
+
+        return redirect()->route('quotes.index')
+            ->with('success', 'Silindi.');
     }
 
     private function activeCurrencies()

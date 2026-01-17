@@ -43,6 +43,7 @@ class Contract extends Model
         'rendered_body',
         'rendered_at',
         'created_by',
+        'tenant_id',
     ];
 
     protected $casts = [
@@ -66,6 +67,10 @@ class Contract extends Model
     protected static function booted(): void
     {
         static::creating(function (Contract $contract) {
+            if (! $contract->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $contract->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+
             if ($contract->contract_no) {
                 return;
             }
@@ -75,10 +80,17 @@ class Contract extends Model
             $padding = config('contracts.padding');
 
             DB::transaction(function () use ($contract, $year, $prefix, $padding) {
-                $sequence = ContractSequence::lockForUpdate()->find($year);
+                // Determine tenant context
+                $tenantId = $contract->tenant_id;
+
+                $sequence = ContractSequence::lockForUpdate()
+                    ->where('tenant_id', $tenantId)
+                    ->where('year', $year)
+                    ->first();
 
                 if (! $sequence) {
                     $sequence = ContractSequence::create([
+                        'tenant_id' => $tenantId,
                         'year' => $year,
                         'last_number' => 0,
                     ]);
@@ -123,6 +135,8 @@ class Contract extends Model
     {
         return $this->belongsTo(self::class, 'superseded_by_id');
     }
+
+
 
     public function creator()
     {

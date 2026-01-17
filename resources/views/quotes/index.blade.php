@@ -417,7 +417,7 @@
                                         <x-ui.empty-state
                                             title="{{ __('Henüz teklif oluşturulmadı') }}"
                                             description="{{ __('İlk teklifinizi oluşturun; önizleme ve PDF ile müşterinize dakikalar içinde gönderebilirsiniz.') }}"
-                                            icon="document-add"
+                                            icon="document-text"
                                         >
                                             <x-slot:actions>
                                                 <x-ui.button href="{{ route('quotes.create') }}" size="md">

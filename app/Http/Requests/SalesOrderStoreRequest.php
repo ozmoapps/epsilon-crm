@@ -19,9 +19,36 @@ class SalesOrderStoreRequest extends FormRequest
         $statuses = array_keys(SalesOrder::statusOptions());
 
         return [
-            'customer_id' => ['required', 'exists:customers,id'],
-            'vessel_id' => ['required', 'exists:vessels,id'],
-            'work_order_id' => ['nullable', 'exists:work_orders,id'],
+            'customer_id' => [
+                'required',
+                Rule::exists('customers', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
+            'vessel_id' => [
+                'required',
+                Rule::exists('vessels', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
+            'work_order_id' => [
+                'nullable',
+                Rule::exists('work_orders', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'title' => ['required', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in($statuses)],
             'currency' => ['required', 'string', 'max:10'],

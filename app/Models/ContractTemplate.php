@@ -9,6 +9,8 @@ class ContractTemplate extends Model
 {
     use HasFactory;
 
+    use \App\Support\TenantGuard;
+
     protected $fillable = [
         'name',
         'locale',
@@ -17,8 +19,18 @@ class ContractTemplate extends Model
         'is_default',
         'is_active',
         'created_by',
+        'tenant_id',
         'current_version_id',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (!$model->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $model->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+        });
+    }
 
     protected $casts = [
         'is_default' => 'boolean',

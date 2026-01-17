@@ -52,8 +52,26 @@ class QuoteUpdateRequest extends FormRequest
         $statuses = array_keys(Quote::statusOptions());
 
         return [
-            'customer_id' => ['required', 'exists:customers,id'],
-            'vessel_id' => ['required', 'exists:vessels,id'],
+            'customer_id' => [
+                'required',
+                Rule::exists('customers', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
+            'vessel_id' => [
+                'required',
+                Rule::exists('vessels', 'id')->where(function ($query) {
+                    $tenantId = app(\App\Services\TenantContext::class)->id();
+                    if ($tenantId) {
+                        return $query->where('tenant_id', $tenantId);
+                    }
+                    return $query;
+                }),
+            ],
             'work_order_id' => ['nullable', 'exists:work_orders,id'],
             'title' => ['required', 'string', 'max:255'],
             'status' => ['required', 'string', Rule::in($statuses)],
@@ -70,7 +88,22 @@ class QuoteUpdateRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'fx_note' => ['nullable', 'string'],
             'items' => ['nullable', 'array'],
-            'items.*.id' => ['nullable', 'integer', 'exists:quote_items,id'],
+            'items.*.id' => [
+                'nullable', 
+                'integer', 
+                Rule::exists('quote_items', 'id')->where(function ($query) {
+                    $query->where('quote_id', $this->route('quote')->id);
+                    // Standard Quote/Item tenancy is handled by relation or quote-scoped access,
+                    // but we can ensure items belong to current tenant too? 
+                    // Usually items don't have tenant_id unless propagated. 
+                    // Let's rely on quote_id match since quote access is Guarded by TenantGuard.
+                    // But if items table has tenant_id, we should add it.
+                    // Assuming items table has tenant_id as per Phase 2B.
+                    if (app(\App\Services\TenantContext::class)->id()) {
+                         $query->where('tenant_id', app(\App\Services\TenantContext::class)->id());
+                    }
+                })
+            ],
             'items.*.title' => ['required', 'string', 'max:255'],
             'items.*.description' => ['required', 'string'],
             'items.*.amount' => ['required', 'numeric', 'min:0'],

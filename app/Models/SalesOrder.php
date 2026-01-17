@@ -13,6 +13,7 @@ class SalesOrder extends Model
 
     protected $fillable = [
         'customer_id',
+        'tenant_id',
         'vessel_id',
         'work_order_id',
         'quote_id',
@@ -56,6 +57,10 @@ class SalesOrder extends Model
     protected static function booted(): void
     {
         static::creating(function (SalesOrder $salesOrder) {
+            if (! $salesOrder->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $salesOrder->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+
             if ($salesOrder->order_no) {
                 return;
             }
@@ -65,10 +70,17 @@ class SalesOrder extends Model
             $padding = config('sales_orders.padding');
 
             DB::transaction(function () use ($salesOrder, $year, $prefix, $padding) {
-                $sequence = SalesOrderSequence::lockForUpdate()->find($year);
+                // Determine tenant context
+                $tenantId = $salesOrder->tenant_id;
+
+                $sequence = SalesOrderSequence::lockForUpdate()
+                    ->where('tenant_id', $tenantId)
+                    ->where('year', $year)
+                    ->first();
 
                 if (! $sequence) {
                     $sequence = SalesOrderSequence::create([
+                        'tenant_id' => $tenantId,
                         'year' => $year,
                         'last_number' => 0,
                     ]);

@@ -22,6 +22,7 @@ class WorkOrder extends Model
 
     protected $fillable = [
         'created_by',
+        'tenant_id',
         'customer_id',
         'vessel_id',
         'title',
@@ -40,6 +41,15 @@ class WorkOrder extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (! $model->tenant_id && app(\App\Services\TenantContext::class)->id()) {
+                $model->tenant_id = app(\App\Services\TenantContext::class)->id();
+            }
+        });
     }
 
     protected $casts = [
