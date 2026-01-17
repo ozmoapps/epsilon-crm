@@ -25,11 +25,30 @@ class SetTenant
         $user = auth()->user();
         $domainTenant = null;
 
-        // CRITICAL FIX A & B: Bypass Tenant Resolution for Platform Admin & Support Routes
-        // 1. Platform Admin Panel (/admin/*) -> Should NOT have tenant context (unless explicitly switched? No, context is global/null)
-        // 2. Break-Glass Entry (/support/access/*) -> Must process without context first to validate token
-        if ($request->is('admin') || $request->is('admin/*') || $request->is('support/access/*')) {
+        // 1. NEUTRAL ROUTES ALLOWLIST (TR: "Neutral routes allowlist")
+        // These routes DO NOT require tenant resolution or context.
+        $routeName = $request->route()?->getName();
+        $isNeutral = in_array($routeName, [
+            'login', 'logout', 'register', 
+            'password.request', 'password.email', 'password.reset', 'password.update', 'password.confirm', 'password.store',
+            'verification.notice', 'verification.verify', 'verification.send',
+            'invitations.accept'
+        ]) || $request->is('/') || $request->is('login') || $request->is('register') || $request->is('logout') || 
+              $request->is('forgot-password') || $request->is('reset-password/*') || $request->is('verify-email/*') ||
+              $request->is('invite/*');
+
+        if ($isNeutral) {
+            // Special Case: Logout Cleanup
+            if (($routeName === 'logout' || $request->is('logout')) && $request->method() === 'POST') {
+                session()->forget(['current_tenant_id', 'support_session_id', 'support_tenant_id']);
+            }
             return $next($request);
+        }
+
+        // 2. PLATFORM ROUTES (TR: "Platform routes")
+        // Admin panel and Support Access Entry -> Skip tenant resolution
+        if ($request->is('admin') || $request->is('admin/*') || $request->is('support/access/*')) {
+             return $next($request);
         }
 
         // 1. Domain/Host Based Resolution (Feature Flagged)
@@ -216,8 +235,6 @@ class SetTenant
             // PR4C3: Privacy by Default (Platform Lock)
             // If user is Platform Admin (is_admin=true), they CANNOT access tenant context
             // UNLESS a valid break-glass session exists.
-            
-            // PR4C3: Privacy by Default (Platform Lock)
             if ($this->shouldSkipContextForPlatformAdmin($request, $tenant)) {
                  return $next($request);
             }
@@ -228,6 +245,12 @@ class SetTenant
             if (! $request->expectsJson()) {
                 View::share('currentTenant', $tenant);
             }
+        } else {
+             // 5. TENANT USER WITHOUT CONTEXT -> FORBIDDEN
+             // If not neutral, not platform, and no tenant -> Block tenant user.
+             if ($user && !$user->is_admin) {
+                 abort(403, 'Erişmeye çalıştığınız sayfa için firma bağlamı bulunamadı (No Tenant Context).');
+             }
         }
 
         return $next($request);

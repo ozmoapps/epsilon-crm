@@ -180,11 +180,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
         // Settings
         // Settings
-        Route::middleware(['admin.support'])->group(function () {
-            Route::resource('company-profiles', CompanyProfileController::class);
-            Route::resource('currencies', CurrencyController::class);
-            Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy'])
-                ->parameters(['contract-templates' => 'template']);
             Route::match(['POST', 'PUT'], 'contract-templates/preview', [ContractTemplateController::class, 'preview'])
                 ->name('contract-templates.preview');
             Route::post('contract-templates/{template}/versions/{version}/restore', [ContractTemplateController::class, 'restore'])
@@ -193,7 +188,12 @@ Route::middleware('auth')->group(function () {
                 ->name('contract-templates.make_default');
             Route::post('contract-templates/{template}/toggle-active', [ContractTemplateController::class, 'toggleActive'])
                 ->name('contract-templates.toggle_active');
-        });
+
+        // Platform Settings (Standard Admin Access)
+        Route::resource('company-profiles', CompanyProfileController::class);
+        Route::resource('currencies', CurrencyController::class);
+        Route::resource('contract-templates', ContractTemplateController::class)->except(['destroy'])
+            ->parameters(['contract-templates' => 'template']);
 
         // User Management
         Route::get('users', [\App\Http\Controllers\Admin\UserAdminController::class, 'index'])->name('users.index');
@@ -208,6 +208,8 @@ Route::middleware('auth')->group(function () {
 
         // Account Management (PR4D3)
         Route::resource('accounts', \App\Http\Controllers\Admin\AccountAdminController::class)->only(['index', 'show', 'update']);
+        Route::patch('accounts/{account}/roles', [\App\Http\Controllers\Admin\AccountAdminController::class, 'updateRole'])->name('accounts.roles.update');
+        Route::patch('accounts/{account}/owner', [\App\Http\Controllers\Admin\AccountAdminController::class, 'transferOwner'])->name('accounts.owner.update');
         
         // Dashboard (Platform Overview)
         Route::get('dashboard', \App\Http\Controllers\Admin\DashboardController::class)->name('dashboard');

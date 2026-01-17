@@ -72,9 +72,9 @@
                                 </td>
                                 <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center justify-end gap-2">
-                                        @if(!$invitation->accepted_at)
+                                        @if(!$invite->accepted_at)
                                             <!-- Regenerate -->
-                                            <form action="{{ route('admin.invitations.regenerate', $invitation) }}" method="POST" class="inline">
+                                            <form action="{{ route('admin.invitations.regenerate', $invite) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('PATCH')
                                                 <x-ui.button type="submit" variant="secondary" size="sm" title="{{ __('Linki Yenile ve Süreyi Uzat') }}">
@@ -83,7 +83,7 @@
                                             </form>
                                             
                                             <!-- Revoke -->
-                                            <form action="{{ route('admin.invitations.destroy', $invitation) }}" method="POST" class="inline" 
+                                            <form action="{{ route('admin.invitations.destroy', $invite) }}" method="POST" class="inline" 
                                                   onsubmit="return confirm('Bu daveti iptal etmek istediğinize emin misiniz?');">
                                                 @csrf
                                                 @method('DELETE')

@@ -66,8 +66,15 @@ try {
 
     // 2. Test Platform Admin Access
     echo "\n--- Platform Admin Access Test ---\n";
+    
+    auth()->login($admin);
+    // Session Helper
+    $session = $app['session']->driver();
+    $session->start();
+    
     $request = \Illuminate\Http\Request::create('/admin/accounts', 'GET');
     $request->setUserResolver(fn() => $admin);
+    $request->setLaravelSession($session);
     
     $response = $kernel->handle($request);
     
@@ -84,6 +91,7 @@ try {
     // 3. Test Detail View
     $request = \Illuminate\Http\Request::create("/admin/accounts/{$account->id}", 'GET');
     $request->setUserResolver(fn() => $admin);
+    $request->setLaravelSession($session);
     $response = $kernel->handle($request);
     
     if ($response->getStatusCode() !== 200) {
@@ -108,8 +116,13 @@ try {
 
     // 5. Test Tenant Admin Access (Forbidden)
     echo "\n--- Tenant Admin Access Test ---\n";
+    
+    // Switch Auth
+    auth()->login($tenantAdmin);
+    
     $request = \Illuminate\Http\Request::create('/admin/accounts', 'GET');
     $request->setUserResolver(fn() => $tenantAdmin);
+    $request->setLaravelSession($session);
     
     try {
         // Middleware usually handles this before controller
