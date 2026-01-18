@@ -16,7 +16,7 @@ class UserAdminController extends Controller
      */
     public function index()
     {
-        $users = User::orderBy('name')->with('tenants')->get();
+        $users = User::orderBy('name')->with('tenants')->paginate(50);
         // UI form icin aktif olanlari veya tümünü çekip view'da isleyebiliriz.
         // Talimat: Tüm tenantlari cek, pasifleri disabled yap.
         $tenants = \App\Models\Tenant::orderBy('name')->get();

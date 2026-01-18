@@ -138,7 +138,7 @@ class SalesOrderController extends Controller
                   }], 'qty');
             }]);
         }]);
-
+    
         // Transform items to attach "shipped_qty" and "returned_qty" directly for easier view access
         foreach ($salesOrder->items as $item) {
             $item->shipped_qty = $item->shipment_lines_sum_qty ?? 0;
@@ -226,6 +226,34 @@ class SalesOrderController extends Controller
         ];
 
         return view('sales_orders.show', compact('salesOrder', 'quote', 'contract', 'workOrder', 'timeline', 'operationFlow'));
+    }
+
+    public function pdf(SalesOrder $salesOrder)
+    {
+        $this->checkTenant($salesOrder);
+
+        $this->authorize('view', $salesOrder);
+        return $this->printView($salesOrder);
+    }
+
+    public function preview(SalesOrder $salesOrder)
+    {
+        $this->checkTenant($salesOrder);
+
+        $this->authorize('view', $salesOrder);
+        return $this->printView($salesOrder);
+    }
+
+    public function printView(SalesOrder $salesOrder)
+    {
+        $this->checkTenant($salesOrder);
+
+        $this->authorize('view', $salesOrder);
+        $salesOrder->load(['customer', 'vessel', 'items']);
+        
+        $companyProfile = \App\Models\CompanyProfile::current();
+        $bankAccounts = \App\Models\BankAccount::where('tenant_id', app(\App\Services\TenantContext::class)->id())->where('is_active', true)->get();
+        return view('sales_orders.print', compact('salesOrder', 'companyProfile', 'bankAccounts'));
     }
 
     public function confirm(SalesOrder $salesOrder)

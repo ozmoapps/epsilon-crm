@@ -80,7 +80,7 @@ class TenantInvitationController extends Controller
                  'reason' => 'join_attempt'
              ], 'warn');
 
-             abort(403, 'Bu firmaya kullanıcı eklenemiyor: Paket kullanıcı limitiniz dolu.');
+             abort(403, 'Plan limitine ulaşıldı. Paketi yükseltmeniz gerekiyor.');
         }
 
         // Idempotent Attach

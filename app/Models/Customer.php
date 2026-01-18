@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Customer extends Model
 {
     use HasFactory;
+    use \App\Models\Concerns\TenantScoped;
 
     protected $fillable = [
         'created_by',

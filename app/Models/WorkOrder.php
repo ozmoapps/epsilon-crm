@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Concerns\TenantScoped;
+
 class WorkOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantScoped;
 
     public const STATUS_OPTIONS = [
         'draft' => 'Taslak',
@@ -30,6 +32,10 @@ class WorkOrder extends Model
         'status',
         'planned_start_at',
         'planned_end_at',
+        'delivered_at',
+        'delivered_by',
+        'delivered_to_name',
+        'delivery_notes',
     ];
 
 
@@ -55,6 +61,7 @@ class WorkOrder extends Model
     protected $casts = [
         'planned_start_at' => 'date',
         'planned_end_at' => 'date',
+        'delivered_at' => 'datetime',
     ];
 
     public static function statusOptions(): array
@@ -99,6 +106,11 @@ class WorkOrder extends Model
     public function stockPostedBy()
     {
         return $this->belongsTo(User::class, 'stock_posted_by');
+    }
+
+    public function deliveredBy()
+    {
+        return $this->belongsTo(User::class, 'delivered_by');
     }
 
     public function photos()

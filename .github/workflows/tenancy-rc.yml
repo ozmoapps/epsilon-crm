@@ -1,0 +1,60 @@
+name: Tenancy RC Gate
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  tenancy-rc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, pdo_sqlite, sqlite3
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor
+            ~/.composer/cache
+          key: ${{ runner.os }}-php82-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php82-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare environment (SQLite)
+        run: |
+          cp .env.example .env
+          mkdir -p database
+          touch database/database.sqlite
+          php artisan key:generate
+        env:
+          APP_ENV: testing
+          APP_DEBUG: "false"
+
+      - name: Run migrations (SQLite)
+        run: php artisan migrate --force
+        env:
+          APP_ENV: testing
+          APP_DEBUG: "false"
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+
+      - name: Tenancy Release Gate (RC)
+        run: php storage/verify_tenancy_rc.php
+        env:
+          APP_ENV: testing
+          APP_DEBUG: "false"
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite

@@ -10,6 +10,7 @@ use App\Services\ActivityLogger;
 class Contract extends Model
 {
     use HasFactory;
+    use \App\Models\Concerns\TenantScoped;
 
     protected $fillable = [
         'sales_order_id',

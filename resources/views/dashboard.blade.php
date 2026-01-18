@@ -1,20 +1,77 @@
 <x-app-layout>
+    @php
+        $statusVariants = [
+            'draft' => 'neutral',
+            'planned' => 'info',
+            'confirmed' => 'info',
+            'started' => 'info',
+            'in_progress' => 'info',
+            'on_hold' => 'neutral',
+            'completed' => 'success',
+            'delivered' => 'success',
+            'cancelled' => 'danger',
+            'sent' => 'info',
+            'accepted' => 'success',
+        ];
+
+        // Access Contract
+        $isPlatformAdmin = auth()->check() && auth()->user()->is_admin;
+        $hasSupportSession = session('support_session_id');
+        $showTenantMenu = !$isPlatformAdmin || ($isPlatformAdmin && $hasSupportSession);
+        
+        $isTenantAdmin = false;
+        if(auth()->check() && session('current_tenant_id')) {
+             $isTenantAdmin = auth()->user()->tenants()
+                ->where('tenants.id', session('current_tenant_id'))
+                ->wherePivot('role', 'admin')
+                ->exists();
+        }
+        
+        $canSeeFinance = $showTenantMenu && ($isTenantAdmin || ($isPlatformAdmin && $hasSupportSession));
+    @endphp
+
+    @if($is_onboarding ?? false)
+        <x-slot name="header">
+             <x-ui.page-header title="{{ __('Başlangıç') }}" subtitle="{{ __('Hoşgeldiniz') }}" />
+        </x-slot>
+
+        <div class="py-12">
+            <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white rounded-2xl border border-slate-100 p-8 text-center shadow-sm">
+                    <div class="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                         <x-icon.office-building class="w-8 h-8 text-slate-400" />
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">{{ __('Henüz bir firmaya üye değilsiniz') }}</h3>
+                    <p class="text-slate-500 mb-8 max-w-md mx-auto">{{ __('Bu hesaba bağlı firma bulunamadı. Yeni bir firma oluşturarak başlayabilirsiniz.') }}</p>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <x-ui.button href="{{ route('onboarding.company.create') }}" variant="primary">
+                            {{ __('Firma Oluştur') }}
+                        </x-ui.button>
+                        
+                         <a href="{{ route('manage.tenants.join') }}" class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+                            {{ __('Davet Bağlantım Var') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
     <x-slot name="header">
         <x-ui.page-header title="{{ __('Dashboard') }}" subtitle="{{ __('Genel durum ve hızlı işlemler.') }}">
             <x-slot name="actions">
                 <div class="flex flex-wrap items-center gap-2">
                     <x-ui.button href="{{ route('quotes.create') }}" variant="secondary" size="sm">
-                        <x-icon.plus class="h-4 w-4 mr-2" />
                         {{ __('Yeni Teklif') }}
                     </x-ui.button>
+                    @if($canSeeFinance)
                     <x-ui.button href="{{ route('invoices.create') }}" variant="secondary" size="sm">
-                        <x-icon.plus class="h-4 w-4 mr-2" />
                         {{ __('Yeni Fatura') }}
                     </x-ui.button>
                      <x-ui.button href="{{ route('payments.create') }}" variant="secondary" size="sm">
-                        <x-icon.plus class="h-4 w-4 mr-2" />
                         {{ __('Tahsilat Ekle') }}
                     </x-ui.button>
+                    @endif
                 </div>
                 <x-ui.button href="{{ route('work-orders.create') }}" variant="secondary" size="sm">
                     {{ __('Yeni İş Emri') }}
@@ -30,11 +87,11 @@
         x-data="{ 
             currency: 'EUR',
             currencies: ['EUR', 'USD', 'TRY', 'GBP'],
-            openInvoices: {{ json_encode($openInvoices) }},
-            overdueInvoices: {{ json_encode($overdueInvoices) }},
-            advances: {{ json_encode($advances) }},
-            bankBalances: {{ json_encode($bankBalances) }},
-            finance: {{ json_encode($financeStats) }},
+            openInvoices: {{ $canSeeFinance ? json_encode($openInvoices) : '[]' }},
+            overdueInvoices: {{ $canSeeFinance ? json_encode($overdueInvoices) : '[]' }},
+            advances: {{ $canSeeFinance ? json_encode($advances) : '[]' }},
+            bankBalances: {{ $canSeeFinance ? json_encode($bankBalances) : '[]' }},
+            finance: {{ $canSeeFinance ? json_encode($financeStats) : json_encode(['invoiced' => [], 'collected' => []]) }},
             
             getKpi(data, field = 'total_amount') {
                 if (this.currency === 'all') {
@@ -68,6 +125,7 @@
         </div>
 
         {{-- KPI Cards --}}
+        @if($canSeeFinance)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             
             {{-- Open Invoices --}}
@@ -174,6 +232,7 @@
                 </x-ui.card>
             </a>
         </div>
+        @endif
 
 
         {{-- Operations Dashboard --}}
@@ -195,7 +254,7 @@
                         <a href="{{ route('work-orders.show', $wo) }}" class="block p-3 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-slate-50 transition-all group">
                             <div class="flex justify-between items-start mb-1">
                                 <span class="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{{ $wo->title }}</span>
-                                <x-ui.badge :status="$wo->status" class="!px-1.5 !py-0.5 text-[10px]">{{ $wo->status_label }}</x-ui.badge>
+                                <x-ui.badge :variant="$statusVariants[$wo->status] ?? 'neutral'">{{ $wo->status_label }}</x-ui.badge>
                             </div>
                             <div class="text-xs text-slate-500">
                                 {{ $wo->customer?->name }} • {{ $wo->vessel?->name }}
@@ -232,7 +291,7 @@
                                 {{ $wo->customer?->name }} • {{ $wo->vessel?->name }}
                             </div>
                              <div class="flex items-center gap-1">
-                                <x-ui.badge :status="$wo->status" class="!px-1.5 !py-0.5 text-[10px]">{{ $wo->status_label }}</x-ui.badge>
+                                <x-ui.badge :variant="$statusVariants[$wo->status] ?? 'neutral'">{{ $wo->status_label }}</x-ui.badge>
                             </div>
                         </a>
                     @empty
@@ -257,7 +316,7 @@
                         <a href="{{ route('work-orders.show', $wo) }}" class="block p-3 rounded-xl border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-all group">
                              <div class="flex justify-between items-start mb-1">
                                 <span class="text-sm font-semibold text-slate-900">{{ $wo->title }}</span>
-                                <x-ui.badge variant="neutral" class="!px-1.5 !py-0.5 text-[10px]">{{ $wo->status_label }}</x-ui.badge>
+                                <x-ui.badge :variant="$statusVariants[$wo->status] ?? 'neutral'">{{ $wo->status_label }}</x-ui.badge>
                             </div>
                             <div class="text-xs text-slate-500">
                                 {{ $wo->customer?->name }} • {{ $wo->vessel?->name }}
@@ -269,6 +328,59 @@
                 </div>
             </x-ui.card>
         </div>
+
+        {{-- Recent Operations Table (PR8) --}}
+        <x-ui.card>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-slate-900">{{ __('Son Operasyonlar') }}</h3>
+                <x-ui.button href="{{ route('sales-orders.index') }}" variant="ghost" size="sm" class="text-xs">
+                    {{ __('Tümünü Gör') }}
+                </x-ui.button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-xs text-slate-500 border-b border-slate-100">
+                            <th class="py-2 pl-2 font-medium">{{ __('Sipariş No') }}</th>
+                            <th class="py-2 font-medium">{{ __('Müşteri') }}</th>
+                            <th class="py-2 font-medium">{{ __('Tekne') }}</th>
+                            <th class="py-2 font-medium">{{ __('Durum') }}</th>
+                            <th class="py-2 pr-2 font-medium text-right">{{ __('Sonraki Adım') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        @forelse($recentOperations as $order)
+                        <tr class="hover:bg-slate-50 transition-colors cursor-pointer group" onclick="window.location='{{ route('sales-orders.show', $order) }}'">
+                            <td class="py-3 pl-2 text-xs font-semibold text-slate-700 group-hover:text-blue-600">
+                                {{ $order->order_no }}
+                            </td>
+                            <td class="py-3 text-xs text-slate-600">
+                                {{ $order->customer->name ?? '-' }}
+                            </td>
+                             <td class="py-3 text-xs text-slate-600">
+                                {{ $order->vessel->name ?? '-' }}
+                            </td>
+                            <td class="py-3 text-xs">
+                                <x-ui.badge :variant="$statusVariants[$order->status] ?? 'neutral'">{{ $order->status_label }}</x-ui.badge>
+                            </td>
+                            <td class="py-3 pr-2 text-right">
+                                <x-ui.badge :variant="$order->next_step_variant" class="!px-1.5 !py-0.5 text-[10px]">
+                                    {{ $order->next_step_label }}
+                                </x-ui.badge>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="py-4 text-center text-xs text-slate-400 italic">
+                                {{ __('Kayıt bulunamadı.') }}
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </x-ui.card>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
@@ -342,6 +454,7 @@
                  </x-ui.card>
 
                 {{-- Finance Summary (30 Days) --}}
+                 @if($canSeeFinance)
                  <x-ui.card>
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-bold text-slate-900">{{ __('Finans (Son 30 Gün)') }}</h3>
@@ -363,6 +476,7 @@
                         </div>
                     </div>
                  </x-ui.card>
+                 @endif
 
 
             </div>
@@ -370,8 +484,58 @@
              {{-- Right Sidebar --}}
              <div class="space-y-6">
                 
+                    {{-- Operations Summary (PR8) --}}
+                    <x-ui.card>
+                        <h3 class="text-sm font-bold text-slate-900 mb-3">{{ __('Operasyon Özeti') }}</h3>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 flex flex-col items-center text-center">
+                                <span class="text-[10px] text-slate-500 uppercase font-bold">{{ __('Açık Sipariş') }}</span>
+                                <div class="mt-1">
+                                    <x-ui.badge variant="info" class="!text-xs">{{ $opOpenSalesOrders }}</x-ui.badge>
+                                </div>
+                            </div>
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 flex flex-col items-center text-center">
+                                <span class="text-[10px] text-slate-500 uppercase font-bold">{{ __('Açık İş Emri') }}</span>
+                                <div class="mt-1">
+                                    <x-ui.badge variant="info" class="!text-xs">{{ $opOpenWorkOrders }}</x-ui.badge>
+                                </div>
+                            </div>
+                             <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 flex flex-col items-center text-center">
+                                <span class="text-[10px] text-slate-500 uppercase font-bold">{{ __('Foto Eksik') }}</span>
+                                <div class="mt-1">
+                                    @if($opMissingPhotos > 0)
+                                        <x-ui.badge variant="info" class="!text-xs">{{ $opMissingPhotos }}</x-ui.badge>
+                                    @else
+                                        <x-ui.badge variant="success" class="!text-xs">OK</x-ui.badge>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 flex flex-col items-center text-center">
+                                <span class="text-[10px] text-slate-500 uppercase font-bold">{{ __('Teslim Bekleyen') }}</span>
+                                <div class="mt-1">
+                                    <x-ui.badge variant="neutral" class="!text-xs">{{ $opPendingDelivery }}</x-ui.badge>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                             <a href="{{ route('sales-orders.index') }}" class="block text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded transition-colors flex items-center justify-between">
+                                {{ __('Satış Siparişleri') }}
+                                <x-icon.chevron-right class="h-3 w-3" />
+                            </a>
+                             <a href="{{ route('work-orders.index') }}" class="block text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded transition-colors flex items-center justify-between">
+                                {{ __('İş Emirleri') }}
+                                <x-icon.chevron-right class="h-3 w-3" />
+                            </a>
+                             <a href="{{ route('contracts.index') }}" class="block text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded transition-colors flex items-center justify-between">
+                                {{ __('Sözleşmeler') }}
+                                <x-icon.chevron-right class="h-3 w-3" />
+                            </a>
+                        </div>
+                    </x-ui.card>
+
                     {{-- Critical Alerts --}}
-                    @if($criticalOverdueInvoices->isNotEmpty())
+                    @if($canSeeFinance && $criticalOverdueInvoices->isNotEmpty())
                         <x-ui.card class="border-rose-100 bg-rose-50/30">
                             <h3 class="text-sm font-bold text-rose-700 mb-3 flex items-center">
                                 <x-icon.exclamation-circle class="w-4 h-4 mr-2"/>
@@ -449,4 +613,5 @@
 
         </div>
     </div>
+    @endif
 </x-app-layout>

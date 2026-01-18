@@ -1,4 +1,3 @@
-{{-- resources/views/layouts/navigation.blade.php --}}
 @php
     $navItemBase = 'group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ui-focus';
     $navItemActive = 'relative bg-slate-50 text-slate-900 before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-slate-900/70 [&>svg]:text-slate-700';
@@ -24,28 +23,38 @@
     elseif (request()->routeIs('profile.*')) { $headerTitle = __('Profil'); $headerSubtitle = __('Ayarlar'); }
     elseif (request()->routeIs('admin.*')) { $headerTitle = __('Yönetim'); $headerSubtitle = __('Admin'); }
 
-    // Define isAdmin based on authenticated user
-    $isAdmin = auth()->check() && auth()->user()->is_admin;
+    // 1. Platform Admin Check
+    $isPlatformAdmin = auth()->check() && auth()->user()->is_admin;
+    // REMOVED $isAdmin alias to prevent confusion. Use $isPlatformAdmin for platform checks.
+
+    // 2. Support Session Check
+    $hasSupportSession = session('support_session_id');
+
+    // 3. Tenant Menu Visibility
+    $showTenantMenu = (!$isPlatformAdmin || ($isPlatformAdmin && $hasSupportSession)) && session()->has('current_tenant_id');
+
+    // 4. Platform Only Mode (Admin Dashboard etc)
+    $isPlatformOnly = $isPlatformAdmin && !$hasSupportSession;
+
+    // 5. Tenant Admin Check (Determinisic)
+    $isTenantAdmin = false;
+    if(auth()->check() && session('current_tenant_id')) {
+            $isTenantAdmin = auth()->user()->tenants()
+            ->where('tenants.id', session('current_tenant_id'))
+            ->wherePivot('role', 'admin')
+            ->exists();
+    }
+
+    // 6. Finance Visibility Contract
+    // - Tenant Admin: YES
+    // - Platform Admin + Support Session (Break Glass): YES
+    // - Standard Member: NO
+    $canSeeFinance = $showTenantMenu && ($isTenantAdmin || ($isPlatformAdmin && $hasSupportSession));
 
     // Admin link styles (reuse main styles)
     $adminLinkBase = $navItemBase;
     $adminActive = $navItemActive;
     $adminInactive = $navItemInactive;
-
-    // Sidebar Logic: Platform Admin Isolation
-    // Show tenant menus ONLY if:
-    // 1. User is NOT a platform admin (Normal Tenant User)
-    // 2. OR User IS a platform admin BUT has an active Support Session (Break-Glass)
-    $hasSupportSession = session('support_session_id');
-    // Show tenant menus ONLY if:
-    // 1. User is NOT a platform admin (Normal Tenant User)
-    // 2. OR User IS a platform admin BUT has an active Support Session (Break-Glass)
-    $hasSupportSession = session('support_session_id');
-    $showTenantMenu = !$isAdmin || ($isAdmin && $hasSupportSession);
-    
-    // Platform Only (Normal Mode)
-    // Items that should be hidden in normal platform admin mode but visible in support/break-glass
-    $isPlatformOnly = $isAdmin && !$hasSupportSession;
 @endphp
 
 <div class="relative">
@@ -65,7 +74,7 @@
         aria-label="{{ __('Yan Menü') }}"
     >
         <div class="flex items-center justify-between px-6 py-5">
-            <a href="{{ ($isAdmin && !$hasSupportSession) ? route('admin.dashboard') : route('dashboard') }}" class="flex items-center gap-3">
+            <a href="{{ ($isPlatformAdmin && !$hasSupportSession) ? route('admin.dashboard') : route('dashboard') }}" class="flex items-center gap-3">
                 <x-application-logo class="h-9 w-auto fill-current text-slate-800" />
                 <span class="text-sm font-semibold text-slate-800">{{ config('app.name', 'Epsilon CRM') }}</span>
             </a>
@@ -80,6 +89,17 @@
         </div>
 
         <div class="flex-1 space-y-8 overflow-y-auto px-4 pb-8">
+            
+            {{-- Onboarding / No Tenant --}}
+            @if(!session('current_tenant_id') && !$isPlatformAdmin)
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                <p class="text-xs font-semibold text-slate-700 mb-2">{{ __('Başlangıç') }}</p>
+                <x-ui.button href="{{ route('onboarding.company.create') }}" variant="primary" size="sm" class="w-full justify-center">
+                    {{ __('Firma Oluştur') }}
+                </x-ui.button>
+            </div>
+            @endif
+
             {{-- Kısayollar --}}
             @if($showTenantMenu)
             <div class="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
@@ -167,8 +187,9 @@
 
 
             @endif
-
-            @if($showTenantMenu)
+            
+            {{-- Finans (Tenant Admin Only OR Platform Admin with Support Session) --}}
+            @if($canSeeFinance)
             <div class="border-t border-slate-100/80 pt-6">
                 <p class="px-3 text-xs font-semibold tracking-wide text-slate-500">{{ __('Finans') }}</p>
 
@@ -210,7 +231,7 @@
                         <a href="#" onclick="return false;" title="{{ __('Yakında') }}" class="{{ $navItemBase }} {{ $lockedFinanceClass }}">
                             <x-icon.bank class="nav-icon" />
                             <span>{{ __('Tahsilatlar') }}</span>
-                            <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" />
+                            <x-ui.badge variant="neutral" size="xs" class="ml-auto">{{ __('Yakında') }}</x-ui.badge>
                         </a>
                     @endif
 
@@ -227,13 +248,11 @@
                         <a href="#" onclick="return false;" title="{{ __('Yakında') }}" class="{{ $navItemBase }} {{ $lockedFinanceClass }}">
                             <x-icon.credit-card class="nav-icon" />
                             <span>{{ __('Kasa & Bankalar') }}</span>
-                            <x-ui.icon.lock class="w-3 h-3 ml-auto text-slate-400" />
+                            <x-ui.badge variant="neutral" size="xs" class="ml-auto">{{ __('Yakında') }}</x-ui.badge>
                         </a>
                     @endif
                 </div>
             </div>
-
-
             @endif
 
             @if($showTenantMenu)
@@ -366,7 +385,7 @@
                     @endif
 
                     {{-- Global Yönetim (Platform Admin) --}}
-                    @if($isAdmin)
+                    @if($isPlatformAdmin)
                         <div>
                             <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Platform') }}</p>
                             <div class="space-y-0.5">
@@ -429,8 +448,16 @@
                                     href="{{ route('admin.tenants.index') }}"
                                     class="{{ $adminLinkBase }} {{ request()->routeIs('admin.tenants.*') ? $adminActive : $adminInactive }}"
                                 >
-                                    <x-icon.office-building class="nav-icon" />
                                     <span>{{ __('Firmalar') }}</span>
+                                </a>
+
+                                {{-- Paket Talepleri (PR7d) --}}
+                                <a
+                                    href="{{ route('admin.plan_requests.index') }}"
+                                    class="{{ $adminLinkBase }} {{ request()->routeIs('admin.plan_requests.*') ? $adminActive : $adminInactive }}"
+                                >
+                                    <x-icon.credit-card class="nav-icon" />
+                                    <span>{{ __('Paket Talepleri') }}</span>
                                 </a>
 
                                 {{-- Para Birimleri --}}
@@ -455,16 +482,6 @@
                     @endif
 
                     {{-- Firma Yönetimi (Tenant Admin) --}}
-                    @php
-                        // Check if user is tenant admin for CURRENT tenant
-                        $isTenantAdmin = false;
-                        if(auth()->check() && session('current_tenant_id')) {
-                             $isTenantAdmin = auth()->user()->tenants()
-                                ->where('tenants.id', session('current_tenant_id'))
-                                ->wherePivot('role', 'admin')
-                                ->exists();
-                        }
-                    @endphp
 
                     @if($showTenantMenu && $isTenantAdmin && \Illuminate\Support\Facades\Route::has('manage.members.index'))
                         <div class="mt-2">
@@ -484,8 +501,7 @@
                                     <x-icon.document class="nav-icon" />
                                     <span>{{ __('Davetler') }}</span>
                                 </a>
-                                    <span>{{ __('Davetler') }}</span>
-                                </a>
+
                                 @php
                                     // Check if user is Account Owner or Billing Admin
                                     $isAccountOwner = false;
@@ -516,7 +532,22 @@
                                     }
                                 @endphp
                                 
-                                @if($isAccountOwner && \Illuminate\Support\Facades\Route::has('manage.billing.index'))
+                                @if($isAccountOwner && \Illuminate\Support\Facades\Route::has('manage.plan.index'))
+                                    <a
+                                        href="{{ route('manage.plan.index') }}"
+                                        class="{{ $navItemBase }} {{ request()->routeIs('manage.plan.index') || request()->routeIs('manage.plan_requests.create') ? $navItemActive : $navItemInactive }}"
+                                    >
+                                        <x-icon.credit-card class="nav-icon" />
+                                        <span>{{ __('Paket & Kullanım') }}</span>
+                                    </a>
+                                     <a
+                                        href="{{ route('manage.plan_requests.index') }}"
+                                        class="{{ $navItemBase }} {{ request()->routeIs('manage.plan_requests.index') ? $navItemActive : $navItemInactive }}"
+                                    >
+                                        <x-icon.clipboard-list class="nav-icon" />
+                                        <span>{{ __('Taleplerim') }}</span>
+                                    </a>
+                                @elseif($isAccountOwner && \Illuminate\Support\Facades\Route::has('manage.billing.index'))
                                     <a
                                         href="{{ route('manage.billing.index') }}"
                                         class="{{ $navItemBase }} {{ request()->routeIs('manage.billing.*') ? $navItemActive : $navItemInactive }}"
@@ -530,7 +561,7 @@
                     @endif
 
                     {{-- Geliştirici (Sadece Local ve NON-ADMIN) --}}
-                    @if (app()->environment('local') && !$isAdmin && \Illuminate\Support\Facades\Route::has('ui.index'))
+                    @if (app()->environment('local') && !$isPlatformAdmin && \Illuminate\Support\Facades\Route::has('ui.index'))
                         <div>
                             <p class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{{ __('Geliştirici') }}</p>
                             <a

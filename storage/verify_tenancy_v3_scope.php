@@ -1303,7 +1303,8 @@ echo "Testing Tenant Creation & Attach...\n";
 $newTenantData = [
     'name' => 'Auto Created Tenant',
     'domain' => 'auto-tenant.test',
-    'is_active' => true
+    'is_active' => true,
+    'owner_user_id' => $user->id
 ];
 $adminController = new \App\Http\Controllers\Admin\TenantAdminController();
 // Mock Request
@@ -1358,7 +1359,8 @@ $expectedClean = 'messy-domain.test';
 $normReq = \Illuminate\Http\Request::create('/admin/tenants', 'POST', [
     'name' => 'Messy Tenant',
     'domain' => $messyDomain,
-    'is_active' => true
+    'is_active' => true,
+    'owner_user_id' => $user->id
 ]);
 $normReq->setUserResolver(function() use ($user) { return $user; });
 
@@ -1373,7 +1375,11 @@ $controller = new \App\Http\Controllers\Admin\TenantAdminController();
 \App\Models\Tenant::where('domain', $expectedClean)->delete(); // Cleanup
 
 try {
-    $controller->store($normReq);
+    $controller->store(
+        $normReq, 
+        app(\App\Services\EntitlementsService::class),
+        app(\App\Services\AuditLogger::class)
+    );
 } catch (\Illuminate\Http\RedirectResponse $e) {
     // Expected redirect
 } catch (\Exception $e) {
@@ -1394,12 +1400,17 @@ echo "Testing Unique Validation on Normalized Input...\n";
 $dupReq = \Illuminate\Http\Request::create('/admin/tenants', 'POST', [
     'name' => 'Duplicate Messy',
     'domain' => 'http://' . $expectedClean . '/', // Should normalize to same and fail unique
-    'is_active' => true
+    'is_active' => true,
+    'owner_user_id' => $user->id
 ]);
 $dupReq->setUserResolver(function() use ($user) { return $user; });
 
 try {
-    $controller->store($dupReq);
+    $controller->store(
+        $dupReq,
+        app(\App\Services\EntitlementsService::class),
+        app(\App\Services\AuditLogger::class)
+    );
     echo "[FAIL] Validation should have failed for duplicate normalized domain!\n";
     exit(1);
 } catch (\Illuminate\Validation\ValidationException $e) {

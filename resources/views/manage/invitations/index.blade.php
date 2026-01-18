@@ -12,20 +12,53 @@
             <x-ui.card>
                 <div class="p-6">
                     <h3 class="text-lg font-medium text-slate-900 mb-4">{{ __('Yeni Davet Oluştur') }}</h3>
+                    @php
+                       // Resolve entitlements for current account
+                       $tenantId = session('current_tenant_id');
+                       $tenant = \App\Models\Tenant::find($tenantId);
+                       $account = $tenant ? $tenant->account : null;
+                       $canAddSeat = $account ? app(\App\Services\EntitlementsService::class)->canAddSeat($account) : true;
+                    @endphp
+
+                    @if(!$canAddSeat)
+                        <div class="mb-6 rounded-md bg-rose-50 p-4 border border-rose-100">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <x-icon.exclamation-triangle class="h-5 w-5 text-rose-400" />
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-rose-800">{{ __('Plan limitine ulaşıldı') }}</h3>
+                                    <div class="mt-2 text-sm text-rose-700">
+                                        <p>{{ __('Paketinizin kullanıcı (seat) limiti dolmuştur. Yeni davet göndermek için paketinizi yükseltmeniz gerekmektedir.') }}</p>
+                                    </div>
+                                    <div class="mt-4">
+                                        <div class="-mx-2 -my-1.5 flex">
+                                            @if(\Illuminate\Support\Facades\Route::has('manage.plan.index'))
+                                                <a href="{{ route('manage.plan.index') }}" class="rounded-md bg-rose-50 px-2 py-1.5 text-sm font-medium text-rose-800 hover:bg-rose-100 focus:outline-none focus:ring-2 focus:ring-rose-600 focus:ring-offset-2 focus:ring-offset-rose-50">
+                                                    {{ __('Paketimi Görüntüle') }}
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <form action="{{ route('manage.invitations.store') }}" method="POST" class="flex gap-4 items-end">
                         @csrf
                         <div class="flex-1">
                             <x-input-label for="email" :value="__('E-posta Adresi')" />
-                            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email')" placeholder="user@example.com" required />
+                            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email')" placeholder="user@example.com" required :disabled="!$canAddSeat" />
                         </div>
                         <div class="w-48">
                             <x-input-label for="role" :value="__('Rol')" />
-                            <select id="role" name="role" class="mt-1 block w-full border-slate-300 focus:border-brand-500 focus:ring-brand-500 rounded-xl shadow-sm">
+                            <select id="role" name="role" class="mt-1 block w-full border-slate-300 focus:border-brand-500 focus:ring-brand-500 rounded-xl shadow-sm" {{ !$canAddSeat ? 'disabled' : '' }}>
                                 <option value="staff">{{ __('Personel') }}</option>
                                 <option value="admin">{{ __('Yönetici') }}</option>
                             </select>
                         </div>
-                        <x-primary-button class="mb-[2px]">{{ __('Davet Gönder') }}</x-primary-button>
+                        <x-primary-button class="mb-[2px]" :disabled="!$canAddSeat" >{{ __('Davet Gönder') }}</x-primary-button>
                     </form>
                     
                     @if(session('invite_link'))

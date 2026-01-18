@@ -36,7 +36,7 @@
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                                             <x-ui.badge variant="neutral">
-                                                {{ $account->plan->name_tr ?? $account->plan->key }}
+                                                {{ $account->plan_name }}
                                             </x-ui.badge>
                                         </td>
                                         <td class="whitespace-nowrap px-3 py-4 text-sm text-slate-500">

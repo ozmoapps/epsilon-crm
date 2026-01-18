@@ -25,7 +25,7 @@
                        <h3 class="text-sm font-medium text-slate-500">{{ __('Paket') }}</h3>
                        <div class="mt-1">
                            <x-ui.badge variant="info" size="lg">
-                               {{ $account->plan->name_tr ?? $account->plan->key }}
+                               {{ $account->plan_name }}
                            </x-ui.badge>
                            @if($account->extra_seats_purchased > 0)
                                <div class="mt-1 text-xs text-slate-500">+{{ $account->extra_seats_purchased }} Ek Kullanıcı</div>
@@ -50,34 +50,45 @@
                 <x-ui.card>
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-medium text-slate-900">{{ __('Firma Limiti') }}</h3>
-                        <span class="text-2xl font-bold {{ $tenantUsage >= $tenantLimit && $tenantLimit !== null ? 'text-rose-600' : 'text-slate-900' }}">
-                            {{ $tenantUsage }} / {{ $tenantLimit ?? '∞' }}
-                        </span>
+                        <div class="text-right">
+                             <span class="text-2xl font-bold {{ $tenantUsage > ($tenantLimit ?? PHP_INT_MAX) ? 'text-rose-600' : 'text-slate-900' }}">
+                                {{ $tenantUsage }} / {{ $tenantLimit ?? '∞' }}
+                            </span>
+                            @if($tenantLimit !== null && $tenantUsage > $tenantLimit)
+                                <x-ui.badge variant="danger" size="sm" class="ml-2">{{ __('Limit Aşıldı') }}</x-ui.badge>
+                            @endif
+                        </div>
                     </div>
                     <div class="mt-4 w-full bg-slate-100 rounded-full h-2.5 dark:bg-slate-700">
                         @php
                            $tenantPercent = $tenantLimit ? min(100, ($tenantUsage / $tenantLimit) * 100) : 0;
+                           $tenantBarColor = ($tenantLimit && $tenantUsage > $tenantLimit) ? 'bg-rose-500' : 'bg-brand-600';
                         @endphp
-                        <div class="bg-brand-600 h-2.5 rounded-full" style="width: {{ $tenantPercent }}%"></div>
+                        <div class="{{ $tenantBarColor }} h-2.5 rounded-full" style="width: {{ $tenantPercent }}%"></div>
                     </div>
                 </x-ui.card>
 
                 <x-ui.card>
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-medium text-slate-900">{{ __('Kullanıcı (Seat) Limiti') }}</h3>
-                        <span class="text-2xl font-bold {{ $seatUsage >= $seatLimit && $seatLimit !== null ? 'text-rose-600' : 'text-slate-900' }}">
-                            {{ $seatUsage }} / {{ $seatLimit ?? '∞' }}
-                        </span>
+                        <div class="text-right">
+                            <span class="text-2xl font-bold {{ $seatUsage > ($seatLimit ?? PHP_INT_MAX) ? 'text-rose-600' : 'text-slate-900' }}">
+                                {{ $seatUsage }} / {{ $seatLimit ?? '∞' }}
+                            </span>
+                             @if($seatLimit !== null && $seatUsage > $seatLimit)
+                                <x-ui.badge variant="danger" size="sm" class="ml-2">{{ __('Limit Aşıldı') }}</x-ui.badge>
+                            @endif
+                        </div>
                     </div>
                     <div class="mt-4 w-full bg-slate-100 rounded-full h-2.5 dark:bg-slate-700">
                         @php
                            $seatPercent = $seatLimit ? min(100, ($seatUsage / $seatLimit) * 100) : 0;
+                           $seatBarColor = ($seatLimit && $seatUsage > $seatLimit) ? 'bg-rose-500' : 'bg-brand-600';
                         @endphp
-                        <div class="bg-brand-600 h-2.5 rounded-full" style="width: {{ $seatPercent }}%"></div>
+                        <div class="{{ $seatBarColor }} h-2.5 rounded-full" style="width: {{ $seatPercent }}%"></div>
                     </div>
                 </x-ui.card>
             </div>
-
             {{-- Account Users & Roles (PR4D6) --}}
             @php
                 // Minimal inline helper for email masking
@@ -197,13 +208,37 @@
                     @csrf
                     @method('PATCH')
                     
+                    @if(($tenantLimit !== null && $tenantUsage > $tenantLimit) || ($seatLimit !== null && $seatUsage > $seatLimit))
+                        <div class="mb-4 rounded-md bg-rose-50 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <x-icon.exclamation-triangle class="h-5 w-5 text-rose-400" />
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-rose-800">{{ __('Limit Aşımı Mevcut') }}</h3>
+                                    <div class="mt-2 text-sm text-rose-700">
+                                        <p>{{ __('Şu anda hesap limitleri aşılmış durumda. Daha düşük bir pakete geçiş yapmanız engellenecektir. Lütfen kullanıcıları veya firmaları azalttıktan sonra deneyin veya paketi yükseltin.') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <x-input-label for="plan_id" :value="__('Paket Değiştir')" />
-                            <select id="plan_id" name="plan_id" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
-                                @foreach(\App\Models\Plan::all() as $plan)
-                                    <option value="{{ $plan->id }}" {{ $account->plan_id == $plan->id ? 'selected' : '' }}>
-                                        {{ $plan->name_tr ?? $plan->key }} (Limit: {{ $plan->seat_limit ?? 'Sınırsız' }} Seat / {{ $plan->tenant_limit ?? 'Sınırsız' }} Firma)
+                            <x-input-label for="plan_key" :value="__('Paket Değiştir')" />
+                            <select id="plan_key" name="plan_key" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
+                                @foreach(config('plans') as $key => $planConfig)
+                                    @php
+                                        // Optional: Check if moving to this plan would immediately block
+                                        // This logic is mostly for UI hint, controller does hard check.
+                                        $wouldBlockTenant = isset($planConfig['tenant_limit']) && $tenantUsage > $planConfig['tenant_limit'];
+                                        $wouldBlockSeat = isset($planConfig['user_limit']) && $seatUsage > $planConfig['user_limit'];
+                                        $disabled = $wouldBlockTenant || $wouldBlockSeat;
+                                    @endphp
+                                    <option value="{{ $key }}" {{ ($account->plan_key ?? 'starter') == $key ? 'selected' : '' }} {{ $disabled ? 'class=text-slate-400' : '' }}>
+                                        {{ $planConfig['name'] }} (Limit: {{ $planConfig['user_limit'] ?? 'Sınırsız' }} Kullanıcı / {{ $planConfig['tenant_limit'] ?? 'Sınırsız' }} Firma)
+                                        @if($disabled) [Yetersiz Limit] @endif
                                     </option>
                                 @endforeach
                             </select>

@@ -330,6 +330,9 @@
                         @endforeach
                     </tbody>
                 </x-ui.table>
+                <div class="mt-4 px-4">
+                    {{ $users->links() }}
+                </div>
             </x-ui.card>
         </div>
     </div>
