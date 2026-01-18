@@ -11,6 +11,7 @@ use App\Services\ActivityLogger;
 class Quote extends Model
 {
     use HasFactory;
+    use \App\Models\Concerns\TenantScoped;
 
     protected $fillable = [
         'created_by',

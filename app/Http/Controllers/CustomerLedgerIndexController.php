@@ -57,7 +57,8 @@ class CustomerLedgerIndexController extends Controller
             $onlyOverdue = true;
         }
 
-        $query = Customer::query()->where('tenant_id', app(\App\Services\TenantContext::class)->id());
+        $tenantId = app(\App\Services\TenantContext::class)->id();
+        $query = Customer::query()->where('tenant_id', $tenantId);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -210,13 +211,15 @@ class CustomerLedgerIndexController extends Controller
         $scope = $request->input('scope', 'page');
 
         // Helper for Open Invoice Subquery (Reusable)
-        $getOpenInvoiceSub = function($isSort = false) use ($currency) {
+        $getOpenInvoiceSub = function($isSort = false) use ($currency, $tenantId) {
             $legacyPaidSub = DB::table('payments')
                 ->select('invoice_id', DB::raw('SUM(amount) as paid'))
+                ->where('tenant_id', $tenantId) // Tenant Scope
                 ->groupBy('invoice_id');
             
             $allocPaidSub = DB::table('payment_allocations')
                 ->join('payments', 'payments.id', '=', 'payment_allocations.payment_id')
+                ->where('payments.tenant_id', $tenantId) // Tenant Scope via Payment
                 ->whereNull('payments.invoice_id')
                 ->select('payment_allocations.invoice_id', DB::raw('SUM(payment_allocations.amount) as alloc'))
                 ->groupBy('payment_allocations.invoice_id');
@@ -246,6 +249,7 @@ class CustomerLedgerIndexController extends Controller
                     ->leftJoinSub($allocPaidSub, 'a', 'a.invoice_id', '=', 'invoices.id')
                     ->where('invoices.status', 'issued')
                     ->where('invoices.payment_status', '!=', 'paid')
+                    ->where('invoices.tenant_id', $tenantId) // Tenant Scope
                     ->groupBy('invoices.customer_id');
             } else {
                  $q = DB::table('invoices')
@@ -255,6 +259,7 @@ class CustomerLedgerIndexController extends Controller
                     ->leftJoinSub($allocPaidSub, 'a', 'a.invoice_id', '=', 'invoices.id')
                     ->where('invoices.status', 'issued')
                     ->where('invoices.payment_status', '!=', 'paid')
+                    ->where('invoices.tenant_id', $tenantId) // Tenant Scope
                     ->groupBy('invoices.customer_id', 'invoices.currency'); // Always group by currency
             }
 
@@ -265,18 +270,20 @@ class CustomerLedgerIndexController extends Controller
         };
 
         // Helper for Advance Sort/Agg Subquery
-        $getAdvanceSub = function($isSort = false) use ($currency) {
+        $getAdvanceSub = function($isSort = false) use ($currency, $tenantId) {
              $remainingExpr = "(payments.amount - COALESCE((SELECT SUM(amount) FROM payment_allocations WHERE payment_id = payments.id), 0))";
              
              if ($isSort) {
                  $q = DB::table('payments')
                      ->select('payments.customer_id', DB::raw("SUM({$remainingExpr}) as sort_total_adv"))
+                     ->where('payments.tenant_id', $tenantId) // Tenant Scope
                      ->whereNull('payments.invoice_id')
                      ->groupBy('payments.customer_id');
              } else {
                  $q = DB::table('payments')
                      ->select('payments.customer_id', DB::raw("SUM({$remainingExpr}) as total_adv"))
                      ->addSelect('payments.original_currency as currency') // Always select
+                     ->where('payments.tenant_id', $tenantId) // Tenant Scope
                      ->whereNull('payments.invoice_id')
                      ->groupBy('payments.customer_id', 'payments.original_currency');
              }
@@ -288,17 +295,19 @@ class CustomerLedgerIndexController extends Controller
         };
 
         // Helper for Debt Sort/Agg Subquery
-        $getDebtSub = function($isSort = false) use ($currency) {
+        $getDebtSub = function($isSort = false) use ($currency, $tenantId) {
             $expr = "SUM(CASE WHEN direction='debit' THEN amount ELSE -amount END)";
             
             if ($isSort) {
                 $q = DB::table('ledger_entries')
                     ->select('customer_id', DB::raw("{$expr} as sort_balance"))
+                    ->where('tenant_id', $tenantId) // Tenant Scope
                     ->groupBy('customer_id');
             } else {
                 $q = DB::table('ledger_entries')
                     ->select('customer_id', DB::raw("{$expr} as total_balance"))
                     ->addSelect('currency') // Always select
+                    ->where('tenant_id', $tenantId) // Tenant Scope
                     ->groupBy('customer_id', 'currency');
             }
             

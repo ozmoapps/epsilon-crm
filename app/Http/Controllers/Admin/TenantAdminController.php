@@ -99,7 +99,7 @@ class TenantAdminController extends Controller
                 // If usage method not public/avail, just log limit. EntitlementsService usually has checks.
             ], 'warn');
             
-            return back()->with('error', "Paket limitiniz dolu: En fazla $limit firma oluşturabilirsiniz. Plan yükseltin veya ek firma satın alın.");
+            return back()->with('error', "Plan limitine ulaşıldı. Paketi yükseltmeniz gerekiyor.");
         }
 
         // 3. Create Tenant linked to Account

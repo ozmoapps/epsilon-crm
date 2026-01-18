@@ -77,20 +77,22 @@ class AccountAdminController extends Controller
     }
     public function update(Request $request, Account $account, EntitlementsService $entitlements, \App\Services\AuditLogger $logger)
     {
+        // Config based validation
+        $validPlans = array_keys(config('plans'));
+        
         $validated = $request->validate([
-            'plan_id' => 'required|exists:plans,id',
+            'plan_key' => 'required|string|in:' . implode(',', $validPlans),
             'extra_seats_purchased' => 'required|integer|min:0',
         ]);
 
-        $newPlanId = $validated['plan_id'];
+        $newPlanKey = $validated['plan_key'];
         $newExtraSeats = $validated['extra_seats_purchased'];
 
         // Downgrade / Limit Check logic
-        // We must fetch the target plan to know its limits
-        $targetPlan = \App\Models\Plan::find($newPlanId);
+        $targetPlanConfig = config("plans.{$newPlanKey}");
         
         // 1. Check Tenant Limit
-        $targetTenantLimit = $targetPlan->tenant_limit; // No extra tenant purchase logic yet, just plan
+        $targetTenantLimit = $targetPlanConfig['tenant_limit'];
         $currentTenantUsage = $entitlements->accountTenantUsage($account);
         
         if ($targetTenantLimit !== null && $currentTenantUsage > $targetTenantLimit) {
@@ -110,7 +112,7 @@ class AccountAdminController extends Controller
         }
 
         // 2. Check Seat Limit
-        $targetSeatLimit = $targetPlan->seat_limit;
+        $targetSeatLimit = $targetPlanConfig['user_limit'];
         if ($targetSeatLimit !== null) {
             $targetSeatLimit += $newExtraSeats;
         }
@@ -134,17 +136,17 @@ class AccountAdminController extends Controller
         }
 
         // Proceed with Update
-        $oldPlanId = $account->plan_id;
+        $oldPlanKey = $account->plan_key;
         $oldExtraSeats = $account->extra_seats_purchased;
 
         $account->update([
-            'plan_id' => $newPlanId,
+            'plan_key' => $newPlanKey,
             'extra_seats_purchased' => $newExtraSeats
         ]);
 
         // Audit Logs for Changes
-        if ($oldPlanId != $newPlanId) {
-             $logger->log('account.plan.changed', ['account_id' => $account->id, 'old' => $oldPlanId, 'new' => $newPlanId], 'info');
+        if ($oldPlanKey !== $newPlanKey) {
+             $logger->log('account.plan.changed', ['account_id' => $account->id, 'old' => $oldPlanKey, 'new' => $newPlanKey], 'info');
         }
         if ($oldExtraSeats != $newExtraSeats) {
              $logger->log('account.seats.changed', ['account_id' => $account->id, 'old' => $oldExtraSeats, 'new' => $newExtraSeats], 'info');

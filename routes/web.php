@@ -27,6 +27,24 @@ Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+// Onboarding Routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/onboarding/company', [App\Http\Controllers\OnboardingCompanyController::class, 'create'])->name('onboarding.company.create');
+    Route::post('/onboarding/company', [App\Http\Controllers\OnboardingCompanyController::class, 'store'])->name('onboarding.company.store');
+});
+
+// PR5a: Membership-first Tenancy Routes
+Route::middleware(['auth'])->prefix('manage/tenants')->name('manage.tenants.')->group(function () {
+    Route::get('join', function () {
+        return view('manage.tenants.join');
+    })->name('join');
+    
+    Route::get('select', function () {
+        // Redirect logic handled in SetTenant or user can select manually
+        return view('manage.tenants.select');
+    })->name('select');
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -36,7 +54,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/saved-views', [App\Http\Controllers\SavedViewController::class, 'store'])->name('saved-views.store');
     Route::delete('/saved-views/{savedView}', [App\Http\Controllers\SavedViewController::class, 'destroy'])->name('saved-views.destroy');
 
+    Route::delete('/saved-views/{savedView}', [App\Http\Controllers\SavedViewController::class, 'destroy'])->name('saved-views.destroy');
+
     Route::post('customers/bulk-delete', [CustomerController::class, 'bulkDestroy'])->name('customers.bulk_destroy');
+
+    // PR14c: Paywall / Billing Placeholder
+    Route::get('/billing', function () {
+        return view('billing.paywall');
+    })->name('billing.paywall');
 
     // Core Resources (Accessible to Staff)
     Route::resource('customers', CustomerController::class);
@@ -56,6 +81,7 @@ Route::middleware('auth')->group(function () {
     Route::post('work-orders/{workOrder}/updates', [App\Http\Controllers\WorkOrderUpdateController::class, 'store'])->name('work-orders.updates.store');
     Route::delete('work-order-updates/{update}', [App\Http\Controllers\WorkOrderUpdateController::class, 'destroy'])->name('work-order-updates.destroy');
     Route::post('work-orders/{workOrder}/progress', [App\Http\Controllers\WorkOrderProgressController::class, 'store'])->name('work-orders.progress.store');
+    Route::post('work-orders/{workOrder}/deliver', [App\Http\Controllers\WorkOrderController::class, 'deliver'])->name('work-orders.deliver');
 
     // Stock Module
     Route::resource('products', App\Http\Controllers\ProductController::class);
@@ -99,12 +125,23 @@ Route::middleware('auth')->group(function () {
         // Global Customer Ledger Index
         Route::get('/customer-ledgers', [\App\Http\Controllers\CustomerLedgerIndexController::class, 'index'])->name('customer-ledgers.index');
 
-        // Quotes
+        // Contracts (Admin-Only Actions)
+        Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])->name('contracts.attachments.store');
+        Route::delete('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'destroy'])->name('contracts.attachments.destroy');
+        Route::post('contracts/{contract}/deliveries', [ContractDeliveryController::class, 'store'])->name('contracts.deliveries.store');
+        Route::patch('contracts/{contract}/deliveries/{delivery}/mark-sent', [ContractDeliveryController::class, 'markSent'])->name('contracts.deliveries.mark_sent');
+        Route::post('contracts/{contract}/revise', [ContractController::class, 'revise'])->name('contracts.revise');
+        Route::patch('contracts/{contract}/mark-sent', [ContractController::class, 'markSent'])->name('contracts.mark_sent');
+        Route::patch('contracts/{contract}/mark-signed', [ContractController::class, 'markSigned'])->name('contracts.mark_signed');
+        Route::patch('contracts/{contract}/cancel', [ContractController::class, 'cancel'])->name('contracts.cancel');
+        
+        // Contract Resources (Admin Write)
+        Route::resource('contracts', ContractController::class)->only(['edit', 'update', 'destroy']);
+
+
+        // Quotes (Admin Actions)
         Route::post('quotes/bulk-delete', [QuoteController::class, 'bulkDestroy'])->name('quotes.bulk_destroy');
-        Route::resource('quotes', QuoteController::class);
-        Route::get('quotes/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview');
-        Route::get('quotes/{quote}/pdf', [QuoteController::class, 'pdf'])->name('quotes.pdf');
-        Route::get('quotes/{quote}/print', [QuoteController::class, 'printView'])->name('quotes.print');
+        Route::resource('quotes', QuoteController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::post('quotes/{quote}/mark-sent', [QuoteController::class, 'markAsSent'])->name('quotes.mark_sent');
         Route::post('quotes/{quote}/mark-accepted', [QuoteController::class, 'markAsAccepted'])->name('quotes.mark_accepted');
         Route::post('quotes/{quote}/convert-to-sales-order', [QuoteController::class, 'convertToSalesOrder'])->name('quotes.convert_to_sales_order');
@@ -112,48 +149,16 @@ Route::middleware('auth')->group(function () {
         Route::put('quotes/{quote}/items/{item}', [QuoteItemController::class, 'update'])->name('quotes.items.update');
         Route::delete('quotes/{quote}/items/{item}', [QuoteItemController::class, 'destroy'])->name('quotes.items.destroy');
 
-        // Contracts
-        Route::resource('contracts', ContractController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
-        Route::get('contracts/{contract}/pdf', [ContractController::class, 'pdf'])->name('contracts.pdf');
-        Route::get('contracts/{contract}/print', [ContractController::class, 'printView'])->name('contracts.print');
-        Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])->name('contracts.attachments.store');
-        Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'download'])->name('contracts.attachments.download');
-        Route::delete('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'destroy'])->name('contracts.attachments.destroy');
-        Route::get('contracts/{contract}/delivery-pack', [ContractDeliveryController::class, 'downloadPack'])->name('contracts.delivery_pack');
-        Route::post('contracts/{contract}/deliveries', [ContractDeliveryController::class, 'store'])->name('contracts.deliveries.store');
-        Route::patch('contracts/{contract}/deliveries/{delivery}/mark-sent', [ContractDeliveryController::class, 'markSent'])->name('contracts.deliveries.mark_sent');
-        Route::post('contracts/{contract}/revise', [ContractController::class, 'revise'])->name('contracts.revise');
-        Route::patch('contracts/{contract}/mark-sent', [ContractController::class, 'markSent'])->name('contracts.mark_sent');
-        Route::patch('contracts/{contract}/mark-signed', [ContractController::class, 'markSigned'])->name('contracts.mark_signed');
-        Route::patch('contracts/{contract}/cancel', [ContractController::class, 'cancel'])->name('contracts.cancel');
 
-        // Sales Orders
-        Route::resource('sales-orders', SalesOrderController::class);
+        // Sales Orders (Admin Actions - Create/Edit/Delete Only)
+        Route::resource('sales-orders', SalesOrderController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::get('sales-orders/{salesOrder}/contracts/create', [ContractController::class, 'create'])->name('sales-orders.contracts.create');
         Route::post('sales-orders/{salesOrder}/contracts', [ContractController::class, 'store'])->name('sales-orders.contracts.store');
-        Route::patch('sales-orders/{salesOrder}/confirm', [SalesOrderController::class, 'confirm'])->name('sales-orders.confirm');
-        Route::patch('sales-orders/{salesOrder}/start', [SalesOrderController::class, 'start'])->name('sales-orders.start');
-        Route::patch('sales-orders/{salesOrder}/complete', [SalesOrderController::class, 'complete'])->name('sales-orders.complete');
-        Route::patch('sales-orders/{salesOrder}/cancel', [SalesOrderController::class, 'cancel'])->name('sales-orders.cancel');
         Route::post('sales-orders/{salesOrder}/items', [SalesOrderItemController::class, 'store'])->name('sales-orders.items.store');
         Route::put('sales-orders/{salesOrder}/items/{item}', [SalesOrderItemController::class, 'update'])->name('sales-orders.items.update');
         Route::delete('sales-orders/{salesOrder}/items/{item}', [SalesOrderItemController::class, 'destroy'])->name('sales-orders.items.destroy');
-        Route::post('sales-orders/{salesOrder}/post-stock', [SalesOrderController::class, 'postStock'])->name('sales-orders.post-stock');
-        Route::post('sales-orders/{salesOrder}/create-work-order', [SalesOrderController::class, 'createWorkOrder'])->name('sales-orders.create-work-order');
 
-        // Shipments & Returns (linked to Sales Orders)
-        Route::get('sales-orders/{salesOrder}/shipments/create', [App\Http\Controllers\SalesOrderShipmentController::class, 'create'])->name('sales-orders.shipments.create');
-        Route::post('sales-orders/{salesOrder}/shipments', [App\Http\Controllers\SalesOrderShipmentController::class, 'store'])->name('sales-orders.shipments.store');
-        Route::get('sales-orders/{salesOrder}/shipments/{shipment}', [App\Http\Controllers\SalesOrderShipmentController::class, 'show'])->name('sales-orders.shipments.show');
-        Route::post('shipments/{shipment}/post', [App\Http\Controllers\SalesOrderShipmentController::class, 'post'])->name('shipments.post');
-        Route::delete('shipments/{shipment}', [App\Http\Controllers\SalesOrderShipmentController::class, 'destroy'])->name('shipments.destroy');
         
-        Route::get('shipments/{shipment}/returns/create', [App\Http\Controllers\SalesOrderReturnController::class, 'create'])->name('shipments.returns.create');
-        Route::post('shipments/{shipment}/returns', [App\Http\Controllers\SalesOrderReturnController::class, 'store'])->name('shipments.returns.store');
-        Route::get('returns/{return}', [App\Http\Controllers\SalesOrderReturnController::class, 'show'])->name('returns.show');
-        Route::post('returns/{return}/post', [App\Http\Controllers\SalesOrderReturnController::class, 'post'])->name('returns.post');
-        Route::delete('returns/{return}', [App\Http\Controllers\SalesOrderReturnController::class, 'destroy'])->name('returns.destroy');
-
         Route::post('/follow-ups', [App\Http\Controllers\FollowUpController::class, 'store'])->name('follow-ups.store');
         Route::post('/follow-ups/{followUp}/complete', [App\Http\Controllers\FollowUpController::class, 'complete'])->name('follow-ups.complete');
         Route::delete('/follow-ups/{followUp}', [App\Http\Controllers\FollowUpController::class, 'destroy'])->name('follow-ups.destroy');
@@ -169,6 +174,44 @@ Route::middleware('auth')->group(function () {
         Route::get('payments/create', [App\Http\Controllers\PaymentController::class, 'create'])->name('payments.create');
         Route::post('payments', [App\Http\Controllers\PaymentController::class, 'storeAdvance'])->name('payments.store');
     });
+
+    // PR OPS-01: Shared Access (Read-Only for Staff) - Moved here to prevent caching issues (create vs show)
+    // Quotes (Read Only)
+    Route::resource('quotes', QuoteController::class)->only(['index', 'show']);
+    Route::get('quotes/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview');
+    Route::get('quotes/{quote}/pdf', [QuoteController::class, 'pdf'])->name('quotes.pdf');
+    Route::get('quotes/{quote}/print', [QuoteController::class, 'printView'])->name('quotes.print');
+
+    // Sales Orders (Read Only)
+    Route::resource('sales-orders', SalesOrderController::class)->only(['index', 'show']);
+    Route::get('sales-orders/{salesOrder}/preview', [SalesOrderController::class, 'preview'])->name('sales-orders.preview');
+    Route::get('sales-orders/{salesOrder}/pdf', [SalesOrderController::class, 'pdf'])->name('sales-orders.pdf');
+    Route::get('sales-orders/{salesOrder}/print', [SalesOrderController::class, 'printView'])->name('sales-orders.print');
+    // Shipments/Returns Read Only
+    Route::get('sales-orders/{salesOrder}/shipments/{shipment}', [App\Http\Controllers\SalesOrderShipmentController::class, 'show'])->name('sales-orders.shipments.show');
+    Route::get('returns/{return}', [App\Http\Controllers\SalesOrderReturnController::class, 'show'])->name('returns.show');
+
+    // PR9: Shared Operational Actions (Accessible to Staff)
+    // These actions drive the operation flow
+    Route::patch('sales-orders/{salesOrder}/confirm', [SalesOrderController::class, 'confirm'])->name('sales-orders.confirm');
+    Route::patch('sales-orders/{salesOrder}/start', [SalesOrderController::class, 'start'])->name('sales-orders.start');
+    Route::patch('sales-orders/{salesOrder}/complete', [SalesOrderController::class, 'complete'])->name('sales-orders.complete');
+    Route::patch('sales-orders/{salesOrder}/cancel', [SalesOrderController::class, 'cancel'])->name('sales-orders.cancel');
+    Route::post('sales-orders/{salesOrder}/post-stock', [SalesOrderController::class, 'postStock'])->name('sales-orders.post-stock');
+    Route::post('sales-orders/{salesOrder}/create-work-order', [SalesOrderController::class, 'createWorkOrder'])->name('sales-orders.create-work-order');
+
+    // Shipments (Shared Operational)
+    Route::get('sales-orders/{salesOrder}/shipments/create', [App\Http\Controllers\SalesOrderShipmentController::class, 'create'])->name('sales-orders.shipments.create');
+    Route::post('sales-orders/{salesOrder}/shipments', [App\Http\Controllers\SalesOrderShipmentController::class, 'store'])->name('sales-orders.shipments.store');
+    Route::post('shipments/{shipment}/post', [App\Http\Controllers\SalesOrderShipmentController::class, 'post'])->name('shipments.post');
+    Route::delete('shipments/{shipment}', [App\Http\Controllers\SalesOrderShipmentController::class, 'destroy'])->name('shipments.destroy');
+
+    // Contracts (Read Only)
+    Route::resource('contracts', ContractController::class)->only(['index', 'show']);
+    Route::get('contracts/{contract}/pdf', [ContractController::class, 'pdf'])->name('contracts.pdf');
+    Route::get('contracts/{contract}/print', [ContractController::class, 'printView'])->name('contracts.print');
+    Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'download'])->name('contracts.attachments.download');
+    Route::get('contracts/{contract}/delivery-pack', [ContractDeliveryController::class, 'downloadPack'])->name('contracts.delivery_pack');
     
     // Sprint 3.2: Manual Allocation Removed (Parachute Mode Active)
     // Route::get('payments/{payment}/allocate', [App\Http\Controllers\PaymentController::class, 'allocate'])->name('payments.allocate');
@@ -216,6 +259,12 @@ Route::middleware('auth')->group(function () {
 
         // Audit Logs (Global)
         Route::get('audit', [App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('audit.index');
+
+        // Plan Requests (PR7d)
+        Route::get('plan-change-requests', [\App\Http\Controllers\Admin\PlanChangeRequestAdminController::class, 'index'])->name('plan_requests.index');
+        Route::get('plan-change-requests/{planChangeRequest}', [\App\Http\Controllers\Admin\PlanChangeRequestAdminController::class, 'show'])->name('plan_requests.show');
+        Route::post('plan-change-requests/{planChangeRequest}/approve', [\App\Http\Controllers\Admin\PlanChangeRequestAdminController::class, 'approve'])->name('plan_requests.approve');
+        Route::post('plan-change-requests/{planChangeRequest}/reject', [\App\Http\Controllers\Admin\PlanChangeRequestAdminController::class, 'reject'])->name('plan_requests.reject');
     });
 });
 
@@ -307,6 +356,13 @@ Route::middleware(['auth', 'tenant.admin'])->prefix('manage')->name('manage.')->
     Route::get('audit', [App\Http\Controllers\Manage\AuditLogController::class, 'index'])->name('audit.index');
 
     // Billing (Owner Only) - PR4D4
+    // Modified in PR7c for Plan visibility
+    Route::get('plan', [\App\Http\Controllers\Manage\PlanController::class, 'index'])->name('plan.index');
+    Route::get('plan/requests', [\App\Http\Controllers\Manage\PlanChangeRequestController::class, 'index'])->name('plan_requests.index');
+    Route::get('plan/upgrade-request', [\App\Http\Controllers\Manage\PlanChangeRequestController::class, 'create'])->name('plan_requests.create');
+    Route::post('plan/upgrade-request', [\App\Http\Controllers\Manage\PlanChangeRequestController::class, 'store'])->name('plan_requests.store');
+    
+    // Legacy Billing route (keep for now or redirect?)
     Route::get('billing', [App\Http\Controllers\Manage\BillingController::class, 'index'])->name('billing.index');
 });
 

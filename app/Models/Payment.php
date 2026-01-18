@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     use HasFactory;
+    use \App\Models\Concerns\TenantScoped;
 
     protected static function booted()
     {

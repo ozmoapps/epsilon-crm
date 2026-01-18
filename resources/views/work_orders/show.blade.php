@@ -25,14 +25,14 @@
                     <x-ui.button href="{{ route('work-orders.edit', $workOrder) }}" variant="secondary" size="sm">
                         {{ __('Düzenle') }}
                     </x-ui.button>
-                    <x-ui.button href="{{ route('work-orders.print', $workOrder) }}" variant="secondary" size="sm">
-                        {{ __('Yazdır') }}
+                     <x-ui.button href="{{ route('work-orders.print', $workOrder) }}" variant="secondary" size="sm">
+                        <x-icon.printer class="h-4 w-4 mr-1 text-slate-500" />
+                        {{ __('Teslim Raporu') }}
                     </x-ui.button>
                     
                     <x-ui.dropdown align="right" width="48">
                         <x-slot name="trigger">
                             <x-ui.button type="button" variant="secondary" size="sm" class="inline-flex items-center gap-2">
-                                {{ __('İşlemler') }}
                                 <x-icon.dots class="h-4 w-4" />
                             </x-ui.button>
                         </x-slot>
@@ -72,7 +72,7 @@
                         <dt class="text-xs font-bold tracking-wider text-slate-500 mb-1">{{ __('Müşteri') }}</dt>
                         <dd class="mt-1 font-medium text-slate-900 border-b border-slate-100 pb-1">
                             @if ($workOrder->customer)
-                                <a href="{{ route('admin.company-profiles.show', $workOrder->customer_id) }}" class="text-brand-600 hover:text-brand-700 hover:underline decoration-brand-600/50 underline-offset-4 transition-all">
+                                <a href="{{ route('customers.show', $workOrder->customer) }}" class="text-brand-600 hover:text-brand-700 hover:underline decoration-brand-600/50 underline-offset-4 transition-all">
                                     {{ $workOrder->customer->name }}
                                 </a>
                             @else
@@ -107,7 +107,6 @@
                         </dd>
                     </div>
                 </dl>
-                </dl>
             </x-ui.card>
             
             @include('work_orders.partials.items')
@@ -117,6 +116,60 @@
         @endslot
 
         @slot('right')
+            {{-- Delivery Card --}}
+            <x-ui.card class="rounded-2xl border border-slate-200 bg-white shadow-card !p-5 mb-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                    <h3 class="font-semibold text-slate-900">{{ __('Teslimat') }}</h3>
+                </div>
+
+                @if($workOrder->status === 'delivered')
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-sm">
+                        <div class="flex items-center gap-2 text-emerald-800 font-semibold mb-2">
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                             {{ __('Teslim Edildi') }}
+                        </div>
+                        <dl class="space-y-2 mt-3">
+                            <div>
+                                <dt class="text-xs text-emerald-600/80">{{ __('Teslim Alan') }}</dt>
+                                <dd class="font-medium text-emerald-900">{{ $workOrder->delivered_to_name }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-xs text-emerald-600/80">{{ __('Teslim Tarihi') }}</dt>
+                                <dd class="font-medium text-emerald-900">{{ $workOrder->delivered_at?->format('d.m.Y H:i') }}</dd>
+                            </div>
+                            @if($workOrder->delivery_notes)
+                            <div class="pt-2 border-t border-emerald-200/50 mt-2">
+                                <dt class="text-xs text-emerald-600/80">{{ __('Notlar') }}</dt>
+                                <dd class="text-emerald-900 italic">"{{ $workOrder->delivery_notes }}"</dd>
+                            </div>
+                            @endif
+                        </dl>
+                    </div>
+                @else
+                    <form action="{{ route('work-orders.deliver', $workOrder) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                             <x-ui.input-label for="delivered_to_name" value="{{ __('Teslim Alan Kişi') }}" />
+                             <x-ui.text-input id="delivered_to_name" name="delivered_to_name" class="mt-1 w-full" required placeholder="Müşteri Ad Soyad" />
+                        </div>
+
+                        <div>
+                             <x-ui.input-label for="delivered_at" value="{{ __('Teslim Tarihi') }}" />
+                             <x-ui.text-input type="datetime-local" id="delivered_at" name="delivered_at" class="mt-1 w-full" required value="{{ now()->format('Y-m-d\TH:i') }}" />
+                        </div>
+                        
+                        <div>
+                             <x-ui.input-label for="delivery_notes" value="{{ __('Notlar (Opsiyonel)') }}" />
+                             <x-ui.text-input id="delivery_notes" name="delivery_notes" class="mt-1 w-full" placeholder="Teslimat notları..." />
+                        </div>
+
+                        <x-ui.button type="submit" variant="primary" class="w-full justify-center">
+                            {{ __('Teslim Et') }}
+                        </x-ui.button>
+                    </form>
+                @endif
+            </x-ui.card>
+
             @include('work_orders.partials.progress', ['workOrder' => $workOrder])
 
             @include('partials.operation-flow', ['flow' => $operationFlow])

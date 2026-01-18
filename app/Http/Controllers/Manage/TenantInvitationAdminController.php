@@ -62,7 +62,7 @@ class TenantInvitationAdminController extends Controller
                  'pending_invites_counted' => true // assuming service logic
              ], 'warn');
 
-             return back()->with('error', 'Paket kullanıcı limitiniz dolu. Plan yükseltin veya ek kullanıcı satın alın.');
+             return back()->with('error', 'Plan limitine ulaşıldı. Paketi yükseltmeniz gerekiyor.');
         }
 
         $token = Str::random(64);

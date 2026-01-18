@@ -8,7 +8,8 @@ class Account extends Model
 {
     protected $fillable = [
         'owner_user_id',
-        'plan_id',
+        'plan_id', // Deprecated but kept for compatibility
+        'plan_key', // New Source of Truth
         'status',
         'extra_seats_purchased',
         'billing_provider',
@@ -47,16 +48,35 @@ class Account extends Model
     }
 
     /**
+     * Get the plan configuration array from config/plans.php
+     */
+    public function getPlanConfigAttribute()
+    {
+        $key = $this->plan_key ?? 'starter'; // Default to starter if null
+        return config("plans.{$key}");
+    }
+
+    /**
+     * Get the plan name (Translated).
+     */
+    public function getPlanNameAttribute()
+    {
+        return $this->plan_config['name'] ?? ucfirst($this->plan_key);
+    }
+
+    /**
      * Get the effective seat limit (Plan limit + Extra purchases).
      * Returns null if unlimited.
      */
     public function effectiveSeatLimit(): ?int
     {
-        if ($this->plan->seat_limit === null) {
+        $limit = $this->plan_config['user_limit'] ?? null;
+        
+        if ($limit === null) {
             return null;
         }
 
-        return $this->plan->seat_limit + $this->extra_seats_purchased;
+        return $limit + $this->extra_seats_purchased;
     }
 
     /**
@@ -65,6 +85,6 @@ class Account extends Model
      */
     public function effectiveTenantLimit(): ?int
     {
-        return $this->plan->tenant_limit;
+        return $this->plan_config['tenant_limit'] ?? null;
     }
 }

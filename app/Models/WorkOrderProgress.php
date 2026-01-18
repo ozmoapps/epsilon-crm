@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Concerns\TenantScoped;
+
 class WorkOrderProgress extends Model
 {
-    use HasFactory;
+    use HasFactory, TenantScoped;
 
     protected $table = 'work_order_progress';
 
     protected $fillable = [
+        'tenant_id',
         'work_order_id',
         'label',
         'progress_percent',

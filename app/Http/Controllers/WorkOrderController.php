@@ -260,4 +260,26 @@ class WorkOrderController extends Controller
 
         return redirect()->back()->with('success', "Stok düşüşü gerçekleştirildi ({$processedCount} kalem).");
     }
+
+    public function deliver(Request $request, WorkOrder $workOrder)
+    {
+        $this->checkTenant($workOrder);
+        $this->authorize('update', $workOrder);
+
+        $validated = $request->validate([
+            'delivered_to_name' => 'required|string|max:255',
+            'delivered_at' => 'required|date',
+            'delivery_notes' => 'nullable|string',
+        ]);
+
+        $workOrder->update([
+            'status' => 'delivered',
+            'delivered_at' => $validated['delivered_at'],
+            'delivered_by' => $request->user()->id,
+            'delivered_to_name' => $validated['delivered_to_name'],
+            'delivery_notes' => $validated['delivery_notes'],
+        ]);
+
+        return redirect()->back()->with('success', 'Teslimat bilgisi kaydedildi.');
+    }
 }

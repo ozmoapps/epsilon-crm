@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BankAccount extends Model
 {
     use HasFactory;
+    use \App\Models\Concerns\TenantScoped;
 
     protected static function booted()
     {

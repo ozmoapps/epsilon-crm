@@ -1,6 +1,6 @@
 @extends('layouts.print')
 
-@section('title', 'İş Emri Yazdır - #' . $workOrder->id)
+@section('title', 'Teslim Raporu - #' . $workOrder->id)
 
 @section('content')
     @php
@@ -126,18 +126,35 @@
     {{-- Delivery / Signature Block --}}
     <div class="section break-inside-avoid mt-8">
         <div class="grid grid-cols-2 gap-8">
-            <div class="border border-slate-200 p-4 h-32">
+            <div class="border border-slate-200 p-4 h-36 relative">
                 <p class="font-bold text-xs uppercase tracking-wider mb-2 text-slate-500">{{ __('Teslim Eden (Personel)') }}</p>
-                <div class="mt-8 border-b border-slate-300 w-2/3"></div>
-                <p class="text-xs text-slate-400 mt-1">{{ __('İmza') }}</p>
+                @if($workOrder->delivered_by)
+                    <p class="font-semibold text-sm">{{ $workOrder->deliveredBy->name ?? '-' }}</p>
+                    <p class="text-xs text-slate-500">{{ $workOrder->delivered_at?->format('d.m.Y H:i') }}</p>
+                @else
+                    <div class="mt-8 border-b border-slate-300 w-2/3"></div>
+                    <p class="text-xs text-slate-400 mt-1">{{ __('İmza') }}</p>
+                @endif
             </div>
-            <div class="border border-slate-200 p-4 h-32">
+            <div class="border border-slate-200 p-4 h-36 relative">
                 <p class="font-bold text-xs uppercase tracking-wider mb-2 text-slate-500">{{ __('Teslim Alan (Müşteri)') }}</p>
-                <div class="mt-8 border-b border-slate-300 w-2/3"></div>
-                <p class="text-xs text-slate-400 mt-1">{{ __('İmza') }}</p>
+                @if($workOrder->delivered_to_name)
+                    <p class="font-semibold text-sm">{{ $workOrder->delivered_to_name }}</p>
+                    <p class="text-xs text-slate-500">{{ $workOrder->delivered_at?->format('d.m.Y H:i') }}</p>
+                    @if($workOrder->delivery_notes)
+                        <p class="text-xs text-slate-500 mt-1 italic">"{{ Str::limit($workOrder->delivery_notes, 50) }}"</p>
+                    @endif
+                @else
+                    <div class="mt-8 border-b border-slate-300 w-2/3"></div>
+                    <p class="text-xs text-slate-400 mt-1">{{ __('İmza') }}</p>
+                @endif
                 
-                <div class="mt-4 flex items-center gap-2">
-                    <div class="h-4 w-4 border border-slate-400 rounded"></div>
+                <div class="absolute bottom-4 left-4 flex items-center gap-2">
+                    <div class="h-4 w-4 border border-slate-400 rounded flex items-center justify-center">
+                        @if($workOrder->status === 'delivered')
+                            <svg class="w-3 h-3 text-slate-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        @endif
+                    </div>
                     <span class="text-xs font-semibold">{{ __('Eksiksiz Teslim Aldım') }}</span>
                 </div>
             </div>

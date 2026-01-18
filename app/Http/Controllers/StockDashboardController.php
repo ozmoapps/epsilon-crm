@@ -38,15 +38,19 @@ class StockDashboardController extends Controller
         $todayStart = now()->startOfDay();
         $todayEnd = now()->endOfDay();
 
+        $tenantId = app(\App\Services\TenantContext::class)->id();
+
         $shippedToday = DB::table('sales_order_shipment_lines')
             ->join('sales_order_shipments', 'sales_order_shipments.id', '=', 'sales_order_shipment_lines.sales_order_shipment_id')
             ->where('sales_order_shipments.status', 'posted')
+            ->where('sales_order_shipments.tenant_id', $tenantId) // Fix Leak
             ->whereBetween('sales_order_shipments.posted_at', [$todayStart, $todayEnd])
             ->sum('sales_order_shipment_lines.qty');
 
         $returnedToday = DB::table('sales_order_return_lines')
             ->join('sales_order_returns', 'sales_order_returns.id', '=', 'sales_order_return_lines.sales_order_return_id')
             ->where('sales_order_returns.status', 'posted')
+            ->where('sales_order_returns.tenant_id', $tenantId) // Fix Leak
             ->whereBetween('sales_order_returns.posted_at', [$todayStart, $todayEnd])
             ->sum('sales_order_return_lines.qty');
 

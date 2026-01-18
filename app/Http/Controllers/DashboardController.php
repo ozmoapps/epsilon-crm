@@ -23,7 +23,48 @@ class DashboardController extends Controller
     public function __invoke()
     {
         $user = request()->user();
-        $isAdmin = true; // PR68: Remove Gating - All users are admins for now
+        
+        // PR8a: Safe Admin Detection
+        $tenantId = app(\App\Services\TenantContext::class)->id();
+
+        // PR14: Onboarding Guard (No Tenant)
+        if (! $tenantId) {
+             return view('dashboard', [
+                'is_onboarding' => true,
+                'openInvoices' => collect(),
+                'overdueInvoices' => collect(),
+                'advances' => collect(),
+                'bankBalances' => collect(),
+                'stockAlertsCount' => 0,
+                'quoteStats' => (object)['total' => 0, 'draft' => 0, 'sent' => 0, 'accepted' => 0],
+                'salesOrderStats' => (object)['total' => 0, 'active' => 0, 'completed' => 0],
+                'workOrderStats' => (object)['total' => 0, 'planned' => 0, 'in_progress' => 0, 'completed' => 0],
+                'financeStats' => ['invoiced' => collect(), 'collected' => collect()],
+                'recentActivity' => collect(),
+                'upcomingFollowUps' => collect(),
+                'criticalOverdueInvoices' => collect(),
+                'todaysWorkOrders' => collect(),
+                'overdueWorkOrders' => collect(),
+                'onHoldWorkOrders' => collect(),
+                'opOpenSalesOrders' => 0,
+                'opOpenWorkOrders' => 0,
+                'opMissingPhotos' => 0,
+                'opPendingDelivery' => 0,
+                'recentOperations' => collect(),
+                'canSeeFinance' => false
+             ]);
+        }
+
+        $membership = $user->tenants()->where('tenants.id', $tenantId)->first();
+        // Null-safe check: defaults to false if no membership or pivot data
+        $isTenantAdmin = $membership?->pivot?->role === 'admin'; 
+
+        // PR12: Finance Visibility Contract (Defense in Depth)
+        $isPlatformAdmin = $user->is_admin;
+        $hasSupportSession = session('support_session_id');
+        $showTenantMenu = !$isPlatformAdmin || ($isPlatformAdmin && $hasSupportSession);
+        
+        $canSeeFinance = $showTenantMenu && ($isTenantAdmin || ($isPlatformAdmin && $hasSupportSession));
 
         // --- 1. KPI Cards Data ---
         $openInvoices = collect();
@@ -37,7 +78,8 @@ class DashboardController extends Controller
         $financeStats = ['invoiced' => collect(), 'collected' => collect()];
         $criticalOverdueInvoices = collect();
 
-        if ($isAdmin) {
+        // STRICT GATING: Financial queries only run if authorized
+        if ($canSeeFinance) {
             // Open Invoices (Issued/Sent but not Paid)
             $openInvoices = Invoice::query()
                 ->whereIn('status', ['issued', 'sent'])
@@ -78,21 +120,7 @@ class DashboardController extends Controller
                 ->where('track_stock', true)
                 ->whereRaw('(SELECT COALESCE(SUM(qty_on_hand), 0) FROM inventory_balances WHERE product_id = products.id) <= critical_stock_level')
                 ->count();
-
-            // Sales Funnel
-            $quoteStats = Quote::selectRaw('
-                count(*) as total,
-                sum(case when status = "draft" then 1 else 0 end) as draft,
-                sum(case when status = "sent" then 1 else 0 end) as sent,
-                sum(case when status = "accepted" then 1 else 0 end) as accepted
-            ')->first();
-
-            $salesOrderStats = SalesOrder::selectRaw('
-                count(*) as total,
-                sum(case when status not in ("completed", "cancelled") then 1 else 0 end) as active,
-                sum(case when status = "completed" then 1 else 0 end) as completed
-            ')->first();
-
+            
             // Finance (Last 30 Days)
             $financeStats = [
                 'invoiced' => Invoice::where('issue_date', '>=', now()->subDays(30))
@@ -103,9 +131,9 @@ class DashboardController extends Controller
                     ->selectRaw('COALESCE(original_currency, "EUR") as currency, sum(COALESCE(original_amount, amount)) as total')
                     ->groupBy('currency')
                     ->pluck('total', 'currency'),
-            ];
-
-             // Critical Alerts (Specific Items)
+                ];
+            
+            // Critical Alerts (Specific Items)
             $criticalOverdueInvoices = Invoice::query()
                 ->with('customer')
                 ->where('status', 'issued') // Only issued can be overdue in strict sense
@@ -114,6 +142,20 @@ class DashboardController extends Controller
                 ->orderBy('due_date')
                 ->limit(5)
                 ->get();
+
+             // Sales Funnel
+             $quoteStats = Quote::selectRaw('
+                 count(*) as total,
+                 sum(case when status = "draft" then 1 else 0 end) as draft,
+                 sum(case when status = "sent" then 1 else 0 end) as sent,
+                 sum(case when status = "accepted" then 1 else 0 end) as accepted
+             ')->first();
+ 
+             $salesOrderStats = SalesOrder::selectRaw('
+                 count(*) as total,
+                 sum(case when status not in ("completed", "cancelled") then 1 else 0 end) as active,
+                 sum(case when status = "completed" then 1 else 0 end) as completed
+             ')->first();
         }
 
         // --- 2. Shared Data (Staff + Admin) ---
@@ -129,7 +171,7 @@ class DashboardController extends Controller
 
         // Recent Activity
         $recentActivity = ActivityLog::with(['actor', 'subject'])
-            ->where('tenant_id', app(\App\Services\TenantContext::class)->id())
+            ->where('tenant_id', $tenantId)
             ->latest('created_at')
             ->limit(8)
             ->get();
@@ -142,6 +184,76 @@ class DashboardController extends Controller
             ->orderBy('next_at')
             ->limit(5)
             ->get();
+
+        // --- 5. Operations Summary (PR8) ---
+        // Tenant Scoped by default trait, but adding defense-in-depth matches
+        
+        // 1) Açık Satış Siparişi
+        $opOpenSalesOrders = SalesOrder::query()
+            ->whereIn('status', ['confirmed', 'in_progress'])
+            ->count();
+
+        // 2) Açık İş Emri
+        $opOpenWorkOrders = WorkOrder::query()
+            ->whereIn('status', ['planned', 'started', 'in_progress'])
+            ->count();
+            
+        // 3) Foto Eksik (SalesOrder -> workOrder var ama photos yok)
+        $opMissingPhotos = SalesOrder::query()
+            ->whereHas('workOrder', function ($q) {
+                $q->whereDoesntHave('photos');
+            })
+            ->count();
+
+        // 4) Teslim Bekleyen (SalesOrder -> workOrder var, status != delivered)
+        $opPendingDelivery = SalesOrder::query()
+            ->whereHas('workOrder', function ($q) {
+                $q->whereNotIn('status', ['delivered', 'completed', 'cancelled']);
+            })
+            ->count();
+            
+        // --- 6. Recent Operations Table (Last 10 Sales Orders) ---
+        // Eager load customer, vessel, contract, workOrder (with photos count)
+        // PR8a Fix: N+1
+        $recentOperations = SalesOrder::query()
+            ->with(['customer', 'vessel', 'contract', 'workOrder'])
+            ->with(['workOrder' => function($q) {
+                $q->withCount('photos');
+            }])
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->map(function ($order) {
+                // Calculate Next Step Logic
+                $stepLabel = 'Bilinmiyor';
+                $stepVariant = 'neutral';
+                
+                // N+1 Safe check (eager loaded)
+                $hasContract = (bool) $order->contract;
+                $hasWorkOrder = $order->workOrder;
+                
+                if (!$hasContract) {
+                    $stepLabel = 'Sözleşme bekleniyor';
+                    $stepVariant = 'neutral';
+                } elseif (!$hasWorkOrder) {
+                    $stepLabel = 'İş emri oluştur';
+                    $stepVariant = 'info';
+                } elseif ($hasWorkOrder && $order->workOrder->photos_count == 0) {
+                    $stepLabel = 'Fotoğraflar eksik';
+                    $stepVariant = 'info';
+                } elseif ($hasWorkOrder && !in_array($order->workOrder->status, ['delivered', 'completed'])) {
+                    $stepLabel = 'Teslimat bekleniyor';
+                    $stepVariant = 'info';
+                } else {
+                    $stepLabel = 'Tamamlandı';
+                    $stepVariant = 'success';
+                }
+                
+                $order->next_step_label = $stepLabel;
+                $order->next_step_variant = $stepVariant;
+                
+                return $order;
+            });
 
         // --- 4. Operations Dashboard (Sprint O4.2) ---
         
@@ -183,7 +295,13 @@ class DashboardController extends Controller
             'criticalOverdueInvoices',
             'todaysWorkOrders',
             'overdueWorkOrders',
-            'onHoldWorkOrders'
+            'onHoldWorkOrders',
+            'opOpenSalesOrders',
+            'opOpenWorkOrders',
+            'opMissingPhotos',
+            'opPendingDelivery',
+            'recentOperations',
+            'canSeeFinance'
         ));
     }
 }
